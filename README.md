@@ -1,160 +1,178 @@
-# Hệ thống quản lý đặt phòng khách sạn (Booking Hotel System).
+# Hệ thống quản lý đặt phòng khách sạn (Booking Hotel System)
 
-Phiên bản này gồm frontend bằng React + Vite (TypeScript) và backend bằng Node.js + Express với Prisma ORM.
+Ứng dụng gồm frontend (React + Vite, TypeScript) và backend (Node.js + Express, Prisma). README này hướng dẫn cách chạy, cấu hình môi trường và tổng quan API/features.
 
-**Nội dung chính**
+**Thư mục chính**
 
-- **Frontend**: `FE/` — ứng dụng React (Vite, TypeScript, MUI, Redux Toolkit, React Query).
-- **Backend**: `BE/` — API server Express, Prisma, cơ sở dữ liệu và scripts tiện ích.
-
-**Mục tiêu**
-
-- Cung cấp UI cho người dùng đặt phòng, quản lý phòng, quản trị (dashboard, quản lý đặt phòng, khuyến mãi, đánh giá,...).
-- API phục vụ các tính năng đặt phòng, quản lý nhân viên/khách hàng, thanh toán, khuyến mãi, báo cáo.
+- `FE/` (a.k.a. `booking-hotel-frontend/`) — mã nguồn frontend (Vite, React, TypeScript, MUI, Redux Toolkit, React Query).
+- `BE/` (a.k.a. `hotel-backend-updated/`) — mã nguồn backend (Express, Prisma, migrations, seed, scripts).
 
 ---
 
-**Yêu cầu hệ thống**
+## Mục lục
 
-- Node.js (>=16 recommended)
+- [Tổng quan & Tính năng](#tổng-quan--tính-năng)
+- [Yêu cầu hệ thống](#yêu-cầu-hệ-thống)
+- [Chạy nhanh (Dev)](#chạy-nhanh-dev)
+- [Thiết lập Backend (chi tiết)](#thiết-lập-backend-chi-tiết)
+- [Thiết lập Frontend](#thiết-lập-frontend)
+- [Biến môi trường (env)](#biến-môi-trường-env)
+- [Database & Prisma](#database--prisma)
+- [Kiểm thử & API collection](#kiểm-thử--api-collection)
+- [Bảo mật & Lưu ý vận hành](#bảo-mật--lưu-ý-vận-hành)
+- [Đóng góp](#đóng-góp)
+- [Liên hệ](#liên-hệ)
+
+---
+
+## Tổng quan & Tính năng
+
+- Giao diện cho người dùng và giao diện quản trị với các tính năng chính:
+
+  - **Admin / Quản trị**: quản lý phòng & loại phòng; quản lý đặt phòng (xác nhận/hủy, điều chỉnh, tạo đặt phòng offline); quản lý khuyến mãi; quản lý đánh giá; dashboard báo cáo; quản lý người dùng/nhân viên.
+  - **Khách hàng**: tìm kiếm & xem phòng; xem chi tiết phòng (hình ảnh, tiện nghi, giá); đặt phòng & thanh toán trực tuyến; quản lý hồ sơ; xem lịch sử đặt phòng; viết đánh giá.
+
+- **API (Backend)**: RESTful endpoints phục vụ các nhóm chức năng: Auth, Users, Rooms/RoomTypes, Bookings, Payments (VNPAY), Promotions, Reviews, Search/Filters, Dashboard/Reports, Uploads (images).
+
+---
+
+## Yêu cầu hệ thống
+
+- Node.js (>=16)
 - npm hoặc yarn
-- (Backend) MySQL  — phụ thuộc cấu hình `prisma/schema.prisma` và biến môi trường
+- MySQL (theo `BE/prisma/schema.prisma`) — có thể cấu hình sang Postgres/SQLite trong Prisma nếu cần
 
 ---
 
-**Cấu trúc thư mục chính**
+## Chạy nhanh (Dev)
 
-- `FE/` — mã nguồn frontend (Vite + React + TypeScript)
-- `BE/` — mã nguồn backend (Express + Prisma)
-- `prisma/` (trong backend) — schema, migrations, seed scripts
+1. Mở hai terminal.
 
----
-
-**Frontend — Chạy & Xây dựng**
-
-1. Mở terminal, chuyển vào thư mục frontend:
-
-   ```bash
-   cd FE
-   npm install
-   npm run dev
-   ```
-
-2. Xây dựng để production:
-
-   ```bash
-   npm run build
-   npm run preview
-   ```
-
-Scripts chính (`package.json`):
-
-- `dev`: `vite` — chạy dev server
-- `build`: `tsc -b && vite build` — build production
-- `preview`: `vite preview` — xem build local
-
----
-
-**Backend — Chạy & Thao tác**
-
-1. Chuyển vào thư mục backend và cài phụ thuộc:
-
-   ```bash
-   cd BE
-   npm install
-   ```
-
-2. Thiết lập biến môi trường: sao chép `/.env.example` thành `/.env` và chỉnh thông tin DB, JWT, SMTP, VNPAY,...
-
-3. Khởi tạo Prisma và migrate (ví dụ dùng SQLite/Postgres/MySQL theo cấu hình):
-
-   ```bash
-   # Tạo client Prisma
-   npm run prisma:generate
-
-   # Thực thi migrate (phát triển)
-   npm run prisma:migrate
-
-   # Mở Prisma Studio để xem dữ liệu
-   npm run prisma:studio
-   ```
-
-4. Seed dữ liệu mẫu (nếu cần):
-
-   ```bash
-   # Trong thư mục prisma có seed scripts: seed.js, seedLongReviews.js
-   node prisma/seed.js
-   ```
-
-5. Chạy server:
-
-   ```bash
-   npm run dev
-   # hoặc
-   npm start
-   ```
-
-Scripts chính (`package.json`):
-
-- `dev`: `nodemon src/server.js` — chạy server trong dev
-- `start`: `node src/server.js` — chạy production (nếu đã build)
-- `prisma:generate`, `prisma:migrate`, `prisma:studio` — thao tác Prisma
-- `setup` / `setup:win` — script tiện ích để chuẩn bị môi trường
-
----
-
-**Các endpoint chính & tài liệu kiểm thử**
-
-- Tất cả route backend nằm trong `BE/src/routes/`
-- Controllers tương ứng trong `BE/src/controllers/`
-- Có file test và collection API trong repo: `api-test.http`, `api-test.postman_collection.json`, và script test (`api-test-detailed.js`, `api-test.spec.js`).
-
-Để chạy test API nhanh:
+Backend (terminal A):
 
 ```bash
 cd BE
-node api-test-detailed.js
+npm install
+cp .env.example .env   # chỉnh giá trị trong BE/.env
+npm run dev
+```
+
+Frontend (terminal B):
+
+```bash
+cd FE
+npm install
+npm run dev
+```
+
+Truy cập frontend (mặc định): `http://localhost:5173` (hoặc URL Vite hiển thị).
+
+---
+
+## Thiết lập Backend (chi tiết)
+
+1. Sao chép `BE/.env.example` → `BE/.env` và điền các giá trị phù hợp.
+2. Tạo Prisma client & migrate:
+
+```bash
+cd BE
+npm run prisma:generate
+npm run prisma:migrate
+node prisma/seed.js   # (tùy chọn) seed dữ liệu mẫu
+```
+
+3. Chạy server:
+
+```bash
+npm run dev
 # hoặc
-npm run test:api
+npm start
+```
+
+Scripts hữu ích (từ `BE/package.json`): `dev`, `start`, `prisma:generate`, `prisma:migrate`, `prisma:studio`, `setup`.
+
+---
+
+## Thiết lập Frontend
+
+1. Cài đặt và chạy dev server:
+
+```bash
+cd FE
+npm install
+npm run dev
+```
+
+2. Build production:
+
+```bash
+npm run build
+npm run preview
 ```
 
 ---
 
-**Cơ sở dữ liệu & Migrations**
+## Biến môi trường (env)
 
-- Schema Prisma: `BE/prisma/schema.prisma`
-- Migrations đã nằm sẵn trong `BE/prisma/migrations/`.
-- Nếu đổi DB hoặc muốn reset, xem các lệnh `prisma migrate` và chạy lại seed.
+Backend sử dụng `BE/.env`. Không commit file `.env` vào git. Các biến chính:
+
+- `PORT` — cổng server (ví dụ `3001`).
+- `DATABASE_URL` — chuỗi kết nối Prisma, ví dụ MySQL:
+
+  ```text
+  DATABASE_URL="mysql://<DB_USER>:<DB_PASS>@<DB_HOST>:<DB_PORT>/<DB_NAME>"
+  ```
+
+- `JWT_SECRET` — secret dùng ký JWT (sử dụng chuỗi ngẫu nhiên, 32+ ký tự).
+- `CORS_ORIGIN` — origin frontend cho phép (ví dụ `http://localhost:5173`).
+- `FE_ORIGIN` — URL frontend (dùng khi backend cần redirect/notify).
+- `VNP_HASH_SECRET` — secret cho VNPAY (GIỮ BÍ MẬT).
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` — cấu hình SMTP gửi email (nên dùng app password cho Gmail).
+
+Gợi ý nhanh:
+
+```bash
+# tạo JWT secret mạnh
+openssl rand -hex 32
+
+# copy mẫu env
+cp BE/.env.example BE/.env
+```
+
+Nếu `.env` lỡ commit:
+
+```bash
+git rm --cached BE/.env
+git commit -m "Remove tracked env file"
+# sau đó rotate các secrets bị lộ
+```
 
 ---
 
-**Gợi ý chạy song song (dev)**
+## Database & Prisma
 
-- Terminal 1 (backend):
+- Schema và migrations nằm trong `BE/prisma/`.
+- Các lệnh phổ biến:
 
-  ```bash
-  cd hotel-backend-updated
-  npm install
-  npm run dev
-  ```
-
-- Terminal 2 (frontend):
-
-  ```bash
-  cd booking-hotel-frontend
-  npm install
-  npm run dev
-  ```
-
-Frontend thường truy cập API backend qua `VITE_` env biến hoặc cấu hình proxy trong dev (kiểm tra `vite.config.ts` nếu cần cấu hình proxy).
+```bash
+npm run prisma:generate
+npm run prisma:migrate
+npm run prisma:studio
+```
 
 ---
 
-**Cải tiến và ghi chú phát triển**
+## Bảo mật & Lưu ý vận hành
 
-- Kiểm tra biến môi trường (JWT secret, DB URL, SMTP, VNPAY keys) trước khi chạy production.
-- Sử dụng `prisma studio` để duyệt dữ liệu nhanh.
-- Mã frontend sử dụng MUI, Tailwind config có thể được cấu hình thêm (xem `vite.config.ts` / `theme.ts`).
+- KHÔNG commit file `.env` chứa secrets.
+- Dùng app password hoặc OAuth cho SMTP (Gmail).
+- Nếu secrets bị lộ, ngay lập tức rotate password/keys (DB, SMTP, VNPAY, JWT).
+- Cho production, dùng Secret Manager (AWS/GCP/HashiCorp) và không lưu trực tiếp secrets trong repo.
+
+---
+
+## Liên hệ
+
+- Email: `khoaanh662004@gmail.com` — liên hệ nếu cần README tiếng Anh, Docker/Docker Compose config, hoặc CI/CD.
 
 
-Liên hệ: (n/a) — nếu cần tôi cập nhật README bằng tiếng Anh hoặc thêm phần CI/CD, nói tôi biết.
