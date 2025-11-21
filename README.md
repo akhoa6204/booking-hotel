@@ -26,8 +26,8 @@ Phiên bản này gồm frontend bằng React + Vite (TypeScript) và backend b�
 
 **Cấu trúc thư mục chính**
 
-- `booking-hotel-frontend/` — mã nguồn frontend (Vite + React + TypeScript)
-- `hotel-backend-updated/` — mã nguồn backend (Express + Prisma)
+- `FE/` — mã nguồn frontend (Vite + React + TypeScript)
+- `BE/` — mã nguồn backend (Express + Prisma)
 - `prisma/` (trong backend) — schema, migrations, seed scripts
 
 ---
@@ -37,7 +37,7 @@ Phiên bản này gồm frontend bằng React + Vite (TypeScript) và backend b�
 1. Mở terminal, chuyển vào thư mục frontend:
 
    ```bash
-   cd booking-hotel-frontend
+   cd FE
    npm install
    npm run dev
    ```
@@ -62,7 +62,7 @@ Scripts chính (`package.json`):
 1. Chuyển vào thư mục backend và cài phụ thuộc:
 
    ```bash
-   cd hotel-backend-updated
+   cd BE
    npm install
    ```
 
