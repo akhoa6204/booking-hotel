@@ -1,6 +1,4 @@
-# booking-hotel
-
-Hệ thống quản lý đặt phòng khách sạn (Booking Hotel System).
+# Hệ thống quản lý đặt phòng khách sạn (Booking Hotel System).
 
 Phiên bản này gồm frontend bằng React + Vite (TypeScript) và backend bằng Node.js + Express với Prisma ORM.
 
@@ -20,7 +18,7 @@ Phiên bản này gồm frontend bằng React + Vite (TypeScript) và backend b�
 
 - Node.js (>=16 recommended)
 - npm hoặc yarn
-- (Backend) PostgreSQL / MySQL / SQLite — phụ thuộc cấu hình `prisma/schema.prisma` và biến môi trường
+- (Backend) MySQL  — phụ thuộc cấu hình `prisma/schema.prisma` và biến môi trường
 
 ---
 
@@ -107,14 +105,14 @@ Scripts chính (`package.json`):
 
 **Các endpoint chính & tài liệu kiểm thử**
 
-- Tất cả route backend nằm trong `hotel-backend-updated/src/routes/`
-- Controllers tương ứng trong `hotel-backend-updated/src/controllers/`
+- Tất cả route backend nằm trong `BE/src/routes/`
+- Controllers tương ứng trong `BE/src/controllers/`
 - Có file test và collection API trong repo: `api-test.http`, `api-test.postman_collection.json`, và script test (`api-test-detailed.js`, `api-test.spec.js`).
 
 Để chạy test API nhanh:
 
 ```bash
-cd hotel-backend-updated
+cd BE
 node api-test-detailed.js
 # hoặc
 npm run test:api
@@ -124,8 +122,8 @@ npm run test:api
 
 **Cơ sở dữ liệu & Migrations**
 
-- Schema Prisma: `hotel-backend-updated/prisma/schema.prisma`
-- Migrations đã nằm sẵn trong `hotel-backend-updated/prisma/migrations/`.
+- Schema Prisma: `BE/prisma/schema.prisma`
+- Migrations đã nằm sẵn trong `BE/prisma/migrations/`.
 - Nếu đổi DB hoặc muốn reset, xem các lệnh `prisma migrate` và chạy lại seed.
 
 ---
@@ -158,26 +156,5 @@ Frontend thường truy cập API backend qua `VITE_` env biến hoặc cấu h�
 - Sử dụng `prisma studio` để duyệt dữ liệu nhanh.
 - Mã frontend sử dụng MUI, Tailwind config có thể được cấu hình thêm (xem `vite.config.ts` / `theme.ts`).
 
----
-
-**Đóng góp**
-
-- Fork repo, tạo branch feature, gửi pull request.
-- Mô tả rõ các thay đổi, cách chạy/kiểm tra.
-
----
-
-**Tài liệu thêm**
-
-- Xem `hotel-backend-updated/README.md` và `booking-hotel-frontend/README.md` (nếu có) để biết chi tiết từng phần.
-- File test & hướng dẫn kiểm thử: `hotel-backend-updated/API-TEST-GUIDE.md`.
-
----
-
-Nếu bạn muốn, tôi có thể:
-
-- Thêm các lệnh run cụ thể cho Docker / PM2.
-- Viết hướng dẫn cấu hình `.env` chi tiết (liệt kê các biến cần thiết từ backend `.env.example`).
-- Tạo `dev` docker-compose mẫu để chạy DB + backend + frontend.
 
 Liên hệ: (n/a) — nếu cần tôi cập nhật README bằng tiếng Anh hoặc thêm phần CI/CD, nói tôi biết.
