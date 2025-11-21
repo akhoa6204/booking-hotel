@@ -1,0 +1,253 @@
+// Variables
+@baseUrl = http://localhost:3001
+@token = REPLACE_WITH_JWT
+
+### Health
+GET {{baseUrl}}/health
+
+### AUTH - Register CUSTOMER
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Nguyen Van A",
+  "email": "user1@example.com",
+  "password": "secret123",
+  "phone": "0900000001"
+}
+
+### AUTH - Register MANAGER
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Manager 01",
+  "email": "manager1@example.com",
+  "password": "secret123",
+  "phone": "0900000999"
+}
+
+### (MANUAL) Promote manager1 to MANAGER role
+# Thực hiện qua Prisma Studio hoặc query DB:
+# UPDATE User SET role='MANAGER' WHERE email='manager1@example.com';
+
+### AUTH - Login CUSTOMER
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "user1@example.com",
+  "password": "secret123"
+}
+
+### AUTH - Login MANAGER
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "manager1@example.com",
+  "password": "secret123"
+}
+
+### AUTH - Request password reset (Customer)
+POST {{baseUrl}}/auth/password/request-reset
+Content-Type: application/json
+
+{
+  "email": "user1@example.com"
+}
+
+### AUTH - Reset password (DEV: dán token trả về từ request-reset)
+POST {{baseUrl}}/auth/password/reset
+Content-Type: application/json
+
+{
+  "token": "PASTE_TOKEN_HERE",
+  "newPassword": "newpass123"
+}
+
+### HOTELS - Get (public)
+GET {{baseUrl}}/hotels
+
+### HOTELS - Upsert (MANAGER)
+POST {{baseUrl}}/hotels
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Sunrise Hotel",
+  "address": "01 Beach Rd, Da Nang",
+  "description": "4-star beachside hotel",
+  "images": ["https://example.com/h1.jpg"],
+  "policies": "Check-in 14:00, Check-out 12:00; Cancel >= 2 ngày trước check-in."
+}
+
+### SERVICES - List (public, theo hotelId nếu có)
+GET {{baseUrl}}/services?hotelId=1
+
+### SERVICES - Create (MANAGER)
+POST {{baseUrl}}/services
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "hotelId": 1,
+  "name": "Airport Pickup",
+  "description": "Private car, 4 seats",
+  "price": 150000.00
+}
+
+### SERVICES - Update (MANAGER)
+PUT {{baseUrl}}/services/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Airport Pickup (4 seats)",
+  "description": "Sedan",
+  "price": 180000.00
+}
+
+### SERVICES - Delete (MANAGER)
+DELETE {{baseUrl}}/services/1
+Authorization: Bearer {{token}}
+
+### ROOMS - List (public, filter theo hotelId)
+GET {{baseUrl}}/rooms?hotelId=1
+
+### ROOMS - Create (MANAGER)
+POST {{baseUrl}}/rooms
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "hotelId": 1,
+  "name": "Deluxe Ocean View",
+  "type": "DELUXE",
+  "pricePerNight": 1200000.00,
+  "capacity": 2,
+  "description": "Sea view, king bed",
+  "images": ["https://example.com/room1.jpg"]
+}
+
+### ROOMS - Update (MANAGER)
+PUT {{baseUrl}}/rooms/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Deluxe Ocean View (King)",
+  "type": "DELUXE",
+  "pricePerNight": 1350000.00,
+  "capacity": 2,
+  "description": "Sea view, king bed, balcony",
+  "status": "AVAILABLE",
+  "images": ["https://example.com/room1a.jpg"]
+}
+
+### PROMOTIONS - List (MANAGER)
+GET {{baseUrl}}/promotions?hotelId=1
+Authorization: Bearer {{token}}
+
+### PROMOTIONS - Create (MANAGER)
+POST {{baseUrl}}/promotions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "hotelId": 1,
+  "code": "SUMMER15",
+  "type": "PERCENT",
+  "value": 15.0,
+  "conditions": {"minNights": 2},
+  "startDate": "2025-06-01T00:00:00.000Z",
+  "endDate": "2025-09-30T23:59:59.999Z",
+  "active": true
+}
+
+### PROMOTIONS - Update (MANAGER)
+PUT {{baseUrl}}/promotions/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "roomId": 1,
+  "type": "PERCENT",
+  "value": 20.0,
+  "conditions": {"minNights": 3},
+  "startDate": "2025-06-01T00:00:00.000Z",
+  "endDate": "2025-09-30T23:59:59.999Z",
+  "active": true
+}
+
+### PROMOTIONS - Delete (MANAGER)
+DELETE {{baseUrl}}/promotions/1
+Authorization: Bearer {{token}}
+
+### SEARCH - Rooms (public, loại trừ phòng đã đặt trong khoảng ngày)
+GET {{baseUrl}}/search/rooms?q=deluxe&hotelId=1&guests=2&minPrice=500000&maxPrice=2000000&checkIn=2025-10-05&checkOut=2025-10-08
+
+### BOOKINGS - Create (CUSTOMER)
+POST {{baseUrl}}/bookings
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "roomId": 1,
+  "checkIn": "2025-10-10",
+  "checkOut": "2025-10-12",
+  "method": "ONLINE"
+}
+
+### BOOKINGS - My bookings (CUSTOMER)
+GET {{baseUrl}}/bookings
+Authorization: Bearer {{token}}
+
+### BOOKINGS - All (MANAGER)
+GET {{baseUrl}}/bookings/all
+Authorization: Bearer {{token}}
+
+### BOOKINGS - Update status (MANAGER) → CHECKED_IN / CHECKED_OUT / CONFIRMED
+PATCH {{baseUrl}}/bookings/1/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "CHECKED_OUT"
+}
+
+### BOOKINGS - Cancel (CUSTOMER or MANAGER) (>= 2 ngày trước check-in)
+POST {{baseUrl}}/bookings/1/cancel
+Authorization: Bearer {{token}}
+
+### PAYMENTS - Pay booking (CUSTOMER owner hoặc MANAGER)
+POST {{baseUrl}}/payments/1/pay
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "method": "CARD"
+}
+
+### REVIEWS - Create (sau CHECKED_OUT & PAID)
+POST {{baseUrl}}/reviews
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "bookingId": 1,
+  "rating": 5,
+  "comment": "Phòng đẹp, view biển, nhân viên thân thiện"
+}
+
+### NOTIFICATIONS - List my notifications
+GET {{baseUrl}}/notifications
+Authorization: Bearer {{token}}
+
+### NOTIFICATIONS - Mark as read
+PATCH {{baseUrl}}/notifications/1/read
+Authorization: Bearer {{token}}
+
+### DASHBOARD (MANAGER)
+GET {{baseUrl}}/dashboard/overview
+Authorization: Bearer {{token}}

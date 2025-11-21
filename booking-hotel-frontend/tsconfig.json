@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "paths": {
+      "@assets/*": ["src/assets/*"],
+      "@assets": ["src/assets/index.ts"],
+
+      "@images": ["src/assets/images/index.ts"],
+
+      "@components/*": ["src/components/*"],
+      "@components": ["src/components/index.ts"],
+
+      "@constant/*": ["src/constant/*"],
+      "@constant": ["src/constant/index.ts"],
+
+      "@hooks/*": ["src/hooks/*"],
+      "@hooks": ["src/hooks/index.ts"],
+
+      "@layouts/*": ["src/layouts/*"],
+      "@layouts": ["src/layouts/index.ts"],
+
+      "@pages/*": ["src/pages/*"],
+      "@pages": ["src/pages/index.ts"],
+
+      "@routers/*": ["src/routers/*"],
+      "@routers": ["src/routers/index.tsx"],
+
+      "@services/*": ["src/services/*"],
+      "@services": ["src/services/index.ts"],
+
+      "@store/*": ["src/store/*"],
+      "@store": ["src/store/index.ts"],
+
+      "@utils/*": ["src/utils/*"]
+    }
+  },
+  "include": ["src"]
+}

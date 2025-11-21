@@ -1,0 +1,843 @@
+{
+  "info": {
+    "name": "Hotel Backend API Tests",
+    "_postman_id": "b7e7b5be-1d1e-49d8-9b8b-ttt123abc999",
+    "description": "Postman collection for Hotel Management API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Auth - Register CUSTOMER",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "register"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Nguyen Van A\",\n  \"email\": \"user1@example.com\",\n  \"password\": \"secret123\",\n  \"phone\": \"0900000001\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Auth - Register MANAGER",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "register"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Manager 01\",\n  \"email\": \"manager1@example.com\",\n  \"password\": \"secret123\",\n  \"phone\": \"0900000999\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Auth - Login CUSTOMER",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"user1@example.com\",\n  \"password\": \"secret123\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Auth - Login MANAGER",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"manager1@example.com\",\n  \"password\": \"secret123\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Auth - Request reset",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/password/request-reset",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "password",
+            "request-reset"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"user1@example.com\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Auth - Reset password",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/password/reset",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "password",
+            "reset"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"PASTE_TOKEN\",\n  \"newPassword\": \"newpass123\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Hotels - Get",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/hotels",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "hotels"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Hotels - Upsert",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/hotels",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "hotels"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Sunrise Hotel\",\n  \"address\": \"01 Beach Rd, Da Nang\",\n  \"description\": \"4-star beachside hotel\",\n  \"images\": [\n    \"https://example.com/h1.jpg\"\n  ],\n  \"policies\": \"Check-in 14:00, Check-out 12:00\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Services - List",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/services?hotelId=1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "services?hotelId=1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Services - Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/services",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "services"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"hotelId\": 1,\n  \"name\": \"Airport Pickup\",\n  \"description\": \"Sedan\",\n  \"price\": 180000.0\n}"
+        }
+      }
+    },
+    {
+      "name": "Services - Update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/services/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "services",
+            "1"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Airport Pickup (4 seats)\",\n  \"description\": \"Sedan\",\n  \"price\": 180000.0\n}"
+        }
+      }
+    },
+    {
+      "name": "Services - Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/services/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "services",
+            "1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Rooms - List",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/rooms?hotelId=1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "rooms?hotelId=1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Rooms - Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/rooms",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "rooms"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"hotelId\": 1,\n  \"name\": \"Deluxe Ocean View\",\n  \"type\": \"DELUXE\",\n  \"pricePerNight\": 1200000.0,\n  \"capacity\": 2,\n  \"description\": \"Sea view, king bed\",\n  \"images\": [\n    \"https://example.com/room1.jpg\"\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "Rooms - Update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/rooms/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "rooms",
+            "1"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Deluxe Ocean View (King)\",\n  \"type\": \"DELUXE\",\n  \"pricePerNight\": 1350000.0,\n  \"capacity\": 2,\n  \"description\": \"Sea view, king bed, balcony\",\n  \"status\": \"AVAILABLE\",\n  \"images\": [\n    \"https://example.com/room1a.jpg\"\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "Promotions - List",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/promotions?hotelId=1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "promotions?hotelId=1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Promotions - Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/promotions",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "promotions"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"hotelId\": 1,\n  \"code\": \"SUMMER15\",\n  \"type\": \"PERCENT\",\n  \"value\": 15.0,\n  \"conditions\": {\n    \"minNights\": 2\n  },\n  \"startDate\": \"2025-06-01T00:00:00.000Z\",\n  \"endDate\": \"2025-09-30T23:59:59.999Z\",\n  \"active\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Promotions - Update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/promotions/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "promotions",
+            "1"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"roomId\": 1,\n  \"type\": \"PERCENT\",\n  \"value\": 20.0,\n  \"conditions\": {\n    \"minNights\": 3\n  },\n  \"startDate\": \"2025-06-01T00:00:00.000Z\",\n  \"endDate\": \"2025-09-30T23:59:59.999Z\",\n  \"active\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Promotions - Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/promotions/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "promotions",
+            "1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Search - Rooms",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/search/rooms?q=deluxe&hotelId=1&guests=2&minPrice=500000&maxPrice=2000000&checkIn=2025-10-05&checkOut=2025-10-08",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "search",
+            "rooms?q=deluxe&hotelId=1&guests=2&minPrice=500000&maxPrice=2000000&checkIn=2025-10-05&checkOut=2025-10-08"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Bookings - Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/bookings",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "bookings"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"roomId\": 1,\n  \"checkIn\": \"2025-10-10\",\n  \"checkOut\": \"2025-10-12\",\n  \"method\": \"ONLINE\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Bookings - My",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/bookings",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "bookings"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Bookings - All",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/bookings/all",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "bookings",
+            "all"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Bookings - Update status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/bookings/1/status",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "bookings",
+            "1",
+            "status"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"CHECKED_OUT\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Bookings - Cancel",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/bookings/1/cancel",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "bookings",
+            "1",
+            "cancel"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Payments - Pay",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/payments/1/pay",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "payments",
+            "1",
+            "pay"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"method\": \"CARD\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Reviews - Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/reviews",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "reviews"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"bookingId\": 1,\n  \"rating\": 5,\n  \"comment\": \"Phòng đẹp, view biển\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Notifications - List",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notifications",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notifications"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Notifications - Mark read",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notifications/1/read",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notifications",
+            "1",
+            "read"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Dashboard - Overview",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/dashboard/overview",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "dashboard",
+            "overview"
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
+}

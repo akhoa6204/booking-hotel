@@ -1,0 +1,9 @@
+export { default as BgHome } from "./home-1.jpg";
+export { default as BgRoom } from "./room-1.jpg";
+export { default as MatchNotFound } from "./match-not-found.png";
+export { default as PageNotFound } from "./page-not-found.png";
+export { default as ImageHotel } from "./image.png";
+export { default as Customer } from "./customer.jpg";
+export { default as Logo } from "./Logo.png";
+export { default as CheckInImg } from "./share-location.png";
+export { default as NoBookingImg } from "./Group.png";
