@@ -4,8 +4,8 @@
 
 **Thư mục chính**
 
-- `FE/` (a.k.a. `booking-hotel-frontend/`) — mã nguồn frontend (Vite, React, TypeScript, MUI, Redux Toolkit, React Query).
-- `BE/` (a.k.a. `hotel-backend-updated/`) — mã nguồn backend (Express, Prisma, migrations, seed, scripts).
+- `FE/` — mã nguồn frontend (Vite, React, TypeScript, MUI, Redux Toolkit, React Query).
+- `BE/` — mã nguồn backend (Express, Prisma, migrations, seed, scripts).
 
 ---
 
@@ -40,7 +40,7 @@
 
 - Node.js (>=16)
 - npm hoặc yarn
-- MySQL (theo `BE/prisma/schema.prisma`) — có thể cấu hình sang Postgres/SQLite trong Prisma nếu cần
+- MySQL (theo `BE/prisma/schema.prisma`)
 
 ---
 
