@@ -4,8 +4,8 @@ Phiên bản này gồm frontend bằng React + Vite (TypeScript) và backend b�
 
 **Nội dung chính**
 
-- **Frontend**: `booking-hotel-frontend/` — ứng dụng React (Vite, TypeScript, MUI, Redux Toolkit, React Query).
-- **Backend**: `hotel-backend-updated/` — API server Express, Prisma, cơ sở dữ liệu và scripts tiện ích.
+- **Frontend**: `FE/` — ứng dụng React (Vite, TypeScript, MUI, Redux Toolkit, React Query).
+- **Backend**: `BE/` — API server Express, Prisma, cơ sở dữ liệu và scripts tiện ích.
 
 **Mục tiêu**
 
