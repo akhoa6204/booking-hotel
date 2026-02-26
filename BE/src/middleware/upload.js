@@ -36,12 +36,14 @@ export const uploadFor = (type, { field = "images", max = 10 } = {}) => {
 };
 
 /** Một số preset tiện dụng */
-export const uploadHotelImages = uploadFor("hotel", {
+export const uploadHotelImages = uploadFor("hotels", {
   field: "images",
   max: 10,
 });
-export const uploadRoomImages = uploadFor("room", { field: "images", max: 10 });
-export const uploadRoomTypeImages = uploadFor("room-type", { field: "images", max: 10 });
+export const uploadRoomTypeImages = uploadFor("room-types", {
+  field: "images",
+  max: 10,
+});
 
 /** Middleware bắt lỗi Multer gọn */
 export const handleUploadError = (err, _req, res, next) => {

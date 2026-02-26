@@ -1,8 +1,10 @@
 // src/services/RoomService.ts
+import { ApiSuccess } from "@constant/response/api";
 import { PaginatedResponse } from "@constant/response/paginated";
-import { Room, RoomStatus } from "@constant/types";
+import { QuoteResponse, Room, RoomStatus } from "@constant/types";
 import httpClient from "@services";
 
+const AMIN_BASE = "/admin/rooms";
 const BASE = "/rooms";
 
 export default class RoomService {
@@ -18,7 +20,7 @@ export default class RoomService {
       const res = await httpClient.get<{
         success: boolean;
         data: PaginatedResponse<Room>;
-      }>(BASE, {
+      }>(AMIN_BASE, {
         params: {
           page: 1,
           limit: 6,
@@ -29,7 +31,7 @@ export default class RoomService {
     } catch (error: any) {
       console.error("❌ [RoomService.list] Error:", error);
       throw new Error(
-        error?.response?.data?.message || "Không thể tải danh sách phòng"
+        error?.response?.data?.message || "Không thể tải danh sách phòng",
       );
     }
   }
@@ -38,20 +40,19 @@ export default class RoomService {
   static async get(id: number): Promise<Room> {
     try {
       const res = await httpClient.get<{ success: boolean; data: Room }>(
-        `${BASE}/${id}`
+        `${AMIN_BASE}/${id}`,
       );
       return res.data;
     } catch (error: any) {
       console.error("❌ [RoomService.get] Error:", error);
       throw new Error(
-        error?.response?.data?.message || "Không thể tải thông tin phòng"
+        error?.response?.data?.message || "Không thể tải thông tin phòng",
       );
     }
   }
 
   /** POST /api/rooms (chỉ dữ liệu text, không còn ảnh) */
   static async create(payload: {
-    hotelId: number;
     roomTypeId: number;
     name: string;
     description?: string;
@@ -59,25 +60,23 @@ export default class RoomService {
   }) {
     try {
       const res = await httpClient.post<{ success: boolean; data: Room }>(
-        `${BASE}`,
+        `${AMIN_BASE}`,
         {
-          hotelId: payload.hotelId,
           roomTypeId: payload.roomTypeId,
           name: payload.name,
           description: payload.description,
           status: payload.status,
-        }
+        },
       );
       return res.data;
     } catch (error: any) {
-      console.error("❌ [RoomService.create] Error:", error);
       throw new Error(
-        error?.response?.data?.message || "Không thể tạo phòng mới"
+        error?.response?.data?.message || "Không thể tạo phòng mới",
       );
     }
   }
 
-  /** PUT /api/rooms/:id (update text fields, không còn ảnh) */
+  /** PATCH /api/rooms/:id (update text fields, không còn ảnh) */
   static async update(
     id: number,
     payload: {
@@ -85,45 +84,43 @@ export default class RoomService {
       description?: string;
       status?: RoomStatus;
       roomTypeId?: number;
-    }
+    },
   ) {
     try {
-      const res = await httpClient.put<{ success: boolean; data: null }>(
-        `${BASE}/${id}`,
+      const res = await httpClient.patch<{ success: boolean; data: null }>(
+        `${AMIN_BASE}/${id}`,
         {
           name: payload.name,
           description: payload.description,
           status: payload.status,
           roomTypeId: payload.roomTypeId,
-        }
+        },
       );
       return res.data;
     } catch (error: any) {
       console.error("❌ [RoomService.update] Error:", error);
       throw new Error(
-        error?.response?.data?.message || "Không thể cập nhật phòng"
+        error?.response?.data?.message || "Không thể cập nhật phòng",
       );
     }
   }
 
-  /** PATCH /api/rooms/:id/toggle */
-  static async toggleActive(id: number) {
+  /** DELETE /api/rooms/:id */
+  static async remove(id: number) {
     try {
-      const res = await httpClient.patch<{ success: boolean; data: null }>(
-        `${BASE}/${id}/toggle`
+      const res = await httpClient.delete<{ success: boolean; data: null }>(
+        `${AMIN_BASE}/${id}`,
       );
       return res.data;
     } catch (error: any) {
-      console.error("❌ [RoomService.toggleActive] Error:", error);
       throw new Error(
-        error?.response?.data?.message || "Không thể thay đổi trạng thái phòng"
+        error?.response?.data?.message || "Không thể thay đổi trạng thái phòng",
       );
     }
   }
 
   /** POST /api/rooms/available */
   static async getAvailable(params: {
-    hotelId: number;
     roomTypeId?: number;
     checkIn: string;
     checkOut: string;
@@ -131,13 +128,30 @@ export default class RoomService {
     try {
       const res = await httpClient.post<{ success: boolean; data: Room[] }>(
         `${BASE}/available`,
-        params
+        params,
       );
       return res;
     } catch (error: any) {
       console.error("❌ [RoomService.getAvailable] Error:", error);
       throw new Error(
-        error?.response?.data?.message || "Không thể tải danh sách phòng trống"
+        error?.response?.data?.message || "Không thể tải danh sách phòng trống",
+      );
+    }
+  }
+
+  static async quote(params: {
+    roomId: number;
+    checkIn: string;
+    checkOut: string;
+    promoCode?: string;
+  }): Promise<ApiSuccess<QuoteResponse>> {
+    try {
+      const res = await httpClient.post(`${BASE}/quote`, params);
+      return res;
+    } catch (error: any) {
+      console.error("❌ [RoomService.quote] Error:", error);
+      throw new Error(
+        error?.response?.data?.message || "Không thể tải danh sách phòng trống",
       );
     }
   }

@@ -12,20 +12,18 @@ import Title from "@components/Title";
 import BookingCreateDialog from "./components/BookingCreateDialog";
 import CheckInPaymentDialog from "./components/CheckInPaymentDialog";
 import BookingCard from "./components/BookingCard";
-import { Pager } from "@components";
+import { Loading, Pager } from "@components";
 import useBookingManagement from "./useBookingManagement";
 import GlobalSnackbar from "@components/GlobalSnackbar";
 
 export default function BookingManagement() {
   const {
-    dialog: { openDialog, setOpenDialog, resetForm },
+    dialog,
     bookingForm,
     handleChangeBookingForm,
     availableRooms,
     nights,
     pricing,
-    canCheckRooms,
-    canQuote,
     loadingRooms,
     quoting,
     creating,
@@ -51,6 +49,7 @@ export default function BookingManagement() {
     confirmCheckInPayment,
     handleCheckout,
     handleCancelled,
+    showLoadingOverlay,
   } = useBookingManagement();
 
   const totalPages = Math.max(1, pagination?.totalPages ?? 1);
@@ -61,7 +60,7 @@ export default function BookingManagement() {
       <Title
         title="Quản lý đặt phòng"
         subTitle="Quản lý danh sách đặt phòng và trạng thái khách hàng"
-        onAdd={() => setOpenDialog(true)}
+        onAdd={dialog.openDialog}
       />
 
       <Stack
@@ -96,28 +95,13 @@ export default function BookingManagement() {
             </Typography>
           ) : (
             <>
-              {bookings.map((b) => (
+              {bookings.map((booking) => (
                 <BookingCard
-                  key={b.id}
-                  code={`BK${String(b.id).padStart(4, "0")}`}
-                  customer={{
-                    name: b.customer?.fullName || "Khách",
-                    email: b.customer?.email || undefined,
-                    phone: b.customer?.phone || undefined,
-                  }}
-                  room={{
-                    name: b.room?.name || "-",
-                    type: b.room?.roomType?.name || "-",
-                  }}
-                  promotion={b.promotion}
-                  checkIn={b.checkIn}
-                  checkOut={b.checkOut}
-                  total={Number(b.finalPrice) || 0}
-                  status={b.status}
-                  paymentStatus={b.paymentStatus}
-                  onCheckIn={() => handleCheckIn(b)}
-                  onCancel={() => handleCancelled(b)}
-                  onCheckOut={() => handleCheckout(b)}
+                  key={booking.id}
+                  booking={booking}
+                  onCheckIn={() => handleCheckIn(booking)}
+                  onCancel={() => handleCancelled(booking)}
+                  onCheckOut={() => handleCheckout(booking)}
                 />
               ))}
 
@@ -137,10 +121,9 @@ export default function BookingManagement() {
         </Stack>
       </Box>
 
-      {/* Dialog tạo booking */}
       <BookingCreateDialog
-        open={openDialog}
-        onClose={resetForm}
+        open={dialog.open}
+        onClose={dialog.resetForm}
         values={bookingForm}
         onChange={handleChangeBookingForm}
         roomTypes={roomTypes}
@@ -155,7 +138,6 @@ export default function BookingManagement() {
         onSubmit={handleCreateBooking}
       />
 
-      {/* Dialog thanh toán khi check-in */}
       {selectedBookingId && !loadingCheckInDetail ? (
         <CheckInPaymentDialog
           open={!!selectedBookingId}
@@ -168,7 +150,10 @@ export default function BookingManagement() {
         />
       ) : null}
 
-      {/* Snackbar thông báo */}
+      {showLoadingOverlay ? (
+        <Loading content="Đang xử lý thanh toán, vui lòng chờ..." />
+      ) : null}
+
       <GlobalSnackbar alert={alert} closeSnackbar={closeSnackbar} />
     </Box>
   );

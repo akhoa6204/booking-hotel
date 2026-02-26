@@ -2,7 +2,7 @@ import httpClient from "..";
 
 export default class AmenityService {
   static async list() {
-    const res = await httpClient.get("/amenities");
+    const res = await httpClient.get("admin/amenities");
     return res.data.items;
   }
 }

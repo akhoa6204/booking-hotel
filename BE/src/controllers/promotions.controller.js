@@ -2,40 +2,122 @@ import { prisma } from "../lib/prisma.js";
 import { success, bad } from "../utils/response.js";
 import { parsePageLimit, buildOffsetMeta } from "../utils/pagination.js";
 
-/* -------- GET /api/promotions?hotelId=1&scope=ROOM_TYPE&active=true&code=SUM&page=1&limit=10 -------- */
+function logControllerError(action, err, extra = {}) {
+  const message = err?.message || String(err);
+  const stack = err?.stack;
+  console.error(`[promotions.controller] ${action} failed: ${message}`, {
+    ...extra,
+    stack,
+  });
+}
+
+function shapePromotion(promo) {
+  if (!promo) return promo;
+  const customerTypes = Array.isArray(promo.customerTypeRules)
+    ? promo.customerTypeRules.map((r) => r.customerType)
+    : [];
+  const loyaltyTiers = Array.isArray(promo.loyaltyTierRules)
+    ? promo.loyaltyTierRules.map((r) => r.tier)
+    : [];
+  return {
+    ...promo,
+    customerTypes,
+    loyaltyTiers,
+  };
+}
+
+/*
+  GET /api/promotions
+  Query params:
+    hotelId=1
+    scope=GLOBAL|ROOM_TYPE|MIN_TOTAL
+    kind=CODE|FLASH_SALE
+    active=true|false
+    q=<search by code or name>
+    activeNow=true  (filter promotions valid at current time)
+    roomTypeId=2
+    customerType=GUEST|REGISTERED
+    loyaltyTier=BRONZE|SILVER|GOLD|DIAMOND
+    page=1&limit=10
+*/
 export async function listPromotions(req, res) {
   try {
     const { page, limit, skip } = parsePageLimit(req, { defaultLimit: 10 });
 
     const hotelId = req.query.hotelId ? Number(req.query.hotelId) : 1;
-    const scope = req.query.scope || undefined;
+    const scope = req.query.scope || undefined; // GLOBAL | ROOM_TYPE | MIN_TOTAL
+    const kind = req.query.kind || undefined; // CODE | FLASH_SALE
 
     const active =
       typeof req.query.active === "string"
         ? req.query.active === "true"
         : undefined;
 
-    const code = (req.query.code || "").toString().trim();
+    const activeNow =
+      typeof req.query.activeNow === "string" ? req.query.activeNow === "true" : false;
+
+    const roomTypeId = req.query.roomTypeId ? Number(req.query.roomTypeId) : undefined;
+
+    const customerType = (req.query.customerType || "").toString().trim();
+    const loyaltyTier = (req.query.loyaltyTier || "").toString().trim();
+
+    const q = (req.query.q || "").toString().trim();
+
+    const now = new Date();
+
+    const and = [];
+
+    if (customerType) {
+      and.push({
+        OR: [
+          { customerTypeRules: { some: { customerType } } },
+          { customerTypeRules: { none: {} } },
+        ],
+      });
+    }
+
+    if (loyaltyTier) {
+      and.push({
+        OR: [
+          { loyaltyTierRules: { some: { tier: loyaltyTier } } },
+          { loyaltyTierRules: { none: {} } },
+        ],
+      });
+    }
 
     const where = {
       ...(hotelId ? { hotelId } : {}),
       ...(scope ? { scope } : {}),
+      ...(kind ? { kind } : {}),
+      ...(roomTypeId ? { roomTypeId } : {}),
       ...(active !== undefined ? { active } : {}),
-      ...(code
+      ...(activeNow
         ? {
-            code: {
-              contains: code,
-              mode: "insensitive",
-            },
+            active: true,
+            startDate: { lte: now },
+            endDate: { gte: now },
           }
         : {}),
+      ...(q
+        ? {
+            OR: [
+              { code: { contains: q } },
+              { name: { contains: q } },
+            ],
+          }
+        : {}),
+      ...(and.length ? { AND: and } : {}),
     };
 
     const [items, total] = await Promise.all([
       prisma.promotion.findMany({
         where,
-        orderBy: { id: "desc" },
-        include: { roomType: { select: { id: true, name: true } } },
+        orderBy: [{ priority: "asc" }, { id: "desc" }],
+        include: {
+          roomType: { select: { id: true, name: true } },
+          customerTypeRules: { select: { customerType: true } },
+          loyaltyTierRules: { select: { tier: true } },
+        },
         skip,
         take: limit,
       }),
@@ -43,25 +125,27 @@ export async function listPromotions(req, res) {
     ]);
 
     return success(res, {
-      items,
+      items: items.map(shapePromotion),
       meta: buildOffsetMeta({ page, limit, total }),
     });
   } catch (e) {
+    logControllerError("listPromotions", e, { query: req.query });
     return bad(res, e.message || "Internal error", 500);
   }
 }
 
-/*
-  POST /api/promotions
-  body: {
-    hotelId, scope, roomTypeId?, minTotal?, code?,
-    discountType, value, conditions?, startDate, endDate, active?, description?, totalCodes?
-  }
-*/
+
 export async function createPromotion(req, res) {
   try {
+    console.log("[promotions.controller] createPromotion:start", {
+      bodyKeys: Object.keys(req.body || {}),
+    });
+
     const {
       hotelId,
+      kind, // CODE | FLASH_SALE
+      name,
+      priority = 0,
       scope, // GLOBAL | ROOM_TYPE | MIN_TOTAL
       roomTypeId,
       description,
@@ -69,26 +153,47 @@ export async function createPromotion(req, res) {
       code,
       discountType, // PERCENT | FIXED
       value,
-      conditions,
+      maxDiscountAmount,
+      customerTypes = [],
+      loyaltyTiers = [],
+      minNights,
+      minGuests,
       startDate,
       endDate,
       active = true,
-      totalCodes = 100,
+      usageLimitTotal,
+      usageLimitPerCustomer,
     } = req.body || {};
 
-    if (
-      !hotelId ||
-      !scope ||
-      !discountType ||
-      value == null ||
-      !startDate ||
-      !endDate
-    ) {
+    console.log("[promotions.controller] createPromotion:payload", {
+      hotelId,
+      kind,
+      scope,
+      discountType,
+      value,
+      startDate,
+      endDate,
+      code,
+      roomTypeId,
+      minTotal,
+      priority,
+      active,
+      customerTypes,
+      loyaltyTiers,
+      usageLimitTotal,
+      usageLimitPerCustomer,
+    });
+
+    if (!hotelId || !kind || !scope || !discountType || value == null || !startDate || !endDate) {
       return bad(
         res,
-        "hotelId, scope, discountType, value, startDate, endDate là bắt buộc",
+        "hotelId, kind, scope, discountType, value, startDate, endDate là bắt buộc",
         400
       );
+    }
+
+    if (kind === "CODE" && !code?.toString().trim()) {
+      return bad(res, "Khuyến mãi dạng CODE yêu cầu code", 400);
     }
 
     if (scope === "ROOM_TYPE" && !roomTypeId) {
@@ -99,32 +204,93 @@ export async function createPromotion(req, res) {
       return bad(res, "MIN_TOTAL yêu cầu minTotal", 400);
     }
 
+    const ct = Array.isArray(customerTypes) ? customerTypes : [];
+    const lt = Array.isArray(loyaltyTiers) ? loyaltyTiers : [];
+
+    let finalCustomerTypes = ct;
+    let finalLoyaltyTiers = lt;
+
+    if (finalLoyaltyTiers.length > 0 && !finalCustomerTypes.includes("REGISTERED")) {
+      finalCustomerTypes = [...finalCustomerTypes, "REGISTERED"];
+    }
+
+    console.log("[promotions.controller] createPromotion:beforeCreate", {
+      finalCustomerTypes,
+      finalLoyaltyTiers,
+    });
+
     const promo = await prisma.promotion.create({
       data: {
         hotelId: Number(hotelId),
+        kind,
+        name: name?.toString().trim() || null,
+        priority: Number(priority) || 0,
         scope,
         roomTypeId: roomTypeId ? Number(roomTypeId) : null,
         minTotal: minTotal != null ? Number(minTotal) : null,
-        code: code?.trim() || null,
+        minNights: minNights != null ? Number(minNights) : null,
+        minGuests: minGuests != null ? Number(minGuests) : null,
+
+        code: kind === "CODE" ? code?.toString().trim() : null,
+
         discountType,
         value: Number(value),
-        conditions: conditions ?? null,
+        maxDiscountAmount:
+          discountType === "PERCENT" && maxDiscountAmount != null
+            ? Number(maxDiscountAmount)
+            : null,
+
+        ...(finalCustomerTypes.length
+          ? {
+              customerTypeRules: {
+                create: finalCustomerTypes.map((customerType) => ({ customerType })),
+              },
+            }
+          : {}),
+        ...(finalLoyaltyTiers.length
+          ? {
+              loyaltyTierRules: {
+                create: finalLoyaltyTiers.map((tier) => ({ tier })),
+              },
+            }
+          : {}),
+
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         active: Boolean(active),
-        description: description?.trim() || null,
-        totalCodes: Number(totalCodes) || 100,
+        description: description?.toString().trim() || null,
+
+        usageLimitTotal: usageLimitTotal != null ? Number(usageLimitTotal) : null,
+        usageLimitPerCustomer:
+          usageLimitPerCustomer != null ? Number(usageLimitPerCustomer) : null,
+
         totalUsed: 0,
+      },
+      include: {
+        roomType: { select: { id: true, name: true } },
+        customerTypeRules: { select: { customerType: true } },
+        loyaltyTierRules: { select: { tier: true } },
       },
     });
 
-    return success(res, promo, "Tạo khuyến mãi thành công", 201);
+    console.log("[promotions.controller] createPromotion:created", {
+      id: promo?.id,
+      kind: promo?.kind,
+      code: promo?.code,
+    });
+
+    return success(res, shapePromotion(promo), "Tạo khuyến mãi thành công", 201);
   } catch (e) {
+    logControllerError("createPromotion", e, {
+      hotelId: req?.body?.hotelId,
+      kind: req?.body?.kind,
+      scope: req?.body?.scope,
+      code: req?.body?.code,
+    });
     return bad(res, e.message || "Internal error", 500);
   }
 }
 
-/* -------- PUT /api/promotions/:id -------- */
 export async function updatePromotion(req, res) {
   try {
     const id = Number(req.params.id);
@@ -132,20 +298,39 @@ export async function updatePromotion(req, res) {
       return bad(res, "ID không hợp lệ", 400);
     }
 
+    const existing = await prisma.promotion.findUnique({
+      where: { id },
+      include: {
+        customerTypeRules: { select: { customerType: true } },
+        loyaltyTierRules: { select: { tier: true } },
+      },
+    });
+    if (!existing) return bad(res, "Không tìm thấy khuyến mãi", 404);
+
     const {
+      kind,
+      name,
+      priority,
       scope,
       roomTypeId,
       minTotal,
       code,
       discountType,
       value,
-      conditions,
+      maxDiscountAmount,
+      customerTypes,
+      loyaltyTiers,
+      minNights,
+      minGuests,
       startDate,
       endDate,
       active,
       description,
-      totalCodes,
+      usageLimitTotal,
+      usageLimitPerCustomer,
     } = req.body || {};
+
+    const nextKind = kind || existing.kind;
 
     if (scope === "ROOM_TYPE" && !roomTypeId) {
       return bad(res, "ROOM_TYPE yêu cầu roomTypeId", 400);
@@ -155,7 +340,14 @@ export async function updatePromotion(req, res) {
       return bad(res, "MIN_TOTAL yêu cầu minTotal", 400);
     }
 
+    if (nextKind === "CODE" && code !== undefined && !code?.toString().trim()) {
+      return bad(res, "Khuyến mãi dạng CODE yêu cầu code", 400);
+    }
+
     const data = {
+      ...(kind ? { kind } : {}),
+      ...(name !== undefined ? { name: name?.toString().trim() || null } : {}),
+      ...(priority !== undefined ? { priority: Number(priority) || 0 } : {}),
       ...(scope ? { scope } : {}),
       ...(roomTypeId !== undefined
         ? { roomTypeId: roomTypeId ? Number(roomTypeId) : null }
@@ -163,22 +355,106 @@ export async function updatePromotion(req, res) {
       ...(minTotal !== undefined
         ? { minTotal: minTotal != null ? Number(minTotal) : null }
         : {}),
-      ...(code !== undefined ? { code: code?.trim() || null } : {}),
+      ...(minNights !== undefined
+        ? { minNights: minNights != null ? Number(minNights) : null }
+        : {}),
+      ...(minGuests !== undefined
+        ? { minGuests: minGuests != null ? Number(minGuests) : null }
+        : {}),
+
+      ...(code !== undefined
+        ? {
+            code:
+              nextKind === "CODE" ? (code?.toString().trim() || null) : null,
+          }
+        : {}),
+
       ...(discountType ? { discountType } : {}),
       ...(value != null ? { value: Number(value) } : {}),
-      ...(conditions !== undefined ? { conditions } : {}),
+      ...(maxDiscountAmount !== undefined
+        ? {
+            maxDiscountAmount:
+              (discountType || existing.discountType) === "PERCENT" &&
+              maxDiscountAmount != null
+                ? Number(maxDiscountAmount)
+                : null,
+          }
+        : {}),
+
       ...(startDate ? { startDate: new Date(startDate) } : {}),
       ...(endDate ? { endDate: new Date(endDate) } : {}),
       ...(active !== undefined ? { active: Boolean(active) } : {}),
       ...(description !== undefined
-        ? { description: description?.trim() || null }
+        ? { description: description?.toString().trim() || null }
         : {}),
-      ...(totalCodes !== undefined ? { totalCodes: Number(totalCodes) } : {}),
+
+      ...(usageLimitTotal !== undefined
+        ? { usageLimitTotal: usageLimitTotal != null ? Number(usageLimitTotal) : null }
+        : {}),
+      ...(usageLimitPerCustomer !== undefined
+        ? {
+            usageLimitPerCustomer:
+              usageLimitPerCustomer != null ? Number(usageLimitPerCustomer) : null,
+          }
+        : {}),
     };
 
-    const promo = await prisma.promotion.update({ where: { id }, data });
+    if (customerTypes !== undefined) {
+      const ct = Array.isArray(customerTypes) ? customerTypes : [];
+      data.customerTypeRules = {
+        deleteMany: {},
+        ...(ct.length ? { create: ct.map((customerType) => ({ customerType })) } : {}),
+      };
+    }
 
-    return success(res, promo, "Cập nhật khuyến mãi thành công");
+    if (loyaltyTiers !== undefined) {
+      const lt = Array.isArray(loyaltyTiers) ? loyaltyTiers : [];
+      data.loyaltyTierRules = {
+        deleteMany: {},
+        ...(lt.length ? { create: lt.map((tier) => ({ tier })) } : {}),
+      };
+    }
+
+    const nextLoyaltyTiers = Array.isArray(loyaltyTiers) ? loyaltyTiers : undefined;
+    if (nextLoyaltyTiers && nextLoyaltyTiers.length > 0) {
+      const nextCustomerTypes = Array.isArray(customerTypes)
+        ? customerTypes
+        : undefined;
+
+      const shouldEnsureRegistered =
+        nextCustomerTypes && !nextCustomerTypes.includes("REGISTERED");
+
+      if (shouldEnsureRegistered) {
+        const ensured = [...nextCustomerTypes, "REGISTERED"];
+        data.customerTypeRules = {
+          deleteMany: {},
+          create: ensured.map((customerType) => ({ customerType })),
+        };
+      } else if (!nextCustomerTypes) {
+        const existingTypes = Array.isArray(existing.customerTypeRules)
+          ? existing.customerTypeRules.map((r) => r.customerType)
+          : [];
+
+        if (existingTypes.length > 0 && !existingTypes.includes("REGISTERED")) {
+          data.customerTypeRules = {
+            deleteMany: {},
+            create: [...existingTypes, "REGISTERED"].map((customerType) => ({ customerType })),
+          };
+        }
+      }
+    }
+
+    const promo = await prisma.promotion.update({
+      where: { id },
+      data,
+      include: {
+        roomType: { select: { id: true, name: true } },
+        customerTypeRules: { select: { customerType: true } },
+        loyaltyTierRules: { select: { tier: true } },
+      },
+    });
+
+    return success(res, shapePromotion(promo), "Cập nhật khuyến mãi thành công");
   } catch (e) {
     return bad(res, e.message || "Internal error", 500);
   }
@@ -202,6 +478,7 @@ export async function deletePromotion(req, res) {
 
     return success(res, null, "Đã vô hiệu khuyến mãi");
   } catch (e) {
+    logControllerError("deletePromotion", e, { id: req?.params?.id });
     return bad(res, e.message || "Internal error", 500);
   }
 }

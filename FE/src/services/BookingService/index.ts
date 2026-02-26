@@ -6,10 +6,10 @@ import {
   PaymentStatus,
   QuoteResponse,
 } from "@constant/types";
-import { GuestType } from "@pages/common/booking-page/useBooking";
 import httpClient from "@services";
 
 const BASE = "/bookings";
+const ADMIN_BASE = "/admin/bookings";
 
 export default class BookingService {
   // ===== Người dùng =====
@@ -31,7 +31,7 @@ export default class BookingService {
     phone: string;
     fullName: string;
     arrivalTime?: string;
-    guestType: GuestType;
+    guestType: string;
     checkIn: string;
     checkOut: string;
     promoCode?: string;
@@ -84,7 +84,7 @@ export default class BookingService {
     const { data } = await httpClient.get<{
       success: boolean;
       data: PaginatedResponse<Booking>;
-    }>(`${BASE}/admin`, {
+    }>(`${ADMIN_BASE}/`, {
       params: {
         page,
         limit,
@@ -95,37 +95,35 @@ export default class BookingService {
   }
 
   static async adminCreate(payload: {
-    customer: { fullName?: string; phone: string; email?: string };
+    fullName: string;
+    phone: string;
     roomId: number;
     checkIn: string;
     checkOut: string;
-    status?: BookingStatus;
-    paymentMethod?: PaymentMethod;
     promoCode?: string;
-    note?: string;
-  }): Promise<{ booking: Booking; pricing: any }> {
+  }): Promise<{ bookingId: number }> {
     const { data } = await httpClient.post<{
       success: boolean;
-      data: { booking: Booking; pricing: any };
-    }>(`${BASE}/admin`, payload);
+      data: { bookingId: number };
+    }>(`${ADMIN_BASE}/`, payload);
     return data;
   }
 
   static async updateStatus(
     id: number,
-    status: BookingStatus
+    status: BookingStatus,
   ): Promise<Booking> {
     const { data } = await httpClient.patch<{
       success: boolean;
       data: Booking;
-    }>(`${BASE}/${id}/status`, { status });
+    }>(`${ADMIN_BASE}/${id}`, { status });
     return data;
   }
 
   // ===== Thanh toán =====
   // ONLINE: tạo link thanh toán VNPAY
   static async createPaymentLink(
-    bookingId: number
+    bookingId: number,
   ): Promise<{ vnpayUrl: string; amount: number }> {
     const { data } = await httpClient.post<{
       success: boolean;

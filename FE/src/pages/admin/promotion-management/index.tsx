@@ -1,6 +1,6 @@
 import { Box, Stack, TextField, InputAdornment } from "@mui/material";
 import { Search } from "@mui/icons-material";
-import { TitlePageAdmin as Title } from "@components";
+import { GlobalSnackbar, TitlePageAdmin as Title } from "@components";
 import Pager from "@components/pager";
 import PromotionsTable from "./components/PromotionsTable";
 import usePromotionManagement from "./usePromotionManagement";
@@ -21,7 +21,7 @@ export default function PromotionManagement() {
     // dialog + form
     dialogState,
     form,
-    onChange,
+    onChangeField,
     onCreateDialog,
     onEditDialog,
     onClose,
@@ -30,6 +30,9 @@ export default function PromotionManagement() {
     // optional
     handleDeletePromotion,
     roomTypes = [],
+
+    alert,
+    closeSnackbar,
   } = usePromotionManagement();
 
   return (
@@ -48,8 +51,8 @@ export default function PromotionManagement() {
         <TextField
           fullWidth
           size="small"
-          placeholder="Tìm theo mã khuyến mãi…"
-          value={filters.code}
+          placeholder="Tìm theo tên/mã khuyến mãi…"
+          value={filters.q}
           onChange={(e) => handleSearch(e.target.value)}
           InputProps={{
             startAdornment: (
@@ -64,10 +67,7 @@ export default function PromotionManagement() {
       <PromotionsTable
         rows={rows}
         loading={isLoading}
-        onEdit={(id) => {
-          const p = rows.find((x) => x.id === id);
-          if (p) onEditDialog(p);
-        }}
+        onEdit={(id) => onEditDialog(id)}
         onDelete={handleDeletePromotion}
       />
 
@@ -83,13 +83,14 @@ export default function PromotionManagement() {
 
       <PromotionUpsertDialog
         open={dialogState.open}
-        mode={dialogState.mode!}
+        mode={dialogState.mode}
         values={form}
         roomTypes={roomTypes}
-        onChange={onChange}
+        onChange={onChangeField}
         onClose={onClose}
         onSubmit={onSubmit}
       />
+      <GlobalSnackbar alert={alert} closeSnackbar={closeSnackbar} />
     </Box>
   );
 }

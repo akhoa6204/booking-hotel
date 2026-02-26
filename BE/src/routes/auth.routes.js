@@ -7,14 +7,17 @@ import {
   resetPassword,
   changePassword,
   updateAccount,
-} from "../controllers/auth.controller.js";
+} from "../controllers/common/auth.controller.js";
 import { auth } from "../middleware/auth.js";
 
 export const authRouter = Router();
 authRouter.post("/register", register);
 authRouter.post("/login", login);
-authRouter.post("/password/request-reset", requestPasswordReset);
+
+authRouter.get("/me", auth(true), me);
+authRouter.patch("/me", auth(true), updateAccount);
+
+authRouter.patch("/password", auth(true), changePassword);
+
+authRouter.post("/password/reset-request", requestPasswordReset);
 authRouter.post("/password/reset", resetPassword);
-authRouter.get("/me", auth(), me);
-authRouter.post("/change-password", auth(), changePassword);
-authRouter.post("/info", auth(), updateAccount);

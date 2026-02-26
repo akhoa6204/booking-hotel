@@ -1,172 +1,177 @@
-// hooks/usePromotionManagement.ts
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import PromotionService from "@services/PromotionService";
-import {
-  DialogMode,
-  Promotion,
-  PromoScope,
-  PromoType,
-  RoomType,
-} from "@constant/types";
+import { DialogMode, Promotion, RoomType } from "@constant/types";
 import RoomTypeService from "@services/RoomTypeService";
+import useForm from "@hooks/useForm";
+import useSnackbar from "@hooks/useSnackbar";
 
 type DialogState = { open: boolean; mode?: DialogMode };
 
 type Filters = {
-  hotelId: number;
-  code: string;
-  scope?: PromoScope;
-  active?: boolean;
+  q: string;
   page: number;
   limit: number;
 };
 
-export type PromotionForm = {
-  code: string;
-  description: string;
-  discountType: PromoType;
-  value: number | "";
-  scope: PromoScope;
-  roomTypeId: number | "";
-  minTotal: number | "";
-  startDate: string; // yyyy-MM-dd
-  endDate: string; // yyyy-MM-dd
-  totalCodes: number | ""; // "" = unlimited
-  active: boolean;
-};
-
 const initialFilters: Filters = {
-  hotelId: 1,
-  code: "",
-  scope: undefined,
-  active: undefined,
+  q: "",
   page: 1,
   limit: 10,
 };
-
+export type PromotionForm = Omit<Promotion, "id" | "hotelId" | "isActive">;
 const initialForm: PromotionForm = {
-  code: "",
-  description: "",
-  discountType: "PERCENT",
-  value: "",
+  name: "",
+  priority: 100,
   scope: "GLOBAL",
-  roomTypeId: "",
-  minTotal: "",
-  startDate: "",
-  endDate: "",
-  totalCodes: "",
-  active: true,
+  roomTypes: [],
+  description: "",
+  minTotal: null,
+  code: "",
+  type: "PERCENT",
+  maxDiscountAmount: null,
+  value: null,
+  startAt: "",
+  endAt: "",
+  autoApply: false,
+  quotaTotal: null,
+  eligibleFor: "ALL",
+  isStackable: false,
+};
+export const getPromotionLabels = (promotion) => {
+  const scopeLabel =
+    promotion.scope === "ROOM_TYPE"
+      ? "Loại phòng"
+      : promotion.scope === "MIN_TOTAL"
+        ? "Giá tối thiểu"
+        : "Toàn bộ";
+
+  const discountTypeTransform =
+    promotion.type === "FIXED" ? "Giá cố định" : "Phần trăm";
+
+  const usedLabel =
+    promotion.quotaTotal == null
+      ? (promotion.quotaUsed ?? 0)
+      : `${promotion.quotaUsed ?? 0}/${promotion.quotaTotal}`;
+
+  const autoApplyLabel = promotion.autoApply ? "Tự động" : "Mã code";
+
+  return {
+    scopeLabel,
+    discountTypeTransform,
+    usedLabel,
+    autoApplyLabel,
+  };
 };
 
 const usePromotionManagement = () => {
   const qc = useQueryClient();
 
-  /* =================== LIST =================== */
-  const [filters, setFilters] = useState<Filters>(initialFilters);
+  const { alert, showError, showSuccess, closeSnackbar } = useSnackbar();
+  const [editingId, setEditingId] = useState<number | undefined>();
+  const {
+    form: filters,
+    onChangeField: onChangeFilter,
+    updateForm: updateFilter,
+  } = useForm<Filters>(initialFilters);
+  const [dialogState, setDialogState] = useState<DialogState>({ open: false });
+  const { form, onChangeField, resetForm, updateForm } =
+    useForm<PromotionForm>(initialForm);
+
+  const handleSearch = (keyword: string) =>
+    updateFilter({
+      ...filters,
+      q: keyword,
+      page: 1,
+    });
+  const handleChangePage = (page: number) => onChangeFilter("page", page);
+
   const { data, isLoading } = useQuery({
     queryKey: ["promotions", filters],
     queryFn: () =>
       PromotionService.list({
-        hotelId: filters.hotelId,
-        code: filters.code || undefined,
-        scope: filters.scope,
-        active: filters.active,
+        q: filters.q || undefined,
         page: filters.page,
         limit: filters.limit,
       }),
   });
 
-  const rows: Promotion[] = data?.items ?? [];
-  const meta = data?.meta;
-
-  const handleSearch = (keyword: string) =>
-    setFilters((s) => ({ ...s, code: keyword, page: 1 }));
-  const handleChangePage = (page: number) =>
-    setFilters((s) => ({ ...s, page }));
-
+  const rows: Promotion[] = useMemo(() => data?.items || [], [data?.items]);
+  const meta = useMemo(() => data?.meta, [data?.meta]);
   const totalPages = useMemo(
     () =>
       Math.max(
         1,
-        Math.ceil((meta?.total ?? 0) / (meta?.limit ?? filters.limit))
+        Math.ceil((meta?.total ?? 0) / (meta?.limit ?? filters.limit)),
       ),
-    [meta?.total, meta?.limit, filters.limit]
+    [meta?.total, meta?.limit, filters.limit],
   );
-  const currentPage = meta?.page ?? filters.page;
+  const currentPage = useMemo(() => meta?.page || 1, [meta?.page]);
 
-  /* =================== DIALOG + FORM =================== */
-  const [dialogState, setDialogState] = useState<DialogState>({ open: false });
-  const [form, setForm] = useState<PromotionForm>(initialForm);
-  const [editingId, setEditingId] = useState<number | undefined>();
+  const { data: promotion, isLoading: isLoadingPromotion } = useQuery({
+    queryKey: ["promotion", editingId],
+    queryFn: () => PromotionService.getById(Number(editingId)),
+    enabled: !!editingId,
+  });
+
+  const { data: roomTypeResponse } = useQuery({
+    queryKey: ["roomTypes", filters.q],
+    queryFn: async () => await RoomTypeService.list(),
+    staleTime: 30_000,
+  });
+
+  const roomTypes: RoomType[] = useMemo(
+    () => roomTypeResponse?.items || [],
+    [roomTypeResponse?.items],
+  );
 
   const onClose = () => {
     setDialogState({ open: false });
     setEditingId(undefined);
-    setForm(initialForm);
+    resetForm();
   };
 
   const onCreateDialog = () => {
-    setForm(initialForm);
     setEditingId(undefined);
+    resetForm();
     setDialogState({ open: true, mode: "create" });
   };
 
-  // nhận thẳng bản ghi từ bảng để fill form
-  const onEditDialog = (p: Promotion) => {
-    setEditingId(p.id);
-    setForm({
-      code: p.code ?? "",
-      description: (p as any).description ?? "",
-      discountType: p.discountType,
-      value: Number(p.value),
-      scope: p.scope,
-      roomTypeId: p.scope === "ROOM_TYPE" ? p.roomType?.id ?? "" : "",
-      minTotal:
-        p.scope === "MIN_TOTAL" || p.scope === "GLOBAL"
-          ? (p as any).minTotal ?? ""
-          : "",
-      startDate: p.startDate?.slice(0, 10) ?? "",
-      endDate: p.endDate?.slice(0, 10) ?? "",
-      totalCodes: (p as any).totalCodes ?? "",
-      active: p.active,
-    });
-    setDialogState({ open: true, mode: "edit" });
+  const onEditDialog = (id: number) => {
+    setEditingId(id);
   };
 
-  const onChange = (field: keyof PromotionForm, value: any) =>
-    setForm((prev) => ({ ...prev, [field]: value }));
+  useEffect(() => {
+    if (!promotion) return;
+    updateForm(promotion);
+    setDialogState({ open: true, mode: "edit" });
+  }, [promotion]);
 
-  /* =================== MUTATIONS =================== */
   const createMutation = useMutation({
     mutationFn: () =>
       PromotionService.create({
-        hotelId: filters.hotelId,
         scope: form.scope,
         description: form.description,
-        discountType: form.discountType,
+        type: form.type,
         value: Number(form.value || 0),
-        startDate: form.startDate,
-        endDate: form.endDate,
-        roomTypeId:
-          form.scope === "ROOM_TYPE"
-            ? form.roomTypeId
-              ? Number(form.roomTypeId)
-              : null
-            : null,
-        minTotal:
-          form.scope === "GLOBAL" || form.scope === "MIN_TOTAL"
-            ? form.minTotal !== "" && form.minTotal != null
-              ? Number(form.minTotal)
-              : null
-            : null,
+        startAt: form.startAt,
+        endAt: form.endAt,
+        minTotal: Number(form.minTotal) || null,
         code: form.code?.trim() || null,
-        conditions: null,
-        active: form.active,
+        name: form.name || null,
+        autoApply: form.autoApply,
+        priority: form.priority,
+        maxDiscountAmount: Number(form.maxDiscountAmount) || null,
+        isStackable: Boolean(form.isStackable),
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["promotions"] });
+      showSuccess("Tạo mã giảm giá thành công");
       onClose();
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message || "Có lỗi xảy ra";
+      showError(msg);
     },
   });
 
@@ -174,39 +179,47 @@ const usePromotionManagement = () => {
     mutationFn: () =>
       PromotionService.update(editingId!, {
         scope: form.scope,
-        discountType: form.discountType,
+        type: form.type,
         description: form.description,
-        value: form.value === "" ? undefined : Number(form.value),
-        startDate: form.startDate || undefined,
-        endDate: form.endDate || undefined,
-        roomTypeId:
-          form.scope === "ROOM_TYPE"
-            ? form.roomTypeId
-              ? Number(form.roomTypeId)
-              : null
-            : null,
-        minTotal:
-          form.scope === "GLOBAL" || form.scope === "MIN_TOTAL"
-            ? form.minTotal !== "" && form.minTotal != null
-              ? Number(form.minTotal)
-              : null
-            : null,
+        value: Number(form.value) || undefined,
+        startAt: form.startAt || undefined,
+        endAt: form.endAt || undefined,
+        roomTypes: form.roomTypes || null,
+        minTotal: Number(form.minTotal) || null,
         code: form.code?.trim() || null,
-        active: form.active,
+
+        name: form.name || null,
+        autoApply: form.autoApply,
+        priority: form.priority,
+        maxDiscountAmount: Number(form.maxDiscountAmount) || null,
+        eligibleFor: form.eligibleFor,
+        isStackable: Boolean(form.isStackable),
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["promotions"] });
       onClose();
+      showSuccess("Cập nhật mã giảm giá thành công");
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message || "Có lỗi xảy ra";
+      showError(msg);
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => PromotionService.delete(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["promotions"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["promotions"] });
+      showSuccess("Xóa mã giảm giá thành công");
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message || "Có lỗi xảy ra";
+      showError(msg);
+    },
   });
 
   const onSubmit = () => {
-    if (!form.startDate || !form.endDate) return;
+    if (!form.startAt || !form.endAt) return;
     if (dialogState.mode === "edit" && editingId) updateMutation.mutate();
     else createMutation.mutate();
   };
@@ -215,21 +228,6 @@ const usePromotionManagement = () => {
     if (window.confirm("Xóa khuyến mãi này?")) deleteMutation.mutate(id);
   };
 
-  /* =================== FETCH ROOM TYPES =================== */
-  const {
-    data: roomTypeResponse,
-    isLoading: isRoomTypeLoading,
-    isError: isRoomTypeError,
-    error: roomTypeError,
-  } = useQuery({
-    queryKey: ["roomTypes", filters.hotelId],
-    queryFn: async () =>
-      await RoomTypeService.list({ hotelId: filters.hotelId }),
-    staleTime: 30_000,
-  });
-
-  const roomTypes: RoomType[] = roomTypeResponse?.items ?? [];
-  // usePromotionManagement.ts — chỉ phần return thêm các field sau:
   return {
     rows,
     totalPages,
@@ -239,19 +237,22 @@ const usePromotionManagement = () => {
     handleSearch,
     handleChangePage,
 
-    // dialog + form
-    dialogState, // { open, mode }
-    form, // PromotionForm
-    onChange, // (field, value) => void
+    dialogState,
+    form,
+    onChangeField,
     onCreateDialog,
-    onEditDialog, // (p: Promotion) => void
-    onClose, // đóng dialog
-    onSubmit, // create/update
+    onEditDialog,
+    onClose,
+    onSubmit,
 
-    // actions
     handleDeletePromotion,
-    // nếu bạn đã fetch roomTypes trong hook, expose:
-    roomTypes, // { id, name }[]
+    roomTypes,
+
+    alert,
+    closeSnackbar,
+
+    promotion,
+    isLoadingPromotion,
   };
 };
 

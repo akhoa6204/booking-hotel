@@ -7,7 +7,7 @@ type Callback<T> = (form: T) => void;
 const useForm = <T>(
   defaultForm: T,
   validate?: ValidateFn<T>,
-  callback?: Callback<T>
+  callback?: Callback<T>,
 ) => {
   const [form, setForm] = useState<T>(defaultForm);
   const [errors, setErrors] = useState<Errors<T>>({});
@@ -16,7 +16,7 @@ const useForm = <T>(
   const onChangeEvent = (
     e:
       | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-      | { target: { name: string; value: any } }
+      | { target: { name: string; value: any } },
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -26,7 +26,7 @@ const useForm = <T>(
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = (e: React.FormEvent<HTMLFormElement | HTMLDivElement>) => {
     e.preventDefault();
 
     const newErrors = validate ? validate(form) : {};
@@ -37,6 +37,9 @@ const useForm = <T>(
     callback?.(form);
   };
 
+  const resetForm = () => setForm(defaultForm);
+  const updateForm = (value: Partial<T>) =>
+    setForm((prev) => ({ ...prev, ...value }));
   return {
     form,
     setForm,
@@ -45,6 +48,8 @@ const useForm = <T>(
     onChange: onChangeEvent,
     onChangeField,
     onSubmit,
+    resetForm,
+    updateForm,
   };
 };
 

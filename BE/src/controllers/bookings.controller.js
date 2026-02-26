@@ -5,6 +5,7 @@ import { createRequire } from "module";
 import crypto from "node:crypto";
 import { parsePageLimit, buildOffsetMeta } from "../utils/pagination.js";
 import { sendBookingConfirmationEmail } from "../utils/mailer.js";
+import * as BookingService from "../services/bookings.sevice.js";
 
 const FE_ORIGIN = process.env.FE_ORIGIN || "http://localhost:5173";
 const DAY = 24 * 60 * 60 * 1000;
@@ -58,9 +59,6 @@ async function findPromotionByCode({ hotelId, roomTypeId, total, code }) {
   });
 
   if (!promo) return { promo: null, discount: 0, reason: "INVALID_CODE" };
-  console.log("promo:", promo);
-  console.log("totalUsed:", promo.totalUsed);
-  console.log("totalCodes:", promo.totalCodes);
 
   // Hết lượt sử dụng
   if (promo.totalUsed > promo.totalCodes) {
@@ -93,7 +91,7 @@ function verifyVnpReturn(req) {
     .filter(
       (kv) =>
         !kv.startsWith("vnp_SecureHash=") &&
-        !kv.startsWith("vnp_SecureHashType=")
+        !kv.startsWith("vnp_SecureHashType="),
     );
 
   // lấy secureHash gốc
@@ -268,7 +266,7 @@ export async function createBooking(req, res) {
       return bad(
         res,
         "Thiếu dữ liệu: roomTypeId, checkIn, checkOut là bắt buộc",
-        400
+        400,
       );
     }
 
@@ -334,14 +332,14 @@ export async function createBooking(req, res) {
           return bad(
             res,
             "Tài khoản của bạn chưa có số điện thoại, vui lòng cập nhật trước khi đặt phòng",
-            400
+            400,
           );
         }
         if (err.message === "PHONE_OWNED_BY_ANOTHER_USER") {
           return bad(
             res,
             409,
-            "Số điện thoại này đang thuộc về tài khoản khác, vui lòng dùng số khác"
+            "Số điện thoại này đang thuộc về tài khoản khác, vui lòng dùng số khác",
           );
         }
         throw err;
@@ -352,7 +350,7 @@ export async function createBooking(req, res) {
         return bad(
           res,
           "Khách không đăng nhập phải nhập đầy đủ họ tên, email và số điện thoại",
-          409
+          409,
         );
       }
 
@@ -377,7 +375,7 @@ export async function createBooking(req, res) {
           return bad(
             res,
             "Số điện thoại này đã được dùng cho tài khoản đã đăng ký, vui lòng đăng nhập để đặt phòng",
-            409
+            409,
           );
         }
         throw err;
@@ -445,7 +443,7 @@ export async function createBooking(req, res) {
         bookingId: booking.id,
       },
       "Tạo đặt phòng thành công",
-      201
+      201,
     );
   } catch (e) {
     return bad(res, e.message || "Internal server error", 500);
@@ -620,7 +618,7 @@ export async function adminCreateBooking(req, res) {
         },
       },
       "Tạo đặt phòng hộ khách thành công",
-      201
+      201,
     );
   } catch (e) {
     console.error(e);
@@ -641,7 +639,7 @@ export async function createPaymentBanking(req, res) {
   try {
     const remaining = Math.max(
       0,
-      Number(booking.finalPrice) - Number(booking.amountPaid || 0)
+      Number(booking.finalPrice) - Number(booking.amountPaid || 0),
     );
     if (remaining <= 0)
       return bad(res, 400, "Không còn số tiền cần thanh toán");
@@ -660,7 +658,7 @@ export async function createPaymentBanking(req, res) {
       vnp_CreateDate: dateFormat(new Date(), "yyyyMMddHHmmss"),
       vnp_ExpireDate: dateFormat(
         new Date(Date.now() + 15 * 60000),
-        "yyyyMMddHHmmss"
+        "yyyyMMddHHmmss",
       ),
       vnp_CurrCode: "VND",
       vnp_IpAddr: req.ip || "127.0.0.1",
@@ -680,7 +678,7 @@ export async function createPaymentBanking(req, res) {
       res,
       { vnpayUrl: result, amount },
       "Tạo link thanh toán",
-      201
+      201,
     );
   } catch (err) {
     return bad(res, err.message, 400);
@@ -727,7 +725,7 @@ export async function recordPaymentOffline(req, res) {
 
         const newStatus = nextPaymentStatus(
           Number(booking.finalPrice),
-          newPaid
+          newPaid,
         );
 
         const updated = await tx.booking.update({
@@ -757,7 +755,7 @@ export async function recordPaymentOffline(req, res) {
         } catch (mailErr) {
           console.error(
             "Send booking confirmation email (OFFLINE) error:",
-            mailErr
+            mailErr,
           );
         }
       }
@@ -766,7 +764,7 @@ export async function recordPaymentOffline(req, res) {
     return success(
       res,
       { booking: updatedBooking },
-      "Cập nhật thanh toán OFFLINE"
+      "Cập nhật thanh toán OFFLINE",
     );
   } catch (e) {
     return bad(res, e.message, 500);
@@ -946,7 +944,7 @@ export async function checkPayment(req, res) {
         } catch (mailErr) {
           console.error(
             "Send booking confirmation email (VNPAY) error:",
-            mailErr
+            mailErr,
           );
           // Không throw để tránh ảnh hưởng redirect
         }
@@ -1001,7 +999,7 @@ export async function checkPayment(req, res) {
 
         const newStatus = nextPaymentStatus(
           Number(booking.finalPrice),
-          newPaid
+          newPaid,
         );
 
         const updated = await tx.booking.update({
@@ -1031,7 +1029,7 @@ export async function checkPayment(req, res) {
         } catch (mailErr) {
           console.error(
             "Send booking confirmation email (OFFLINE) error:",
-            mailErr
+            mailErr,
           );
         }
       }
@@ -1040,7 +1038,7 @@ export async function checkPayment(req, res) {
     return success(
       res,
       { booking: updatedBooking },
-      "Cập nhật thanh toán OFFLINE"
+      "Cập nhật thanh toán OFFLINE",
     );
   } catch (e) {
     return bad(res, e.message, 500);
@@ -1195,7 +1193,7 @@ export async function listAllBookings(req, res) {
       items,
       meta: buildOffsetMeta({ page, limit, total }),
     },
-    "Danh sách tất cả đặt phòng"
+    "Danh sách tất cả đặt phòng",
   );
 }
 
@@ -1347,7 +1345,7 @@ export async function getBookingQuote(req, res) {
         : null,
       totalAfter,
     },
-    "Báo giá đặt phòng"
+    "Báo giá đặt phòng",
   );
 }
 export async function getBookingById(req, res) {
@@ -1448,5 +1446,46 @@ export async function getBookingById(req, res) {
   } catch (e) {
     console.error("getBookingById error:", e);
     return bad(res, e.message || "Lỗi server", 500);
+  }
+}
+
+export async function list(req, res) {
+  const { page, limit, skip } = parsePageLimit(req, {
+    maxLimit: 100,
+    defaultLimit: 20,
+  });
+  const isManager = req.user.role === "MANAGER";
+  const userId = req.user.id;
+  const { q } = req.query;
+
+  const bookingNumber = q?.match(/\d+/)?.[0];
+  const qLower = q ? q.toLowerCase() : undefined;
+
+  const where = q
+    ? {
+        OR: [
+          bookingNumber ? { id: Number(bookingNumber) } : undefined,
+          {
+            customer: {
+              fullName: {
+                contains: qLower,
+              },
+            },
+          },
+        ].filter(Boolean),
+        ...(isManager ? {} : { userId }),
+      }
+    : {};
+}
+
+export async function customerCreateBooking(req, res) {
+  try {
+    const result = await BookingService.customerCreateBooking({
+      user: req.user || null,
+      body: req.body || {},
+    });
+    return success(res, result, "Tạo đặt phòng thành công", 201);
+  } catch (e) {
+    return bad(res, e.message || "Internal server error", 500);
   }
 }

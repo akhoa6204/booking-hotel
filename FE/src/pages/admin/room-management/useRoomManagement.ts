@@ -3,10 +3,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import RoomTypeService from "@services/RoomTypeService";
 import RoomService from "@services/RoomService";
 import { RoomStatus, RoomType } from "@constant/types";
+import useForm from "@hooks/useForm";
+import useSnackbar from "@hooks/useSnackbar";
 
-/* =================== FILTER TYPES =================== */
 type RoomFilter = {
-  hotelId?: number;
   searchKeyword?: string;
   roomTypeId?: number;
   currentPage: number;
@@ -14,52 +14,85 @@ type RoomFilter = {
 };
 
 const defaultRoomFilter: RoomFilter = {
-  hotelId: 1,
   searchKeyword: "",
   roomTypeId: undefined,
   currentPage: 1,
   pageSize: 6,
 };
 
-/* =================== FORM TYPE =================== */
 type UpsertFormRoom = {
-  hotelId: number;
   roomTypeId: number | "";
   name: string;
   description?: string;
   status?: RoomStatus;
 };
 
+function validateForm(form: UpsertFormRoom) {
+  const errors: Partial<Record<keyof UpsertFormRoom, string>> = {};
+
+  if (!form.name) {
+    errors.name = "Tên phòng là bắt buộc.";
+  }
+
+  if (!form.roomTypeId) {
+    errors.roomTypeId = "Loại phòng là bắt buộc.";
+  }
+
+  return errors;
+}
 export default function useRoomManagement() {
   const queryClient = useQueryClient();
 
-  const [filters, setFilters] = useState<RoomFilter>(defaultRoomFilter);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { alert, showSuccess, showError, closeSnackbar } = useSnackbar();
+  const [dialogState, setDialogState] = useState<{
+    open: boolean;
+    mode?: "create" | "edit";
+  }>({ open: false });
   const [editingRoomId, setEditingRoomId] = useState<number | null>(null);
-  const [formValues, setFormValues] = useState<UpsertFormRoom>({
-    hotelId: 1,
-    roomTypeId: "",
-    name: "",
-    description: "",
-    status: "AVAILABLE",
-  });
+  const {
+    form: filters,
+    onChangeField: onChangeFilter,
+    updateForm: updateFormFilter,
+  } = useForm<RoomFilter>(defaultRoomFilter);
+  const {
+    form,
+    updateForm,
+    onChangeField,
+    resetForm,
+    onSubmit: submitUpsert,
+  } = useForm<UpsertFormRoom>(
+    {
+      roomTypeId: "",
+      name: "",
+      description: "",
+      status: "AVAILABLE",
+    },
+    validateForm,
+    async () => {
+      if (editingRoomId) {
+        await updateMutation.mutateAsync({
+          id: editingRoomId,
+          payload: form,
+        });
+      } else {
+        await createMutation.mutateAsync(form);
+      }
+    },
+  );
 
-  /* =================== FETCH ROOM TYPES =================== */
   const {
     data: roomTypeResponse,
     isLoading: isRoomTypeLoading,
     isError: isRoomTypeError,
     error: roomTypeError,
   } = useQuery({
-    queryKey: ["roomTypes", filters.hotelId],
-    queryFn: async () =>
-      await RoomTypeService.list({ hotelId: filters.hotelId }),
+    queryKey: ["roomTypes"],
+    queryFn: async () => await RoomTypeService.list(),
     staleTime: 30_000,
   });
 
   const roomTypes: RoomType[] = roomTypeResponse?.items ?? [];
 
-  /* =================== FETCH ROOM LIST =================== */
   const {
     data: roomResponse,
     isLoading: isRoomLoading,
@@ -68,7 +101,6 @@ export default function useRoomManagement() {
     queryKey: ["rooms", filters],
     queryFn: async () =>
       RoomService.list({
-        hotelId: filters.hotelId,
         q: filters.searchKeyword,
         roomTypeId: filters.roomTypeId,
         page: filters.currentPage,
@@ -80,79 +112,51 @@ export default function useRoomManagement() {
   const rooms = roomResponse?.items ?? [];
   const paginationMetadata = roomResponse?.meta;
 
-  /* =================== FETCH ROOM DETAIL =================== */
   const { data: roomDetail, isFetching: isRoomDetailLoading } = useQuery({
     queryKey: ["room", editingRoomId],
     queryFn: () => RoomService.get(editingRoomId!),
-    enabled: !!editingRoomId && isDialogOpen,
+    enabled: !!editingRoomId && dialogState.open,
   });
-  console.log(roomDetail);
 
-  // Khi mở dialog edit -> fill form
   useEffect(() => {
     if (editingRoomId && roomDetail) {
-      setFormValues({
-        hotelId: roomDetail.hotelId,
-        roomTypeId: roomDetail.roomTypeId,
+      updateForm({
+        roomTypeId: roomDetail.roomType.id,
         name: roomDetail.name,
-        description: roomDetail.description ?? "",
         status: roomDetail.status as RoomStatus,
       });
     }
   }, [roomDetail, editingRoomId]);
 
-  /* =================== FILTER ACTIONS =================== */
-  const updateFilters = useCallback(
-    (newFilters: Partial<RoomFilter>) =>
-      setFilters((prev) => ({ ...prev, ...newFilters })),
-    []
-  );
-
   const handleSelectRoomType = (roomTypeId?: number) =>
-    updateFilters({ roomTypeId, currentPage: 1 });
+    updateFormFilter({ roomTypeId, currentPage: 1, pageSize: 6 });
 
   const handleSearchByName = (keyword: string) =>
-    updateFilters({ searchKeyword: keyword, currentPage: 1 });
+    updateFormFilter({ searchKeyword: keyword, currentPage: 1, pageSize: 6 });
 
   const handleChangePage = (pageNumber: number) =>
-    updateFilters({ currentPage: pageNumber });
-
-  /* =================== DIALOG ACTIONS =================== */
-  const resetForm = (hotelId?: number) => {
-    setFormValues({
-      hotelId: hotelId ?? filters.hotelId ?? 1,
-      roomTypeId: roomTypes[0]?.id ?? "",
-      name: "",
-      description: "",
-      status: "AVAILABLE",
-    });
-  };
+    onChangeFilter("currentPage", pageNumber);
 
   const openCreateDialog = () => {
     setEditingRoomId(null);
-    resetForm(filters.hotelId);
-    setIsDialogOpen(true);
+    resetForm();
+    setDialogState({ open: true, mode: "create" });
   };
 
   const openEditDialog = (roomId: number) => {
     setEditingRoomId(roomId);
-    setIsDialogOpen(true);
+    setDialogState({ open: true, mode: "edit" });
   };
 
   const closeDialog = () => {
-    setIsDialogOpen(false);
+    setDialogState({ open: false });
     setEditingRoomId(null);
-    resetForm(filters.hotelId);
+    resetForm();
   };
 
-  const handleFormChange = (field: keyof UpsertFormRoom, value: any) =>
-    setFormValues((prev) => ({ ...prev, [field]: value }));
-
-  /* =================== CREATE / UPDATE MUTATIONS =================== */
   const createMutation = useMutation({
     mutationFn: (payload: UpsertFormRoom) =>
       RoomService.create({
-        hotelId: payload.hotelId,
         roomTypeId: Number(payload.roomTypeId),
         name: payload.name,
         description: payload.description,
@@ -161,6 +165,11 @@ export default function useRoomManagement() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["rooms"] });
       closeDialog();
+      showSuccess("Tạo phòng mới thành công");
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message || "Có lỗi xảy ra";
+      showError(msg);
     },
   });
 
@@ -178,42 +187,38 @@ export default function useRoomManagement() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["rooms"] });
       closeDialog();
+      showSuccess("Cập nhật phòng thành công");
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message || "Có lỗi xảy ra";
+      showError(msg);
     },
   });
 
-  const toggleActiveMutation = useMutation({
-    mutationFn: (args: { id: number }) => RoomService.toggleActive(args.id),
+  const deleteMutation = useMutation({
+    mutationFn: (args: { id: number }) => RoomService.remove(args.id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["rooms"] });
+      showSuccess("Xóa phòng thành công");
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message || "Có lỗi xảy ra";
+      showError(msg);
     },
   });
 
-  const submitUpsert = async () => {
-    if (!formValues.name || !formValues.roomTypeId) return;
-
-    if (editingRoomId) {
-      await updateMutation.mutateAsync({
-        id: editingRoomId,
-        payload: formValues,
-      });
-    } else {
-      await createMutation.mutateAsync(formValues);
-    }
+  const deleteRoom = async (id: number) => {
+    await deleteMutation.mutateAsync({ id });
   };
 
-  const toggleActive = async (id: number) => {
-    await toggleActiveMutation.mutateAsync({ id });
-  };
-
-  /* =================== UI HELPERS =================== */
   const roomTypeLabels = useMemo(
     () => roomTypes.map((t) => t.name),
-    [roomTypes]
+    [roomTypes],
   );
 
   const activeTabValue = useMemo(() => {
     const selectedType = roomTypes.find(
-      (t) => t.id === filters.roomTypeId
+      (t) => t.id === filters.roomTypeId,
     )?.name;
     return selectedType || "ALL";
   }, [filters.roomTypeId, roomTypes]);
@@ -231,7 +236,7 @@ export default function useRoomManagement() {
     rooms,
     roomTypes,
     paginationMetadata,
-    formValues,
+    formValues: form,
 
     // Filters
     filters,
@@ -240,15 +245,15 @@ export default function useRoomManagement() {
     handleChangePage,
 
     // Dialog
-    isDialogOpen,
+    dialogState,
     openCreateDialog,
     openEditDialog,
     closeDialog,
 
     // Form
-    handleFormChange,
+    handleFormChange: onChangeField,
     submitUpsert,
-    toggleActive,
+    deleteRoom,
 
     // Loading
     isRoomLoading: isRoomLoading || isRoomFetching || isRoomTypeLoading,
@@ -259,5 +264,8 @@ export default function useRoomManagement() {
     activeTabValue,
     isRoomTypeError,
     roomTypeError,
+
+    alert,
+    closeSnackbar,
   };
 }

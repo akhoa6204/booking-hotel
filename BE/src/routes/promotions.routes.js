@@ -1,9 +1,35 @@
 import { Router } from "express";
-import { auth, requireRole } from "../middleware/auth.js";
-import { listPromotions, createPromotion, updatePromotion, deletePromotion } from "../controllers/promotions.controller.js";
+import { auth, requireRoles } from "../middleware/auth.js";
+import * as PromotionController from "../controllers/admin/promotions.controller.js";
 
 export const promosRouter = Router();
-promosRouter.get("/", auth(), requireRole("MANAGER"), listPromotions);
-promosRouter.post("/", auth(), requireRole("MANAGER"), createPromotion);
-promosRouter.put("/:id", auth(), requireRole("MANAGER"), updatePromotion);
-promosRouter.delete("/:id", auth(), requireRole("MANAGER"), deletePromotion);
+promosRouter.get(
+  "/",
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  PromotionController.list,
+);
+promosRouter.get(
+  "/:id",
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  PromotionController.getById,
+);
+promosRouter.post(
+  "/",
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  PromotionController.create,
+);
+promosRouter.patch(
+  "/:id",
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  PromotionController.update,
+);
+promosRouter.delete(
+  "/:id",
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  PromotionController.remove,
+);

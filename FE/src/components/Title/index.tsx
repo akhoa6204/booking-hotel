@@ -5,9 +5,10 @@ type Props = {
   title: string;
   subTitle: string;
   onAdd?: () => void;
+  showAddButton?: boolean;
 };
 
-const Title = ({ title, subTitle, onAdd }: Props) => {
+const Title = ({ title, subTitle, onAdd, showAddButton = true }: Props) => {
   return (
     <Stack
       direction="row"
@@ -23,7 +24,7 @@ const Title = ({ title, subTitle, onAdd }: Props) => {
           {subTitle}
         </Typography>
       </Box>
-      {onAdd ? (
+      {onAdd && showAddButton && (
         <Box>
           <Button
             startIcon={<Add />}
@@ -34,7 +35,7 @@ const Title = ({ title, subTitle, onAdd }: Props) => {
             Thêm mới
           </Button>
         </Box>
-      ) : null}
+      )}
     </Stack>
   );
 };

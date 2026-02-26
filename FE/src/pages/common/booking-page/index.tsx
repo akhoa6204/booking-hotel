@@ -33,6 +33,7 @@ import BookingSummaryCardSkeleton from "./components/BookingSummaryCardSkeleton"
 import {
   RoomCardSkeleton as RoomCardSkeletonGlobal,
   RoomCard as RoomCardGlobal,
+  Loading,
 } from "@components";
 
 const BookingPage = () => {
@@ -346,26 +347,8 @@ const BookingPage = () => {
 
       {renderStep()}
 
-      {/* GLOBAL OVERLAY khi tạo booking + tạo payment link */}
       {showGlobalOverlay && (
-        <Box
-          sx={{
-            position: "fixed",
-            inset: 0,
-            bgcolor: "rgba(0,0,0,0.5)",
-            zIndex: (theme) => theme.zIndex.modal + 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Stack alignItems="center" spacing={2}>
-            <CircularProgress sx={{ color: "#fff" }} />
-            <Typography color="#fff" fontWeight={500}>
-              Đang xử lý thanh toán, vui lòng chờ...
-            </Typography>
-          </Stack>
-        </Box>
+        <Loading content="Đang xử lý thanh toán, vui lòng chờ..." />
       )}
 
       <GlobalSnackbar alert={alert} closeSnackbar={closeSnackbar} />

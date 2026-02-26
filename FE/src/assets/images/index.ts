@@ -7,3 +7,4 @@ export { default as Customer } from "./customer.jpg";
 export { default as Logo } from "./Logo.png";
 export { default as CheckInImg } from "./share-location.png";
 export { default as NoBookingImg } from "./Group.png";
+export { default as NotFoundImg } from "./404.png";

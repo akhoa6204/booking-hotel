@@ -24,9 +24,10 @@ const useLogin = () => {
   const dispatch = useAppDispatch();
   const callback = async (form: LoginForm) => {
     const { user } = await dispatch(login(form)).unwrap();
-    console.log("user:", user);
-    if (user.role === "MANAGER")
-      navigate("/manager/dashboard", { replace: true });
+    if (user.role !== "CUSTOMER")
+      user.role !== "ADMIN"
+        ? navigate("/manager/bookings", { replace: true })
+        : navigate("/manager/dashboard", { replace: true });
     else navigate("/", { replace: true });
   };
 
@@ -35,7 +36,7 @@ const useLogin = () => {
   const { form, errors, onChange, onSubmit } = useForm<LoginForm>(
     initialForm,
     validate,
-    callback
+    callback,
   );
   const { alert, closeSnackbar, showSuccess } = useSnackbar();
 

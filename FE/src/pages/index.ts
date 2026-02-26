@@ -16,3 +16,4 @@ export { default as ReviewDetailPage } from "./customer/review-detail";
 export { default as RegisterPage } from "./common/register-page";
 export { default as ForgotPasswordPage } from "./common/forgot-password";
 export { default as ResetPasswordPage } from "./common/reset-password-page";
+export { default as NotFoundPage } from "./common/not-found-page";

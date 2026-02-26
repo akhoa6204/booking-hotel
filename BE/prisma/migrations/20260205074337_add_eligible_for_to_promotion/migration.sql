@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Promotion` ADD COLUMN `eligible_for` ENUM('REGISTERED_MEMBER', 'GUEST', 'ALL') NOT NULL DEFAULT 'ALL';

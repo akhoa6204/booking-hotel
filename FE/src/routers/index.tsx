@@ -23,11 +23,13 @@ import {
   RegisterPage,
   ForgotPasswordPage,
   ResetPasswordPage,
+  NotFoundPage,
 } from "@pages";
-import { createBrowserRouter } from "react-router-dom";
-import { CustomerRoute, ManagerRoute } from "./ProtectedRoute";
+import { Navigate, createBrowserRouter } from "react-router-dom";
+import { CustomerRoute, AdminRoute, StaffRoute } from "./ProtectedRoute";
 import HeaderOnlyLayout from "@layouts/header-only";
 import PublicGate, { UnProtectedRoute } from "./UnProtectedRoute";
+
 const paths = [
   {
     element: <RootLayout />,
@@ -52,39 +54,44 @@ const paths = [
               },
             ],
           },
-        ],
-      },
-      {
-        element: <CustomerRoute />,
-        path: "/account",
-        children: [
           {
-            element: <AccountLayout />,
+            element: <CustomerRoute />,
+            path: "/account",
             children: [
               {
-                path: "profile",
-                element: <ProfilePage />,
-              },
-              {
-                path: "bookings",
-                element: <MyBookingPage />,
-              },
-              {
-                path: "bookings/:id",
-                element: <BookingDetailPage />,
-              },
-              {
-                path: "reviews",
-                element: <MyReviewPage />,
-              },
-              {
-                path: "reviews/:id",
-                element: <ReviewDetailPage />,
+                element: <AccountLayout />,
+                children: [
+                  {
+                    index: true,
+                    element: <Navigate to="profile" replace />,
+                  },
+                  {
+                    path: "profile",
+                    element: <ProfilePage />,
+                  },
+                  {
+                    path: "bookings",
+                    element: <MyBookingPage />,
+                  },
+                  {
+                    path: "bookings/:id",
+                    element: <BookingDetailPage />,
+                  },
+                  {
+                    path: "reviews",
+                    element: <MyReviewPage />,
+                  },
+                  {
+                    path: "reviews/:id",
+                    element: <ReviewDetailPage />,
+                  },
+                ],
               },
             ],
           },
         ],
       },
+
       {
         element: <UnProtectedRoute />,
         children: [
@@ -113,18 +120,14 @@ const paths = [
       },
       {
         path: "/manager",
-        element: <ManagerRoute />,
+        element: <StaffRoute roles={["RECEPTION"]} />,
         children: [
           {
             element: <AdminLayout />,
             children: [
               {
-                path: "rooms",
-                element: <RoomsManagement />,
-              },
-              {
-                path: "room-types",
-                element: <RoomTypesManagement />,
+                index: true,
+                element: <Navigate to="bookings" replace />,
               },
               {
                 path: "promotions",
@@ -135,21 +138,34 @@ const paths = [
                 element: <BookingManagement />,
               },
               {
-                path: "dashboard",
-                element: <DashboardPage />,
-              },
-              {
                 path: "reviews",
                 element: <ReviewManagement />,
+              },
+              {
+                element: <AdminRoute />,
+                children: [
+                  {
+                    path: "rooms",
+                    element: <RoomsManagement />,
+                  },
+                  {
+                    path: "room-types",
+                    element: <RoomTypesManagement />,
+                  },
+                  {
+                    path: "dashboard",
+                    element: <DashboardPage />,
+                  },
+                ],
               },
             ],
           },
         ],
       },
+
       {
         path: "*",
-        element: <DefaultLayout />,
-        children: [{ element: <HomePage /> }],
+        element: <NotFoundPage />,
       },
     ],
   },

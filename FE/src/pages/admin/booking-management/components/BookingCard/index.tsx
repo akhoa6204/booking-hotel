@@ -1,4 +1,5 @@
 import {
+  Booking,
   BookingStatus,
   PaymentStatus,
   PromoScope,
@@ -19,14 +20,7 @@ import { fmtVND } from "@utils/format";
 import dayjs from "dayjs";
 
 type BookingCardProps = {
-  code: string;
-  customer: { name: string; email?: string; phone?: string };
-  room: { name: string; type: string };
-  checkIn: string;
-  checkOut: string;
-  total: number;
-  status: BookingStatus;
-  paymentStatus: PaymentStatus;
+  booking: Booking;
   onCheckIn: () => void;
   onCancel: () => void;
   onCheckOut: () => void;
@@ -43,7 +37,7 @@ type BookingCardProps = {
 const nightsBetween = (a: string, b: string) =>
   Math.max(1, dayjs(b).diff(dayjs(a), "day"));
 
-const StatusChip = ({ status }: { status: BookingCardProps["status"] }) => {
+const StatusChip = ({ status }: { status: BookingStatus }) => {
   const map: Record<
     string,
     {
@@ -63,7 +57,7 @@ const StatusChip = ({ status }: { status: BookingCardProps["status"] }) => {
   );
 };
 
-const PayChip = ({ ps }: { ps: BookingCardProps["paymentStatus"] }) => {
+const PayChip = ({ ps }: { ps: PaymentStatus }) => {
   const map: Record<
     string,
     { label: string; color: "default" | "primary" | "warning" }
@@ -79,31 +73,23 @@ const PayChip = ({ ps }: { ps: BookingCardProps["paymentStatus"] }) => {
 };
 
 export default function BookingCard({
-  code,
-  customer,
-  room,
-  checkIn,
-  checkOut,
-  total,
-  status,
-  paymentStatus,
-  promotion,
+  booking,
   onCheckIn,
   onCancel,
   onCheckOut,
 }: BookingCardProps) {
-  const nights = nightsBetween(checkIn, checkOut);
+  const nights = nightsBetween(booking.checkIn, booking.checkOut);
 
   const renderActionButton = () => {
     const now = dayjs();
-    const checkInTime = dayjs(checkIn).hour(14).minute(0).second(0); // 14:00
-    const checkOutTime = dayjs(checkOut).hour(12).minute(0).second(0); // 12:00
+    const checkInTime = dayjs(booking.checkIn).hour(14).minute(0).second(0); // 14:00
+    const checkOutTime = dayjs(booking.checkOut).hour(12).minute(0).second(0); // 12:00
 
     const inWindow = !now.isBefore(checkInTime) && now.isBefore(checkOutTime); // [14:00, 12:00)
     const beforeCheckIn = now.isBefore(checkInTime);
     const afterCheckOut = !now.isBefore(checkOutTime); // now >= 12:00
 
-    if (status === "CONFIRMED" && inWindow) {
+    if (booking.status === "CONFIRMED" && inWindow) {
       return (
         <Button
           size="small"
@@ -116,7 +102,7 @@ export default function BookingCard({
       );
     }
 
-    if (status === "CONFIRMED" && beforeCheckIn) {
+    if (booking.status === "CONFIRMED" && beforeCheckIn) {
       return (
         <Button
           size="small"
@@ -138,7 +124,7 @@ export default function BookingCard({
       );
     }
 
-    if (status === "CONFIRMED" && afterCheckOut) {
+    if (booking.status === "CONFIRMED" && afterCheckOut) {
       return (
         <Button size="small" variant="outlined" color="error" disabled>
           Quá hạn
@@ -146,7 +132,7 @@ export default function BookingCard({
       );
     }
 
-    if (status === "CHECKED_IN") {
+    if (booking.status === "CHECKED_IN") {
       return (
         <Button
           size="small"
@@ -159,7 +145,7 @@ export default function BookingCard({
       );
     }
 
-    if (status === "CHECKED_OUT") {
+    if (booking.status === "CHECKED_OUT") {
       return (
         <Button
           size="small"
@@ -172,7 +158,7 @@ export default function BookingCard({
       );
     }
 
-    if (status === "CANCELLED") {
+    if (booking.status === "CANCELLED") {
       return (
         <Button
           size="small"
@@ -190,12 +176,13 @@ export default function BookingCard({
 
   const renderCancelButton = () => {
     const now = dayjs();
-    const checkInTime = dayjs(checkIn).hour(14).minute(0).second(0);
+    const checkInTime = dayjs(booking.checkIn).hour(14).minute(0).second(0);
 
-    // Cho hủy nếu CONFIRMED và trước 14:00 ngày check-in
-    const canCancel = status === "CONFIRMED" && now.isBefore(checkInTime);
+    const canCancel =
+      booking.status === "CONFIRMED" && now.isBefore(checkInTime);
     const disabled =
-      !canCancel || ["CANCELLED", "CHECKED_OUT", "CHECKED_IN"].includes(status);
+      !canCancel ||
+      ["CANCELLED", "CHECKED_OUT", "CHECKED_IN"].includes(booking.status);
 
     if (disabled) return null;
     return (
@@ -214,45 +201,49 @@ export default function BookingCard({
       <CardContent>
         <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
           <Typography variant="h6" fontWeight={700}>
-            {code}
+            BK{String(booking.id).padStart(4, "0")}
           </Typography>
-          <StatusChip status={status} />
-          <PayChip ps={paymentStatus} />
+          <StatusChip status={booking.status} />
+          <PayChip ps={booking.paymentStatus} />
         </Stack>
         <Grid container spacing={2}>
           <Grid size={5}>
             <Box flex={1}>
-              <Typography fontWeight={700}>{customer.name}</Typography>
-              {customer.email && (
+              <Typography fontWeight={700}>{booking.fullName}</Typography>
+              {booking.email && (
                 <Typography variant="body2" color="text.secondary">
-                  Email: {customer.email}
+                  Email: {booking.email}
                 </Typography>
               )}
-              {customer.phone && (
+              {booking.phone && (
                 <Typography variant="body2" color="text.secondary">
-                  SDT: {customer.phone}
+                  SDT: {booking.phone}
                 </Typography>
               )}
 
               <Typography mt={1.5} fontWeight={700} color="primary">
-                Tổng: {fmtVND(total)} VND ({nights} đêm)
+                Tổng:{" "}
+                {fmtVND(
+                  Number(booking.baseAmount) - Number(booking.discountAmount),
+                )}{" "}
+                VND ({nights} đêm)
               </Typography>
             </Box>
           </Grid>
           <Grid size={5}>
             <Box>
               <Typography>
-                Phòng: {room.name} - {room.type}
+                Phòng: {booking.room.name} - {booking.room.roomType.name}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Check-in: {dayjs(checkIn).format("DD/M/YYYY")}
+                Check-in: {dayjs(booking.checkIn).format("DD/M/YYYY")}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Check-out: {dayjs(checkOut).format("DD/M/YYYY")}
+                Check-out: {dayjs(booking.checkOut).format("DD/M/YYYY")}
               </Typography>
-              {promotion ? (
+              {booking.promotion ? (
                 <Typography variant="body2" color="text.secondary" mb={1}>
-                  Mã giảm giá: {promotion.code}
+                  Chương trình giảm giá: {booking.promotion.name}
                 </Typography>
               ) : null}
             </Box>

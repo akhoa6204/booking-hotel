@@ -8,53 +8,53 @@ import {
   getMonthlyBookingStats,
   getTopCustomers,
 } from "../controllers/dashboard.controller.js";
-import { auth, requireRole } from "../middleware/auth.js";
+import { auth, requireRole, requireRoles } from "../middleware/auth.js";
 
 export const dashboardRoutes = Router();
 dashboardRoutes.get(
   "/summary",
-  auth(),
-  requireRole("MANAGER"),
-  getDashboardSummary
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  getDashboardSummary,
 );
 
 dashboardRoutes.get(
   "/checkins",
-  auth(),
-  requireRole("MANAGER"),
-  getDashboardCheckins
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  getDashboardCheckins,
 );
 dashboardRoutes.get(
   "/checkouts",
-  auth(),
-  requireRole("MANAGER"),
-  getDashboardCheckouts
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  getDashboardCheckouts,
 );
 
 dashboardRoutes.get(
   "/monthly-kpis",
-  auth(),
-  requireRole("MANAGER"),
-  getMonthlyKpis
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  getMonthlyKpis,
 );
 
 dashboardRoutes.get(
   "/monthly-revenue",
-  auth(),
-  requireRole("MANAGER"),
-  getMonthlyRevenue
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  getMonthlyRevenue,
 );
 
 dashboardRoutes.get(
   "/monthly-booking-stats",
-  auth(),
-  requireRole("MANAGER"),
-  getMonthlyBookingStats
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  getMonthlyBookingStats,
 );
 
 dashboardRoutes.get(
   "/top-customers",
-  auth(),
-  requireRole("MANAGER"),
-  getTopCustomers
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  getTopCustomers,
 );

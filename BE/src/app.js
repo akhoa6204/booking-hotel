@@ -4,18 +4,25 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 import { authRouter } from "./routes/auth.routes.js";
-import { roomsRouter } from "./routes/rooms.routes.js";
-import { bookingsRouter } from "./routes/bookings.routes.js";
-import { paymentsRouter } from "./routes/payments.routes.js";
+import { adminRoomsRouter, roomsRouter } from "./routes/rooms.routes.js";
+import {
+  adminBookingsRouter,
+  bookingsRouter,
+} from "./routes/bookings.routes.js";
+import { adminPaymentRouter } from "./routes/payments.routes.js";
 import { hotelsRouter } from "./routes/hotels.routes.js";
 import { servicesRouter } from "./routes/services.routes.js";
 import { promosRouter } from "./routes/promotions.routes.js";
 import { notificationsRouter } from "./routes/notifications.routes.js";
 import { reviewsRouter } from "./routes/reviews.routes.js";
 import { searchRouter } from "./routes/search.routes.js";
-import { roomTypeRoute } from "./routes/roomTypes.routes.js";
+import {
+  roomTypeRoute,
+  roomTypeAdminRoute,
+} from "./routes/roomTypes.routes.js";
 import { dashboardRoutes } from "./routes/dashboard.routes.js";
 import { amenitiesRouter } from "./routes/amenities.routes.js";
+import { employeesRouter } from "./routes/employees.routes.js";
 
 dotenv.config();
 
@@ -30,17 +37,24 @@ app.use("/uploads", express.static("uploads"));
 // Health check
 app.get("/health", (req, res) => res.json({ ok: true }));
 
-// Public & auth routes
+// Public
 app.use("/api/auth", authRouter);
-app.use("/api/hotels", hotelsRouter);
-app.use("/api/services", servicesRouter);
+// app.use("/api/hotels", hotelsRouter);
+// app.use("/api/services", servicesRouter);
 app.use("/api/promotions", promosRouter);
 app.use("/api/rooms", roomsRouter);
 app.use("/api/bookings", bookingsRouter);
-app.use("/api/payments", paymentsRouter);
-app.use("/api/notifications", notificationsRouter);
+// app.use("/api/notifications", notificationsRouter);
 app.use("/api/reviews", reviewsRouter);
-app.use("/api/search", searchRouter);
 app.use("/api/room-types", roomTypeRoute);
-app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/amenities", amenitiesRouter);
+app.use("/api/rooms", roomsRouter);
+
+// Admin
+app.use("/api/admin/room-types", roomTypeAdminRoute);
+app.use("/api/admin/dashboard", dashboardRoutes);
+app.use("/api/admin/amenities", amenitiesRouter);
+app.use("/api/admin/bookings", adminBookingsRouter);
+app.use("/api/admin/rooms", adminRoomsRouter);
+app.use("/api/admin/promotions", promosRouter);
+app.use("/api/admin/payments", adminPaymentRouter);
+app.use("/api/admin/employees", employeesRouter);

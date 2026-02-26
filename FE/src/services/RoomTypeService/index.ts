@@ -8,7 +8,8 @@ import {
 } from "@constant/types";
 import { SortKey } from "@pages/common/booking-page/interface";
 
-const BASE = "/room-types";
+const CUSTOMER_BASE = "/room-types";
+const ADMIN_BASE = "/admin/room-types";
 
 /** Payload tạo/cập nhật loại phòng (admin) */
 export type CreateRoomTypePayload = {
@@ -40,21 +41,20 @@ export default class RoomTypeService {
     const res = await httpClient.get<{
       success: true;
       data: PaginatedResponse<RoomTypeGuest>;
-    }>(`${BASE}/customer`, { params });
+    }>(`${CUSTOMER_BASE}/`, { params });
     return res.data;
   }
 
   /** Lấy chi tiết loại phòng cho khách (public) */
   static async getByIdForGuest(id: number): Promise<RoomTypeGuest> {
     const res = await httpClient.get<{ success: true; data: RoomTypeGuest }>(
-      `${BASE}/customer/${id}`
+      `${CUSTOMER_BASE}/${id}`,
     );
     return res.data;
   }
 
   /** Lấy danh sách loại phòng cho quản lý (admin) */
   static async list(params?: {
-    hotelId?: number;
     page?: number;
     limit?: number;
     q?: string;
@@ -62,7 +62,7 @@ export default class RoomTypeService {
     const res = await httpClient.get<{
       success: true;
       data: PaginatedResponse<RoomType>;
-    }>(`${BASE}/admin`, { params });
+    }>(`${ADMIN_BASE}/`, { params });
 
     return res.data;
   }
@@ -70,7 +70,7 @@ export default class RoomTypeService {
   /** Lấy chi tiết loại phòng (admin) */
   static async getById(id: number): Promise<RoomType> {
     const res = await httpClient.get<{ success: true; data: RoomType }>(
-      `${BASE}/admin/${id}`
+      `${ADMIN_BASE}/${id}`,
     );
     return res.data;
   }
@@ -78,24 +78,24 @@ export default class RoomTypeService {
   // RoomTypeService.ts
   static async create(payload: FormData): Promise<RoomType> {
     const res = await httpClient.post<{ success: true; data: RoomType }>(
-      `${BASE}/admin`,
+      `${ADMIN_BASE}`,
       payload,
-      { headers: { "Content-Type": "multipart/form-data" } }
+      { headers: { "Content-Type": "multipart/form-data" } },
     );
     return res.data;
   }
 
   static async update(id: number, payload: FormData): Promise<RoomType> {
-    const res = await httpClient.put<{ success: true; data: RoomType }>(
-      `${BASE}/admin/${id}`,
+    const res = await httpClient.patch<{ success: true; data: RoomType }>(
+      `${ADMIN_BASE}/${id}`,
       payload,
-      { headers: { "Content-Type": "multipart/form-data" } }
+      { headers: { "Content-Type": "multipart/form-data" } },
     );
     return res.data;
   }
   /** Xóa loại phòng (admin) */
   static async delete(id: number): Promise<void> {
-    await httpClient.delete(`${BASE}/admin/${id}`);
+    await httpClient.delete(`${ADMIN_BASE}/${id}`);
   }
 
   /** Lấy danh sách review theo loại phòng cho khách */
@@ -109,19 +109,19 @@ export default class RoomTypeService {
     const res = await httpClient.get<{
       success: true;
       data: PaginatedResponse<RoomTypeReviewItem>;
-    }>(`${BASE}/customer/${id}/reviews`, { params: query });
+    }>(`${CUSTOMER_BASE}/${id}/reviews`, { params: query });
 
     return res.data;
   }
 
   /** Lấy thống kê review (điểm trung bình) cho loại phòng */
   static async getReviewStatsForGuest(
-    id: number
+    id: number,
   ): Promise<RoomTypeReviewStats> {
     const res = await httpClient.get<{
       success: true;
       data: RoomTypeReviewStats;
-    }>(`${BASE}/customer/${id}/reviews-stats`);
+    }>(`${CUSTOMER_BASE}/${id}/reviews-stats`);
 
     return res.data;
   }

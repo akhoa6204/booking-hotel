@@ -10,7 +10,7 @@ export interface FormBooking {
   capacity: number;
 }
 export type Errors<T> = Partial<Record<keyof T, string>>;
-export type UserRole = "MANAGER" | "CUSTOMER";
+export type UserRole = "MANAGER" | "CUSTOMER" | "ADMIN" | "RECEPTION";
 export interface User {
   id: number;
   fullName: string;
@@ -32,20 +32,16 @@ export type Image = {
   id: number;
   url: string;
   isPrimary: boolean;
-  sortOrder: number;
 };
 export type RoomType = {
   id: number;
-  hotelId: number;
   name: string;
   basePrice: number;
   capacity: number;
-  description?: string | null;
+  description?: string;
   amenities: Amenity[];
   rooms?: { id: number; name: string; status: string }[];
   images?: Image[];
-  createdAt?: string;
-  updatedAt?: string;
 };
 
 export type RoomTypeGuest = Omit<RoomType, "rooms"> & { image: string };
@@ -54,38 +50,38 @@ export type RoomStatus = "AVAILABLE" | "BOOKED" | "MAINTENANCE";
 
 export type Room = {
   id: number;
-  hotelId: number;
-  roomTypeId: number;
   name: string;
-  active: boolean;
   description?: string | null;
   status: RoomStatus;
   roomType: RoomType;
-  image: string;
 };
 
 export type PromoScope = "GLOBAL" | "ROOM_TYPE" | "MIN_TOTAL";
 export type PromoType = "PERCENT" | "FIXED";
-export type DialogMode = "create" | "edit";
+export type DialogMode = "create" | "edit" | "view";
+export type CustomerEligibility = "ALL" | "GUEST" | "REGISTERED_MEMBER";
 
 export type Promotion = {
   id: number;
   hotelId: number;
   scope: PromoScope;
-  roomTypeId?: number | null;
-  minTotal?: number | null;
-  code?: string | null;
-  discountType: PromoType;
+  minTotal?: number;
+  code?: string;
+  type: PromoType;
   value: number;
-  conditions?: any | null;
-  startDate: string;
-  endDate: string;
-  active: boolean;
-  totalCodes?: number | null;
-  totalUsed?: number;
-  roomType?: { id: number; name: string } | null;
-  createdAt?: string;
-  updatedAt?: string;
+  startAt: string;
+  endAt: string;
+  quotaTotal?: number;
+  quotaUsed?: number;
+  description?: string;
+  name?: string;
+  autoApply: boolean;
+  priority: number;
+  maxDiscountAmount?: number;
+  eligibleFor: CustomerEligibility;
+  isActive: boolean;
+  roomTypes?: number[];
+  isStackable: boolean;
 };
 
 export type BookingStatus =
@@ -104,60 +100,25 @@ export type PaymentStatus =
 
 export interface Booking {
   id: number;
-  userId?: number | null;
-  customerId?: number | null;
-  customer?: {
-    fullName?: string;
-    email?: string;
-    phone?: string;
-  } | null;
-
-  room: {
-    id: number;
-    name: string;
-    roomType: {
-      id: number;
-      name: string;
-      basePrice: number;
-      capacity: number;
-      images?: Image[];
-    };
-  };
-
-  roomId: number;
+  fullName: string;
+  phone: string;
+  email?: string;
   checkIn: string;
   checkOut: string;
   status: BookingStatus;
-
-  totalPrice: number;
-  discountAmount: number;
-  finalPrice: number;
-
-  amountPaid: number;
+  baseAmount: string;
+  discountAmount: string;
+  createdAt: string;
+  room: {
+    name: string;
+    roomType: {
+      name: string;
+    };
+  };
+  promotion: {
+    name: string;
+  };
   paymentStatus: PaymentStatus;
-  paymentMethod?: PaymentMethod | null;
-  source: "ONLINE" | "STAFF";
-  createdByUserId?: number | null;
-
-  promotion?: {
-    id: number;
-    code?: string | null;
-    description?: string | null;
-    scope: PromoScope;
-    discountType: PromoType;
-    value: number;
-  } | null;
-
-  payments?: Array<{
-    id: number;
-    amount: number;
-    method: PaymentMethod;
-    status: PaymentStatus;
-    paidAt?: string | null;
-    provider?: string | null;
-    note?: string | null;
-  }>;
-  canReview: boolean;
 }
 
 export interface QuoteResponse {
@@ -168,12 +129,13 @@ export interface QuoteResponse {
   promoApplied: null | {
     id: number;
     code: string | null;
-    scope: string;
+    name: string;
+    scope: PromoScope;
     type: "PERCENT" | "FIXED";
     value: number;
+    priority: number;
+    autoApply: boolean;
   };
-  totalAfter: number;
-  currency: string;
 }
 
 export type DashboardSummary = {
@@ -304,4 +266,18 @@ export type RoomTypeReviewStats = {
     valueForMoney: number | null;
     hygiene: number | null;
   };
+};
+
+export type SePayCheckoutFields = {
+  payment_method: "BANK_TRANSFER";
+  order_invoice_number: number | string;
+  order_amount: number;
+  currency: "VND";
+  order_description: string;
+  success_url: string;
+  error_url: string;
+  cancel_url: string;
+  merchant: string;
+  operation: "PURCHASE";
+  signature: string;
 };

@@ -13,7 +13,7 @@ import { Room } from "@constant/types";
 type Props = {
   room: Room;
   onEdit?: (room: Room) => void;
-  onToggleDelete?: (id: number) => void;
+  onDelete?: (id: number) => void;
 };
 
 const STATUS_VIEW: Record<
@@ -25,8 +25,8 @@ const STATUS_VIEW: Record<
   MAINTENANCE: { label: "Bảo trì", color: "default" },
 };
 
-const RoomCard: React.FC<Props> = ({ room, onEdit, onToggleDelete }) => {
-  const image = room.image;
+const RoomCard: React.FC<Props> = ({ room, onEdit, onDelete }) => {
+  const image = room.roomType.images?.[0]?.url;
   ("https://via.placeholder.com/400x250?text=No+Image");
 
   const formatPrice = (price: number) =>
@@ -115,9 +115,9 @@ const RoomCard: React.FC<Props> = ({ room, onEdit, onToggleDelete }) => {
             color="error"
             startIcon={<Delete />}
             size="small"
-            onClick={() => onToggleDelete?.(room.id)}
+            onClick={() => onDelete?.(room.id)}
           >
-            {room.active ? "Xóa" : "Khôi phục"}
+            Xóa
           </Button>
         </Stack>
       </CardContent>

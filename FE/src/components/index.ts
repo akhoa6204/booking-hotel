@@ -9,3 +9,4 @@ export { default as GlobalSnackbar } from "./GlobalSnackbar";
 export { default as BookingGuestAndStay } from "./BookingGuestAndStay";
 export { default as BookingHeaderSkeleton } from "./BookingHeaderSkeleton";
 export { default as BookingGuestAndStaySkeleton } from "./BookingGuestAndStaySkeleton";
+export { default as Loading } from "./Loading";

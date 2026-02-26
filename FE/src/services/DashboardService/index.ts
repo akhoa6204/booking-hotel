@@ -9,7 +9,7 @@ import {
   TopCustomers,
 } from "@constant/types";
 
-const BASE = "/dashboard";
+const BASE = "/admin/dashboard";
 
 export default class DashboardService {
   /** Tổng quan dashboard (hôm nay & tuần) */
@@ -66,7 +66,7 @@ export default class DashboardService {
   }
 
   static async getMonthlyBookingStats(
-    month?: string
+    month?: string,
   ): Promise<MonthlyBookingStats> {
     const { data } = await httpClient.get<{
       success: boolean;

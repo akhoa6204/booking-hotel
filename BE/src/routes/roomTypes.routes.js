@@ -1,55 +1,61 @@
-// routes/roomTypes.routes.ts
 import { Router } from "express";
+import * as AdminController from "../controllers/admin/roomtypes.controller.js";
+import * as CustomerController from "../controllers/customer/roomtypes.controller.js";
 import {
-  createRoomType,
-  listRoomTypes,
-  getRoomType,
-  updateRoomType,
-  deleteRoomType,
-  listRoomTypesForGuest,
-  getRoomTypeForGuest,
-  getReviewsByRoomType,
-  getReviewStatsByRoomType
-} from "../controllers/roomTypes.controller.js";
-import { auth, requireRole } from "../middleware/auth.js";
+  auth,
+  notRequireRole,
+  requireRole,
+  requireRoles,
+} from "../middleware/auth.js";
 import {
   uploadRoomTypeImages,
   handleUploadError,
 } from "../middleware/upload.js";
 
 export const roomTypeRoute = Router();
+export const roomTypeAdminRoute = Router();
 
 /** Public (guest) */
-roomTypeRoute.get("/customer", listRoomTypesForGuest);
-roomTypeRoute.get("/customer/:id", getRoomTypeForGuest);
-roomTypeRoute.get("/customer/:id/reviews", getReviewsByRoomType);
-roomTypeRoute.get("/customer/:id/reviews-stats", getReviewStatsByRoomType);
+roomTypeRoute.get("/", CustomerController.list);
+roomTypeRoute.get("/:id", CustomerController.getById);
+roomTypeRoute.get("/:id/reviews", CustomerController.getReviews);
+roomTypeRoute.get("/:id/review-stats", CustomerController.getReviewStats);
 
 /** Admin */
-roomTypeRoute.get("/admin", auth(), requireRole("MANAGER"), listRoomTypes);
-roomTypeRoute.get("/admin/:id", auth(), requireRole("MANAGER"), getRoomType);
-
-roomTypeRoute.post(
-  "/admin",
-  auth(),
-  requireRole("MANAGER"),
-  uploadRoomTypeImages,
-  handleUploadError,
-  createRoomType
+roomTypeAdminRoute.get(
+  "/",
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  AdminController.list,
 );
 
-roomTypeRoute.put(
-  "/admin/:id",
-  auth(),
-  requireRole("MANAGER"),
+roomTypeAdminRoute.post(
+  "/",
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
   uploadRoomTypeImages,
   handleUploadError,
-  updateRoomType
+  AdminController.create,
 );
 
-roomTypeRoute.delete(
-  "/admin/:id",
-  auth(),
-  requireRole("MANAGER"),
-  deleteRoomType
+roomTypeAdminRoute.get(
+  "/:id",
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  AdminController.getById,
+);
+
+roomTypeAdminRoute.patch(
+  "/:id",
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  uploadRoomTypeImages,
+  handleUploadError,
+  AdminController.update,
+);
+roomTypeAdminRoute.delete(
+  "/:id",
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  AdminController.remove,
 );

@@ -27,8 +27,7 @@ export const getRoleDisplayName = (role: UserRole): string => {
 };
 
 /* ----------- Phân quyền truy cập ----------- */
-export const canAccessManager = (user: User | null): boolean =>
-  isManager(user);
+export const canAccessManager = (user: User | null): boolean => isManager(user);
 
 export const canAccessCustomer = (user: User | null): boolean =>
   isCustomer(user) || isManager(user); // manager có thể xem dữ liệu customer nếu cần
