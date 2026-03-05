@@ -126,6 +126,7 @@ export default function useBookingManagement() {
     const state = location.state as
       | { bookingId?: number; action?: "CHECK_IN" | "CHECK_OUT" }
       | undefined;
+    console.log("state:", state);
     if (!state?.bookingId) return;
 
     setSelectedBookingId(state.bookingId);
@@ -167,13 +168,13 @@ export default function useBookingManagement() {
 
   const { data: bookingDetail, isLoading: loadingCheckInDetail } = useQuery({
     queryKey: ["booking-detail", selectedBookingId],
-    queryFn: () => BookingService.getById(selectedBookingId!),
+    queryFn: async () => await BookingService.getById(selectedBookingId!),
     enabled: !!selectedBookingId,
   });
 
   useEffect(() => {
     if (!bookingDetail || !pendingAction) return;
-
+    console.log("pending action:", pendingAction);
     const run = async () => {
       if (pendingAction === "CHECK_IN") {
         if (isFullyPaid(bookingDetail)) {
@@ -521,6 +522,7 @@ export default function useBookingManagement() {
     onChangeField(field, value);
   };
 
+  console.log("bookingDetail:", bookingDetail);
   return {
     dialog: { open: dialogState.open, openDialog, resetForm },
     bookingForm,

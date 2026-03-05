@@ -138,7 +138,7 @@ export default function BookingManagement() {
         onSubmit={handleCreateBooking}
       />
 
-      {selectedBookingId && !loadingCheckInDetail ? (
+      {/* {selectedBookingId && !loadingCheckInDetail ? (
         <CheckInPaymentDialog
           open={!!selectedBookingId}
           onClose={closeCheckInDialog}
@@ -148,7 +148,7 @@ export default function BookingManagement() {
           onPaymentMethodChange={onChangeCheckInPaymentMethod}
           onConfirm={confirmCheckInPayment}
         />
-      ) : null}
+      ) : null} */}
 
       {showLoadingOverlay ? (
         <Loading content="Đang xử lý thanh toán, vui lòng chờ..." />

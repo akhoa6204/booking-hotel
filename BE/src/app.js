@@ -23,6 +23,7 @@ import {
 import { dashboardRoutes } from "./routes/dashboard.routes.js";
 import { amenitiesRouter } from "./routes/amenities.routes.js";
 import { employeesRouter } from "./routes/employees.routes.js";
+import { shiftsRouter } from "./routes/shifts.routes.js";
 
 dotenv.config();
 
@@ -58,3 +59,4 @@ app.use("/api/admin/rooms", adminRoomsRouter);
 app.use("/api/admin/promotions", promosRouter);
 app.use("/api/admin/payments", adminPaymentRouter);
 app.use("/api/admin/employees", employeesRouter);
+app.use("/api/admin/shifts", shiftsRouter);

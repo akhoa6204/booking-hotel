@@ -3,7 +3,7 @@ import { RootState } from "../store";
 
 /* ----------- Kiểm tra từng role ----------- */
 export const isManager = (user: User | null): boolean =>
-  user?.role === "MANAGER";
+  user?.role === "MANAGER" || user?.role === "ADMIN";
 
 export const isCustomer = (user: User | null): boolean =>
   user?.role === "CUSTOMER";
@@ -15,15 +15,6 @@ export const hasRole = (user: User | null, role: UserRole): boolean =>
 export const hasAnyRole = (user: User | null, roles: UserRole[]): boolean => {
   if (!user) return false;
   return roles.includes(user.role);
-};
-
-/* ----------- Hiển thị tên role ----------- */
-export const getRoleDisplayName = (role: UserRole): string => {
-  const roleNames: Record<UserRole, string> = {
-    MANAGER: "Quản lý khách sạn",
-    CUSTOMER: "Khách hàng",
-  };
-  return roleNames[role] ?? role;
 };
 
 /* ----------- Phân quyền truy cập ----------- */

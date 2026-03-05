@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import useAuth from "@hooks/useAuth";
 import { UserRole } from "@constant/types";
+import { useMemo } from "react";
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
@@ -21,16 +22,22 @@ export function ProtectedRoute({
 
   if (!user) return <Navigate to={fallbackPath} replace />;
 
-  const isStaffOrAdmin = user.role !== "CUSTOMER";
-  const managerHome = "/manager/bookings";
-  const defaultUnauthorized = isStaffOrAdmin ? managerHome : "/";
+  const defaultUnauthorized = useMemo(() => {
+    if (user.role === "ADMIN" || user.role === "MANAGER")
+      return "/manager/dashboard";
+
+    if (user.role === "RECEPTION") return "/manager/front-desk";
+
+    if (user.role === "HOUSEKEEPING") return "/manager/housekeeping";
+
+    return "/";
+  }, [user.role]);
 
   if (requiredRole && !hasRole(requiredRole)) {
     return <Navigate to={defaultUnauthorized} replace />;
   }
 
-  const anyRoleList = requiredAnyRole ?? requiredRoles;
-  if (anyRoleList && anyRoleList.length && !hasAnyRole(anyRoleList)) {
+  if (requiredRoles && requiredRoles.length && !hasAnyRole(requiredRoles)) {
     return <Navigate to={defaultUnauthorized} replace />;
   }
 
@@ -38,13 +45,13 @@ export function ProtectedRoute({
 }
 
 export const AdminRoute = () => (
-  <ProtectedRoute requiredRole="ADMIN">
+  <ProtectedRoute requiredRoles={["ADMIN", "MANAGER"]}>
     <Outlet />
   </ProtectedRoute>
 );
 
 export const StaffRoute = ({ roles }: { roles?: UserRole[] }) => (
-  <ProtectedRoute requiredAnyRole={["ADMIN", "MANAGER", ...roles]}>
+  <ProtectedRoute requiredRoles={["ADMIN", "MANAGER", ...roles]}>
     <Outlet />
   </ProtectedRoute>
 );

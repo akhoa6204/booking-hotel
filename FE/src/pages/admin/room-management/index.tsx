@@ -40,6 +40,8 @@ export default function RoomManagement() {
 
     alert,
     closeSnackbar,
+
+    editStatusRoomHandler,
   } = useRoomManagement();
 
   const totalPages = Math.max(
@@ -104,6 +106,7 @@ export default function RoomManagement() {
                       room={room}
                       onEdit={() => openEditDialog(room.id)}
                       onDelete={deleteRoom}
+                      onEditStatus={editStatusRoomHandler}
                     />
                   </Grid>
                 ))}

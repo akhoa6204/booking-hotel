@@ -42,11 +42,11 @@ const CheckInPaymentDialog: React.FC<Props> = ({
     return Math.max(1, Number.isFinite(d) ? d : 1);
   }, [booking.checkIn, booking.checkOut]);
 
-  const unitPrice = booking.room.roomType.basePrice;
-  const totalBefore = booking.totalPrice;
+  const unitPrice = booking.room.roomType?.basePrice || 0;
+  const totalBefore = booking.baseAmount;
   const discount = booking.discountAmount || 0;
-  const totalAfter = booking.finalPrice;
-  const deposit = booking.amountPaid || 0;
+  const totalAfter = Number(totalBefore) - Number(discount);
+  const deposit = booking?.totalPaid || 0;
   const remaining = Math.max(0, totalAfter - deposit);
 
   return (
@@ -60,17 +60,13 @@ const CheckInPaymentDialog: React.FC<Props> = ({
             </Typography>
             <Grid container spacing={2}>
               <Grid size={6}>
-                <Typography>
-                  Khách hàng: {booking.customer?.fullName}
-                </Typography>
-                <Typography>Email: {booking.customer?.email || "-"}</Typography>
-                <Typography>
-                  Số điện thoại: {booking.customer?.phone || "-"}
-                </Typography>
+                <Typography>Khách hàng: {booking.fullName}</Typography>
+                <Typography>Email: {booking.email || "-"}</Typography>
+                <Typography>Số điện thoại: {booking.phone || "-"}</Typography>
               </Grid>
               <Grid size={6}>
                 <Typography>
-                  Phòng: {booking.room.name} - {booking.room.roomType.name}
+                  Phòng: {booking.room?.name} - {booking.room.roomType?.name}
                 </Typography>
                 <Typography>
                   Check-in: {dayjs(booking.checkIn).format("DD/M/YYYY")}

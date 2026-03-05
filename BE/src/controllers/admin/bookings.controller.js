@@ -79,6 +79,17 @@ export async function create(req, res) {
       return bad(res, "fullName, phone, checkIn, checkOut là bắt buộc", 400);
     }
 
+    const staff = await prisma.staff.findUnique({
+      where: { userId: userId },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!staff) {
+      return bad(res, "Không tồn tại nhân viên", 400);
+    }
+
     const startDate = DateUtils.toDate(checkIn);
     const endDate = DateUtils.toDate(checkOut);
 
@@ -139,7 +150,7 @@ export async function create(req, res) {
     const result = await prisma.$transaction(async (tx) => {
       const booking = await tx.booking.create({
         data: {
-          staffId: userId,
+          staffId: staff.id,
           roomId: roomId,
           checkIn: startDate,
           checkOut: endDate,
@@ -183,14 +194,82 @@ export async function update(req, res) {
       return bad(res, "Trạng thái không hợp lệ", 400);
     }
 
+    let updatedRoomStatus = null;
+
+    if (status === "CHECKED_IN") {
+      updatedRoomStatus = "BOOKED";
+    } else if (status === "CHECKED_OUT") {
+      updatedRoomStatus = "CLEANING";
+    }
+
     const booking = await prisma.booking.update({
       where: { id: Number(id) },
-      data: { status },
+      data: {
+        status,
+        ...(updatedRoomStatus && {
+          room: {
+            update: {
+              status: updatedRoomStatus,
+            },
+          },
+        }),
+      },
+      include: {
+        room: true,
+      },
     });
 
     return success(res, booking, 200);
   } catch (e) {
     console.error(e);
+    return bad(res, "Có lỗi xảy ra", 500);
+  }
+}
+
+export async function getById(req, res) {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return bad(res, "Thiếu thông tin ID", 400);
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: {
+        id: Number(id),
+      },
+      select: {
+        id: true,
+        fullName: true,
+        phone: true,
+        checkIn: true,
+        checkOut: true,
+        status: true,
+        baseAmount: true,
+        discountAmount: true,
+        createdAt: true,
+        room: {
+          select: {
+            name: true,
+            roomType: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        promotion: {
+          select: {
+            name: true,
+          },
+        },
+        paymentStatus: true,
+      },
+    });
+
+    if (!booking) return bad(res, "Không tồn tại đặt phòng", 400);
+    return success(res, booking, 200);
+  } catch (error) {
+    console.error(error);
     return bad(res, "Có lỗi xảy ra", 500);
   }
 }

@@ -10,7 +10,12 @@ export interface FormBooking {
   capacity: number;
 }
 export type Errors<T> = Partial<Record<keyof T, string>>;
-export type UserRole = "MANAGER" | "CUSTOMER" | "ADMIN" | "RECEPTION";
+export type UserRole =
+  | "MANAGER"
+  | "CUSTOMER"
+  | "ADMIN"
+  | "RECEPTION"
+  | "HOUSEKEEPING";
 export interface User {
   id: number;
   fullName: string;
@@ -46,7 +51,7 @@ export type RoomType = {
 
 export type RoomTypeGuest = Omit<RoomType, "rooms"> & { image: string };
 
-export type RoomStatus = "AVAILABLE" | "BOOKED" | "MAINTENANCE";
+export type RoomStatus = "AVAILABLE" | "BOOKED" | "MAINTENANCE" | "CLEANING";
 
 export type Room = {
   id: number;
@@ -113,6 +118,7 @@ export interface Booking {
     name: string;
     roomType: {
       name: string;
+      basePrice?: string;
     };
   };
   promotion: {
@@ -151,6 +157,7 @@ export type DashboardSummary = {
   availableRoomsDelta: number;
   weekRevenueDeltaPct: number;
   newCustomersDelta: number;
+  totalCleanRooms: number;
 };
 
 export type MonthlyKpis = {
@@ -237,7 +244,7 @@ export type ReviewStats = {
 
 export type ReviewStatus = "PUBLISHED" | "HIDDEN";
 
-export type RoomTypeReviewItem = {
+export interface RoomTypeReviewItem {
   id: number;
   overall: number;
   amenities?: number | null;
@@ -253,9 +260,9 @@ export type RoomTypeReviewItem = {
     name: string;
   };
   displayName: string;
-};
+}
 
-export type RoomTypeReviewStats = {
+export interface RoomTypeReviewStats {
   total: number;
   average: {
     overall: number | null;
@@ -266,9 +273,9 @@ export type RoomTypeReviewStats = {
     valueForMoney: number | null;
     hygiene: number | null;
   };
-};
+}
 
-export type SePayCheckoutFields = {
+export interface SePayCheckoutFields {
   payment_method: "BANK_TRANSFER";
   order_invoice_number: number | string;
   order_amount: number;
@@ -280,4 +287,32 @@ export type SePayCheckoutFields = {
   merchant: string;
   operation: "PURCHASE";
   signature: string;
-};
+}
+
+export interface Employee {
+  id: number;
+  phone: string;
+  email: string;
+  fullName: string;
+  type: "STAFF" | "CUSTOMER";
+  isActive: boolean;
+  staff: {
+    position: UserRole;
+    isAdmin: boolean;
+  };
+}
+
+export interface Shift {
+  id: number;
+  code: string;
+  name: string;
+  startTime: string;
+  endTime: string;
+}
+export interface StaffShiftAssignment {
+  id: number;
+  staffId: number;
+  workDate: string;
+  position: Omit<UserRole, "CUSTOMER">;
+  shift: Shift;
+}

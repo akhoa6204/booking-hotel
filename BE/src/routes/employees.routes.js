@@ -9,3 +9,24 @@ employeesRouter.get(
   requireRoles(["ADMIN", "MANAGER"]),
   EmployeesController.list,
 );
+
+employeesRouter.get(
+  "/:id",
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  EmployeesController.getById,
+);
+
+employeesRouter.patch(
+  "/:id",
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  EmployeesController.update,
+);
+
+employeesRouter.post(
+  "/",
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  EmployeesController.create,
+);

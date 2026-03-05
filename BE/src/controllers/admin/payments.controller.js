@@ -166,10 +166,12 @@ export async function markAsPaid(req, res) {
     }
 
     const result = await prisma.$transaction(async (tx) => {
+      const now = new Date();
       const updatedPayment = await tx.payment.update({
         where: { id: Number(paymentId) },
         data: {
           status: "PAID",
+          paidAt: now,
         },
       });
       const updatedBooking = await tx.booking.update({

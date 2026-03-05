@@ -67,7 +67,7 @@ export default class BookingService {
       const { data } = await httpClient.get<{
         success: boolean;
         data: any;
-      }>(`${BASE}/${id}`);
+      }>(`${ADMIN_BASE}/${id}`);
       return data;
     } catch (error) {
       console.error("Lỗi khi lấy thông tin đặt phòng:", error);

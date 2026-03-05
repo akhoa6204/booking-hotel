@@ -24,6 +24,10 @@ import {
   ForgotPasswordPage,
   ResetPasswordPage,
   NotFoundPage,
+  EmployeeManagement,
+  FrontDeskPage,
+  HouseKeepingPage,
+  ShiftManagementPage,
 } from "@pages";
 import { Navigate, createBrowserRouter } from "react-router-dom";
 import { CustomerRoute, AdminRoute, StaffRoute } from "./ProtectedRoute";
@@ -120,27 +124,48 @@ const paths = [
       },
       {
         path: "/manager",
-        element: <StaffRoute roles={["RECEPTION"]} />,
+        element: <StaffRoute roles={["RECEPTION", "HOUSEKEEPING"]} />,
         children: [
           {
             element: <AdminLayout />,
             children: [
               {
-                index: true,
-                element: <Navigate to="bookings" replace />,
+                element: <StaffRoute roles={["RECEPTION"]} />,
+                children: [
+                  {
+                    path: "bookings",
+                    element: <BookingManagement />,
+                  },
+                  {
+                    path: "front-desk",
+                    element: <FrontDeskPage />,
+                  },
+                  {
+                    path: "promotions",
+                    element: <PromotionManagement />,
+                  },
+                  {
+                    path: "reviews",
+                    element: <ReviewManagement />,
+                  },
+                ],
               },
+
               {
-                path: "promotions",
-                element: <PromotionManagement />,
+                element: <StaffRoute roles={["HOUSEKEEPING"]} />,
+                children: [
+                  {
+                    path: "housekeeping",
+                    element: <HouseKeepingPage />,
+                  },
+                ],
               },
+
               {
-                path: "bookings",
-                element: <BookingManagement />,
+                path: "shifts",
+                element: <ShiftManagementPage />,
               },
-              {
-                path: "reviews",
-                element: <ReviewManagement />,
-              },
+
               {
                 element: <AdminRoute />,
                 children: [
@@ -156,13 +181,16 @@ const paths = [
                     path: "dashboard",
                     element: <DashboardPage />,
                   },
+                  {
+                    path: "employees",
+                    element: <EmployeeManagement />,
+                  },
                 ],
               },
             ],
           },
         ],
       },
-
       {
         path: "*",
         element: <NotFoundPage />,

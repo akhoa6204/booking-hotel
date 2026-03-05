@@ -64,7 +64,7 @@ export async function login(req, res) {
     if (!isValidEmail(email)) return bad(res, "Email không hợp lệ", 400);
 
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email, isActive: true },
       include: { staff: { select: { position: true, isAdmin: true } } },
     });
     if (!user) return bad(res, "Sai mật khẩu / Tài khoản không tồn tại", 401);

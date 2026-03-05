@@ -17,3 +17,7 @@ export { default as RegisterPage } from "./common/register-page";
 export { default as ForgotPasswordPage } from "./common/forgot-password";
 export { default as ResetPasswordPage } from "./common/reset-password-page";
 export { default as NotFoundPage } from "./common/not-found-page";
+export { default as EmployeeManagement } from "./admin/employee-management";
+export { default as FrontDeskPage } from "./admin/front-desk";
+export { default as HouseKeepingPage } from "./admin/housekeeping";
+export { default as ShiftManagementPage } from "./admin/shift-management";

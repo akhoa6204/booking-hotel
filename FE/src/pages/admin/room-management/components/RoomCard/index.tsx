@@ -6,26 +6,43 @@ import {
   Typography,
   Chip,
   Button,
+  Select,
+  MenuItem,
 } from "@mui/material";
-import { Edit, Delete, PeopleAlt } from "@mui/icons-material";
-import { Room } from "@constant/types";
+import {
+  Edit,
+  Delete,
+  PeopleAlt,
+  KeyboardArrowDown,
+} from "@mui/icons-material";
+import { Room, RoomStatus } from "@constant/types";
 
 type Props = {
   room: Room;
   onEdit?: (room: Room) => void;
   onDelete?: (id: number) => void;
+  onEditStatus?: (id: number, status: NonNullable<RoomStatus>) => void;
 };
 
 const STATUS_VIEW: Record<
-  NonNullable<Room["status"]>,
-  { label: string; color: "success" | "warning" | "default" }
+  NonNullable<RoomStatus>,
+  {
+    label: string;
+    color: "success" | "warning" | "default" | "info";
+  }
 > = {
   AVAILABLE: { label: "Còn trống", color: "success" },
   BOOKED: { label: "Đã đặt", color: "warning" },
   MAINTENANCE: { label: "Bảo trì", color: "default" },
+  CLEANING: { label: "Đang dọn phòng", color: "info" },
 };
 
-const RoomCard: React.FC<Props> = ({ room, onEdit, onDelete }) => {
+const RoomCard: React.FC<Props> = ({
+  room,
+  onEdit,
+  onDelete,
+  onEditStatus,
+}) => {
   const image = room.roomType.images?.[0]?.url;
   ("https://via.placeholder.com/400x250?text=No+Image");
 
@@ -70,12 +87,51 @@ const RoomCard: React.FC<Props> = ({ room, onEdit, onDelete }) => {
           <Typography variant="h6" fontWeight={600}>
             Phòng {room.name}
           </Typography>
-          <Chip
-            label={status.label}
-            color={status.color}
-            variant="outlined"
+          <Select
             size="small"
-          />
+            variant="standard"
+            IconComponent={KeyboardArrowDown}
+            disableUnderline
+            value={room.status || "AVAILABLE"}
+            onChange={(e) =>
+              onEditStatus?.(room.id, e.target.value as NonNullable<RoomStatus>)
+            }
+            sx={{
+              minWidth: 160,
+              "& .MuiSelect-select": {
+                display: "flex",
+                alignItems: "center",
+                paddingRight: "28px !important",
+              },
+              "& .MuiSelect-icon": {
+                right: 4,
+              },
+            }}
+            renderValue={(selected) => {
+              const config = STATUS_VIEW[selected as NonNullable<RoomStatus>];
+              return (
+                <Chip
+                  label={config.label}
+                  color={config.color}
+                  size="small"
+                  variant="filled"
+                  sx={{ fontWeight: 600 }}
+                />
+              );
+            }}
+          >
+            {Object.entries(STATUS_VIEW).map(([key, config]) => (
+              <MenuItem key={key} value={key}>
+                <Chip
+                  label={config.label}
+                  color={config.color}
+                  size="small"
+                  variant="filled"
+                  sx={{ fontWeight: 600 }}
+                />
+              </MenuItem>
+            ))}
+          </Select>
         </Stack>
 
         {/* Loại phòng + sức chứa */}

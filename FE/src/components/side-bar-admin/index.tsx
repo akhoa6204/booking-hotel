@@ -16,12 +16,15 @@ import {
   BookOnline,
   Reviews,
   People,
+  MeetingRoom,
+  CleaningServices,
 } from "@mui/icons-material";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "@store/slice/account.slice";
 import useAuth from "@hooks/useAuth";
 import { UserRole } from "@constant/types";
+import { CalendarIcon } from "@mui/x-date-pickers";
 
 const menuItems = [
   {
@@ -43,6 +46,18 @@ const menuItems = [
     allowedRoles: ["ADMIN", "MANAGER"],
   },
   {
+    label: "Lễ tân",
+    icon: <MeetingRoom />,
+    path: "/manager/front-desk",
+    allowedRoles: ["RECEPTION"],
+  },
+  {
+    label: "Buồng phòng",
+    icon: <CleaningServices />,
+    path: "/manager/housekeeping",
+    allowedRoles: ["HOUSEKEEPING"],
+  },
+  {
     label: "Quản lý đặt phòng",
     icon: <BookOnline />,
     path: "/manager/bookings",
@@ -59,6 +74,12 @@ const menuItems = [
     icon: <Reviews />,
     path: "/manager/reviews",
     allowedRoles: ["ADMIN", "MANAGER", "RECEPTION"],
+  },
+  {
+    label: "Quản lý lịch làm",
+    icon: <CalendarIcon />,
+    path: "/manager/shifts",
+    allowedRoles: ["ADMIN", "MANAGER", "RECEPTION", "HOUSEKEEPING"],
   },
   {
     label: "Quản lý nhân viên",

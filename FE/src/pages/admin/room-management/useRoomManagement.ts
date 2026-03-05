@@ -154,6 +154,26 @@ export default function useRoomManagement() {
     resetForm();
   };
 
+  const editStatusRoomHandler = async (
+    id: number,
+    status: RoomStatus,
+  ) => {
+    if (!id) return;
+
+    try {
+      await RoomService.update(id, { status });
+
+      await queryClient.invalidateQueries({ queryKey: ["rooms"] });
+
+      showSuccess("Cập nhật trạng thái phòng thành công");
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        "Không thể cập nhật trạng thái phòng";
+      showError(msg);
+    }
+  };
+
   const createMutation = useMutation({
     mutationFn: (payload: UpsertFormRoom) =>
       RoomService.create({
@@ -265,6 +285,7 @@ export default function useRoomManagement() {
     isRoomTypeError,
     roomTypeError,
 
+    editStatusRoomHandler,
     alert,
     closeSnackbar,
   };

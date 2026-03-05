@@ -76,7 +76,7 @@ export default class RoomService {
     }
   }
 
-  /** PATCH /api/rooms/:id (update text fields, không còn ảnh) */
+  /** PATCH /api/rooms/:id */
   static async update(
     id: number,
     payload: {

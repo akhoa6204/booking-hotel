@@ -93,3 +93,10 @@ adminBookingsRouter.patch(
   notRequireRole("CUSTOMER"),
   AdminBookingController.update,
 );
+
+adminBookingsRouter.get(
+  "/:id",
+  auth(true),
+  notRequireRole("CUSTOMER"),
+  AdminBookingController.getById,
+);
