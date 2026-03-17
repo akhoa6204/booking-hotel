@@ -3,7 +3,7 @@ import { useState } from "react";
 const useSnackbar = () => {
   const [alert, setAlert] = useState({
     open: false,
-    severity: "success" as "success" | "error",
+    severity: "success" as "success" | "error" | "warning",
     message: "",
   });
 
@@ -13,6 +13,9 @@ const useSnackbar = () => {
   const showError = (msg: string) =>
     setAlert({ open: true, severity: "error", message: msg });
 
+  const showWarning = (msg: string) =>
+    setAlert({ open: true, severity: "warning", message: msg });
+
   const closeSnackbar = () => setAlert((a) => ({ ...a, open: false }));
 
   return {
@@ -20,6 +23,7 @@ const useSnackbar = () => {
     showError,
     showSuccess,
     closeSnackbar,
+    showWarning,
   };
 };
 export default useSnackbar;

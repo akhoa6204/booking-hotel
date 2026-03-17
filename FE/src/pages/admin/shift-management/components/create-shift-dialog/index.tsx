@@ -1,3 +1,5 @@
+import EntityPickerField from "@components/entity-picker-field";
+import { Employee } from "@constant/types";
 import {
   Dialog,
   DialogTitle,
@@ -10,10 +12,13 @@ import {
   Grid,
   InputLabel,
 } from "@mui/material";
+import { formatTime } from "@utils/format";
 
 interface Shift {
   id: number;
   name: string;
+  startTime: string;
+  endTime: string;
 }
 
 interface Props {
@@ -23,8 +28,11 @@ interface Props {
   workDate: string;
   staff: { id: number; fullName: string };
   shiftId: string | number;
-  onChangeShift: (field: string, value: string | number) => void;
+  onChangeShift: (field: string, value: any) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  options: any[];
+  isMoreOptions: boolean;
+  seeMore: () => void;
 }
 
 export default function CreateShiftDialog({
@@ -36,6 +44,9 @@ export default function CreateShiftDialog({
   shiftId,
   onChangeShift,
   onSubmit,
+  options,
+  isMoreOptions,
+  seeMore,
 }: Props) {
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -45,7 +56,23 @@ export default function CreateShiftDialog({
           <Grid container spacing={2}>
             <Grid size={6}>
               <InputLabel shrink>Nhân viên</InputLabel>
-              <TextField value={staff.fullName} fullWidth disabled />
+              {/* <TextField value={staff.fullName} fullWidth disabled /> */}
+              <EntityPickerField
+                name="staffId"
+                value={staff.id}
+                options={options}
+                isMoreOptions={isMoreOptions}
+                onChange={(name, value) => {
+                  const employee = options.find((e) => e.id === value);
+
+                  onChangeShift("staff", {
+                    id: value,
+                    fullName: employee?.fullName || employee?.name || "",
+                  });
+                }}
+                onOpenPicker={seeMore}
+                placeholder="Chọn nhân viên"
+              />
             </Grid>
             <Grid size={6}>
               <InputLabel shrink>Ngày làm</InputLabel>
@@ -69,10 +96,11 @@ export default function CreateShiftDialog({
               >
                 {shifts.map((shift) => (
                   <MenuItem key={shift.id} value={shift.id}>
-                    {shift.name}
+                    {shift.name} {formatTime(shift.startTime)} -{" "}
+                    {formatTime(shift.endTime)}
                   </MenuItem>
                 ))}
-              </TextField>{" "}
+              </TextField>
             </Grid>
           </Grid>
 

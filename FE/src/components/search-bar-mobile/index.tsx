@@ -11,6 +11,7 @@ import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
 import SearchIcon from "@mui/icons-material/Search";
 import { useMemo } from "react";
 import { FormBooking } from "@constant/types";
+import { formatDate } from "@utils/format";
 
 const pillInputSX = {
   borderRadius: 999,
@@ -26,14 +27,9 @@ interface Props {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
-const fmtDate = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-    d.getDate()
-  ).padStart(2, "0")}`;
-
 const SearchBarMobile: React.FC<Props> = ({ form, onChange, onSubmit }) => {
   const { from, to, capacity } = form;
-  const today = useMemo(() => fmtDate(new Date()), []);
+  const today = useMemo(() => formatDate(new Date().toDateString()), []);
   const minCheckout = from && from > today ? from : today;
 
   return (

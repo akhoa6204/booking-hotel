@@ -7,20 +7,6 @@ import * as RoomsController from "../controllers/common/rooms.controller.js";
 export const adminRoomsRouter = Router();
 export const roomsRouter = Router();
 
-adminRoomsRouter.get(
-  "/",
-  auth(),
-  requireRoles(["ADMIN", "MANAGER"]),
-  AdminRoomsController.list,
-);
-
-adminRoomsRouter.get(
-  "/:id",
-  auth(true),
-  requireRoles(["ADMIN", "MANAGER"]),
-  AdminRoomsController.getById,
-);
-
 adminRoomsRouter.post(
   "/",
   auth(true),
@@ -42,5 +28,6 @@ adminRoomsRouter.delete(
   AdminRoomsController.remove,
 );
 
-roomsRouter.post("/available", RoomsController.getAvailable);
+roomsRouter.get("/", RoomsController.list);
+roomsRouter.get("/:id", RoomsController.getById);
 roomsRouter.post("/quote", auth(false), RoomsController.quote);

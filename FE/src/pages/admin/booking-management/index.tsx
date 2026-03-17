@@ -1,24 +1,18 @@
-import {
-  Box,
-  InputAdornment,
-  Snackbar,
-  Stack,
-  TextField,
-  Typography,
-  Alert,
-} from "@mui/material";
+import { Box, InputAdornment, Stack, TextField } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import Title from "@components/Title";
-import BookingCreateDialog from "./components/BookingCreateDialog";
-import CheckInPaymentDialog from "./components/CheckInPaymentDialog";
-import BookingCard from "./components/BookingCard";
-import { Loading, Pager } from "@components";
+import BookingCreateDialog from "./components/booking-create-dialog";
+import { EntityPickerDialog, Loading, Pager } from "@components";
 import useBookingManagement from "./useBookingManagement";
 import GlobalSnackbar from "@components/GlobalSnackbar";
+import BookingTable from "./components/booking-table";
+import BookingViewDialog from "./components/booking-view-dialog";
 
 export default function BookingManagement() {
   const {
     dialog,
+    openDialog,
+    closeDialog,
     bookingForm,
     handleChangeBookingForm,
     availableRooms,
@@ -27,7 +21,6 @@ export default function BookingManagement() {
     loadingRooms,
     quoting,
     creating,
-    handleCheckAvailableRooms,
     handleApplyPromo,
     handleCreateBooking,
     roomTypes,
@@ -38,29 +31,59 @@ export default function BookingManagement() {
     pagination,
     handleSearchBooking,
     handleChangePage,
-    openCheckInDialog,
-    closeCheckInDialog,
     selectedBookingId,
     bookingDetail,
     loadingCheckInDetail,
-    paymentMethodCheckIn,
-    onChangeCheckInPaymentMethod,
     handleCheckIn,
-    confirmCheckInPayment,
     handleCheckout,
     handleCancelled,
     showLoadingOverlay,
+    services,
+    onView,
+    filterService,
+    onChangePageService,
+    onChangeTabService,
+    metaServices,
+    bookingViewTab,
+    onChangeBookingViewTab,
+    invoiceDetail,
+    loadingInvoiceDetail,
+    updateService,
+    removeService,
+    handleCreateTask,
+    housekeepingDetail,
+    loadingHousekeepingDetail,
+    handleUpdateTask,
+    formViewBooking,
+    onChangeFormViewBooking,
+    onSubmitFormViewBooking,
+
+    openEntityPickerDialog,
+    closePickerHandler,
+    openPickerHandler,
+    onChangePage,
+    onSearch,
+    selectedId,
+    metaAvailabelRooms,
+    select,
+    filtersAvailableRooms,
+
+    housekeepingList,
+    loadingHousekeepingList,
+    onSelectTask,
+    selectedTaskId,
+    onChangePageHousekeeping,
+    metaHousekeepingList,
   } = useBookingManagement();
 
   const totalPages = Math.max(1, pagination?.totalPages ?? 1);
   const currentPage = pagination?.page ?? 1;
-
   return (
     <Box>
       <Title
         title="Quản lý đặt phòng"
         subTitle="Quản lý danh sách đặt phòng và trạng thái khách hàng"
-        onAdd={dialog.openDialog}
+        onAdd={() => openDialog("CREATE")}
       />
 
       <Stack
@@ -83,47 +106,27 @@ export default function BookingManagement() {
         />
       </Stack>
 
-      <Box p={2} borderRadius={2} border="1px solid #ccc" mb={2}>
-        <Stack spacing={1.5}>
-          {loadingBookingList ? (
-            <Typography variant="body2" color="text.secondary">
-              Đang tải…
-            </Typography>
-          ) : bookings.length === 0 ? (
-            <Typography variant="body2" color="text.secondary">
-              Không có đặt phòng.
-            </Typography>
-          ) : (
-            <>
-              {bookings.map((booking) => (
-                <BookingCard
-                  key={booking.id}
-                  booking={booking}
-                  onCheckIn={() => handleCheckIn(booking)}
-                  onCancel={() => handleCancelled(booking)}
-                  onCheckOut={() => handleCheckout(booking)}
-                />
-              ))}
+      <BookingTable
+        items={bookings}
+        isLoading={loadingBookingList}
+        onView={onView}
+      />
 
-              {totalPages > 1 && (
-                <Box mt={1.5} display="flex" justifyContent="center">
-                  <Pager
-                    page={currentPage}
-                    totalPages={totalPages}
-                    onChange={handleChangePage}
-                    siblingCount={1}
-                    boundaryCount={1}
-                  />
-                </Box>
-              )}
-            </>
-          )}
-        </Stack>
-      </Box>
+      {totalPages > 1 && (
+        <Box mt={1.5} display="flex" justifyContent="center">
+          <Pager
+            page={currentPage}
+            totalPages={totalPages}
+            onChange={handleChangePage}
+            siblingCount={1}
+            boundaryCount={1}
+          />
+        </Box>
+      )}
 
       <BookingCreateDialog
-        open={dialog.open}
-        onClose={dialog.resetForm}
+        open={dialog.type === "CREATE" && dialog.open}
+        onClose={closeDialog}
         values={bookingForm}
         onChange={handleChangeBookingForm}
         roomTypes={roomTypes}
@@ -133,28 +136,74 @@ export default function BookingManagement() {
         loadingRooms={loadingRooms}
         quoting={quoting}
         submitting={creating}
-        onCheckRooms={handleCheckAvailableRooms}
         onApplyPromo={handleApplyPromo}
         onSubmit={handleCreateBooking}
+        onOpenPicker={openPickerHandler}
+        isMoreOptions={metaAvailabelRooms?.totalPages > 1}
       />
-
-      {/* {selectedBookingId && !loadingCheckInDetail ? (
-        <CheckInPaymentDialog
-          open={!!selectedBookingId}
-          onClose={closeCheckInDialog}
-          loading={loadingCheckInDetail}
-          booking={bookingDetail!}
-          paymentMethod={paymentMethodCheckIn}
-          onPaymentMethodChange={onChangeCheckInPaymentMethod}
-          onConfirm={confirmCheckInPayment}
+      {selectedBookingId && !loadingCheckInDetail ? (
+        <BookingViewDialog
+          booking={bookingDetail}
+          open={dialog.type === "VIEW" && dialog.open}
+          services={services}
+          onClose={closeDialog}
+          filterService={filterService}
+          onChangePageService={onChangePageService}
+          onChangeTabService={onChangeTabService}
+          metaServices={metaServices}
+          bookingViewTab={bookingViewTab}
+          onChangeBookingViewTab={onChangeBookingViewTab}
+          invoice={invoiceDetail}
+          loadingInvoiceDetail={loadingInvoiceDetail}
+          updateService={updateService}
+          removeService={removeService}
+          onCheckIn={handleCheckIn}
+          onCancel={handleCancelled}
+          onCheckOut={handleCheckout}
+          onCreateTask={handleCreateTask}
+          housekeepingDetail={housekeepingDetail}
+          loadingHousekeepingDetail={loadingHousekeepingDetail}
+          onUpdateTask={handleUpdateTask}
+          formViewBooking={formViewBooking}
+          onChangeFormViewBooking={onChangeFormViewBooking}
+          onSubmitFormViewBooking={onSubmitFormViewBooking}
+          housekeepingList={housekeepingList}
+          loadingHousekeepingList={loadingHousekeepingList}
+          onSelectTask={onSelectTask}
+          selectedTaskId={selectedTaskId}
+          onChangePageHousekeeping={onChangePageHousekeeping}
+          metaHousekeepingList={metaHousekeepingList}
         />
-      ) : null} */}
+      ) : null}
 
       {showLoadingOverlay ? (
         <Loading content="Đang xử lý thanh toán, vui lòng chờ..." />
       ) : null}
 
       <GlobalSnackbar alert={alert} closeSnackbar={closeSnackbar} />
+
+      <EntityPickerDialog
+        open={openEntityPickerDialog}
+        data={availableRooms}
+        selectedId={selectedId}
+        onClose={closePickerHandler}
+        title="Danh sách phòng trống"
+        columns={[
+          { label: "Tên phòng", name: "name" },
+          { label: "Loại phòng", name: "roomType.name" },
+          { label: "Sức chứa", name: "roomType.capacity" },
+        ]}
+        onSelect={(row) => {
+          select(row);
+          handleChangeBookingForm("roomId", row.id);
+        }}
+        onPageChange={onChangePage}
+        totalPages={metaAvailabelRooms?.totalPages}
+        page={metaAvailabelRooms?.page}
+        onSearch={onSearch}
+        q={filtersAvailableRooms.q}
+        loading={loadingRooms}
+      />
     </Box>
   );
 }

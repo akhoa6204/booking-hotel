@@ -8,6 +8,7 @@ import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
 import "dayjs/locale/vi";
+import { formatTime } from "@utils/format";
 dayjs.locale("vi");
 
 type Props = {
@@ -20,10 +21,7 @@ type Props = {
     assignments: StaffShiftAssignment[];
   }[];
   start: string;
-  end: string;
-  prevWeek: () => void;
-  nextWeek: () => void;
-  onAdd?: (staff: { id: number; fullName: string }, workDate: string) => void;
+  onAdd?: (staff: { id: number; fullName: string }) => void;
   onRemove: (id: number) => void;
   canEdit: boolean;
 };
@@ -40,13 +38,22 @@ const getShiftColor = (role?: Omit<UserRole, "CUSTOMER">) => {
       return { bg: "#F3E5F5", border: "#6A1B9A" };
   }
 };
+const getPositionLabel = (position: Omit<UserRole, "CUSTOMER">) => {
+  switch (position) {
+    case "RECEPTION":
+      return "Lễ tân";
+    case "HOUSEKEEPING":
+      return "Dọn phòng";
+    case "MANAGER":
+      return "Quản lý";
+    default:
+      return "Không xác định";
+  }
+};
 
 export default function WeeklyScheduleCalendar({
   shifts,
   start,
-  end,
-  nextWeek,
-  prevWeek,
   onAdd,
   onRemove,
   canEdit = false,
@@ -68,41 +75,6 @@ export default function WeeklyScheduleCalendar({
 
   return (
     <Box p={3}>
-      {/* Week Navigator */}
-      <Box display="flex" justifyContent="center" mb={3}>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 2,
-            px: 3,
-            py: 1.2,
-            borderRadius: "999px",
-            border: "2px solid #24AB70",
-            // backgroundColor: "#F6FCF9",
-          }}
-        >
-          <IconButton size="small" onClick={prevWeek} color="primary">
-            <ArrowBack fontSize="small" />
-          </IconButton>
-
-          <Typography
-            sx={{
-              fontWeight: 600,
-              fontSize: 15,
-            }}
-            color="primary"
-          >
-            {dayjs(start).format("DD/MM/YYYY")} -{" "}
-            {dayjs(end).format("DD/MM/YYYY")}
-          </Typography>
-
-          <IconButton size="small" onClick={nextWeek} color="primary">
-            <ArrowForward fontSize="small" />
-          </IconButton>
-        </Box>
-      </Box>
-
       <Paper elevation={1} sx={{ borderRadius: 3 }}>
         <Box sx={{ width: "100%", overflowX: "auto" }}>
           <Grid container direction="column">
@@ -166,6 +138,8 @@ export default function WeeklyScheduleCalendar({
                   }}
                 >
                   {staff.user.fullName}
+                  <br />
+                  <small>{getPositionLabel(staff.position)}</small>
                 </Grid>
 
                 {weekDays.map((day) => {
@@ -209,8 +183,8 @@ export default function WeeklyScheduleCalendar({
                             </Typography>
 
                             <Typography fontSize={12}>
-                              {dayjs(a.shift.startTime).utc().format("HH:mm")} -
-                              {dayjs(a.shift.endTime).utc().format("HH:mm")}
+                              {formatTime(a.shift.startTime)} -
+                              {formatTime(a.shift.endTime)}
                             </Typography>
 
                             <Typography fontSize={12}>{a.position}</Typography>
@@ -231,10 +205,10 @@ export default function WeeklyScheduleCalendar({
                         (assignmentsOfDay.length === 0 ? (
                           <Box
                             onClick={() =>
-                              onAdd?.(
-                                { id: staff.id, fullName: staff.user.fullName },
-                                day.format("YYYY-MM-DD")
-                              )
+                              onAdd?.({
+                                id: staff.id,
+                                fullName: staff.user.fullName,
+                              })
                             }
                             className="opacity-0 group-hover:opacity-100 cursor-pointer"
                             sx={{
@@ -253,10 +227,10 @@ export default function WeeklyScheduleCalendar({
                         ) : (
                           <Box
                             onClick={() =>
-                              onAdd?.(
-                                { id: staff.id, fullName: staff.user.fullName },
-                                day.format("YYYY-MM-DD")
-                              )
+                              onAdd?.({
+                                id: staff.id,
+                                fullName: staff.user.fullName,
+                              })
                             }
                             className="opacity-0 group-hover:opacity-100 transition cursor-pointer"
                             sx={{

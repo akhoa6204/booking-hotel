@@ -65,7 +65,7 @@ export default function useRoomManagement() {
       roomTypeId: "",
       name: "",
       description: "",
-      status: "AVAILABLE",
+      status: "VACANT_CLEAN",
     },
     validateForm,
     async () => {
@@ -154,10 +154,7 @@ export default function useRoomManagement() {
     resetForm();
   };
 
-  const editStatusRoomHandler = async (
-    id: number,
-    status: RoomStatus,
-  ) => {
+  const editStatusRoomHandler = async (id: number, status: RoomStatus) => {
     if (!id) return;
 
     try {
@@ -168,8 +165,7 @@ export default function useRoomManagement() {
       showSuccess("Cập nhật trạng thái phòng thành công");
     } catch (err: any) {
       const msg =
-        err?.response?.data?.message ||
-        "Không thể cập nhật trạng thái phòng";
+        err?.response?.data?.message || "Không thể cập nhật trạng thái phòng";
       showError(msg);
     }
   };

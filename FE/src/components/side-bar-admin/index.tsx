@@ -18,6 +18,7 @@ import {
   People,
   MeetingRoom,
   CleaningServices,
+  RoomService,
 } from "@mui/icons-material";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -54,8 +55,8 @@ const menuItems = [
   {
     label: "Buồng phòng",
     icon: <CleaningServices />,
-    path: "/manager/housekeeping",
-    allowedRoles: ["HOUSEKEEPING"],
+    path: "/manager/housekeeping-tasks",
+    allowedRoles: ["ADMIN", "MANAGER", "RECEPTION", "HOUSEKEEPING"],
   },
   {
     label: "Quản lý đặt phòng",
@@ -67,7 +68,13 @@ const menuItems = [
     label: "Quản lý khuyến mãi",
     icon: <LocalOffer />,
     path: "/manager/promotions",
-    allowedRoles: ["ADMIN", "MANAGER", "RECEPTION"],
+    allowedRoles: ["ADMIN", "MANAGER"],
+  },
+  {
+    label: "Quản lý dịch vụ",
+    icon: <RoomService />,
+    path: "/manager/services",
+    allowedRoles: ["ADMIN", "MANAGER"],
   },
   {
     label: "Quản lý đánh giá",

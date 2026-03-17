@@ -1,12 +1,14 @@
-import Title from "@components/Title";
 import { Search } from "@mui/icons-material";
 import { Box, InputAdornment, Stack, TextField } from "@mui/material";
 import useEmployee from "./useEmployee";
 import EmployeeTable from "./components/EmployeeTable";
-import Pager from "@components/pager";
-import { on } from "events";
+import {
+  Pager,
+  GlobalSnackbar,
+  EntityPickerDialog,
+  TitlePageAdmin,
+} from "@components";
 import EmployeeUpserDialog from "./components/EmployeeUpserDialog";
-import GlobalSnackbar from "@components/GlobalSnackbar";
 
 const EmployeeManagement = () => {
   const {
@@ -26,10 +28,12 @@ const EmployeeManagement = () => {
     dialogState,
     onChangeEmployeeForm,
     onSubmitEmployeeForm,
+    tab,
+    onChangeTab,
   } = useEmployee();
   return (
     <Box>
-      <Title
+      <TitlePageAdmin
         title="Quản lý nhân sự"
         subTitle="Xem và quản lý nhân sự khách sạn"
         onAdd={() => onOpenDialog("create")}
@@ -69,12 +73,14 @@ const EmployeeManagement = () => {
         onSave={onSubmitEmployeeForm}
         onChange={onChangeEmployeeForm}
         employeeData={employeeForm}
+        tab={tab}
+        onTabChange={onChangeTab}
       />
 
       {meta?.totalPages > 1 && (
         <Box mt={2} display="flex" justifyContent="center">
           <Pager
-            page={meta.currentPage}
+            page={meta.page}
             totalPages={meta.totalPages}
             onChange={(page) => onChangeFilters("page", page)}
           />

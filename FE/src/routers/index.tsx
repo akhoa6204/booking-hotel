@@ -28,6 +28,7 @@ import {
   FrontDeskPage,
   HouseKeepingPage,
   ShiftManagementPage,
+  ServiceManagementPage,
 } from "@pages";
 import { Navigate, createBrowserRouter } from "react-router-dom";
 import { CustomerRoute, AdminRoute, StaffRoute } from "./ProtectedRoute";
@@ -141,10 +142,6 @@ const paths = [
                     element: <FrontDeskPage />,
                   },
                   {
-                    path: "promotions",
-                    element: <PromotionManagement />,
-                  },
-                  {
                     path: "reviews",
                     element: <ReviewManagement />,
                   },
@@ -152,13 +149,8 @@ const paths = [
               },
 
               {
-                element: <StaffRoute roles={["HOUSEKEEPING"]} />,
-                children: [
-                  {
-                    path: "housekeeping",
-                    element: <HouseKeepingPage />,
-                  },
-                ],
+                path: "housekeeping-tasks",
+                element: <HouseKeepingPage />,
               },
 
               {
@@ -184,6 +176,14 @@ const paths = [
                   {
                     path: "employees",
                     element: <EmployeeManagement />,
+                  },
+                  {
+                    path: "promotions",
+                    element: <PromotionManagement />,
+                  },
+                  {
+                    path: "services",
+                    element: <ServiceManagementPage />,
                   },
                 ],
               },

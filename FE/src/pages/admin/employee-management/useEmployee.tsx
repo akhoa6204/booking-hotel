@@ -17,6 +17,7 @@ export interface EmployeeForm {
   isAdmin: boolean;
   isActive: boolean;
   position: Omit<UserRole, "CUSTOMER" | "ADMIN">;
+  newPassword?: string;
 }
 const validateForm = (form: EmployeeForm) => {
   const errors: Partial<Record<keyof EmployeeForm, string>> = {};
@@ -28,9 +29,7 @@ const validateForm = (form: EmployeeForm) => {
   }
 
   const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
-  if (!form.phone?.trim()) {
-    errors.phone = "Số điện thoại không được để trống";
-  } else if (!phoneRegex.test(form.phone.trim())) {
+  if (form.phone?.trim() && !phoneRegex.test(form.phone.trim())) {
     errors.phone = "Số điện thoại không hợp lệ";
   }
 
@@ -58,8 +57,10 @@ const useEmployee = () => {
     mode: "create",
   });
   const { alert, showError, showSuccess, closeSnackbar } = useSnackbar();
-
+  const [tab, setTab] = useState<"info" | "password">("info");
+  const onChangeTab = (tab: "info" | "password") => setTab(tab);
   const onCloseDialog = () => {
+    setTab("info");
     setDialogState((prev) => ({ ...prev, open: false }));
     setSelectedEmployeeId(null);
   };
@@ -89,9 +90,22 @@ const useEmployee = () => {
       isActive: true,
       position: "RECEPTION",
       isAdmin: false,
+      newPassword: "",
     },
-    validateForm,
+    null,
     async () => {
+      if (dialogState.mode === "create") {
+        const errors = validateForm(employeeForm);
+        if (Object.keys(errors).length) {
+          showError("Thiếu thông tin nhân sự");
+          return;
+        }
+      } else {
+        if (!employeeForm.newPassword) {
+          showError("Mật khẩu không được để trống");
+          return;
+        }
+      }
       if (dialogState.mode === "create") {
         await mCreateEmployee.mutateAsync({
           data: {
@@ -103,16 +117,25 @@ const useEmployee = () => {
         });
       }
       if (dialogState.mode === "edit") {
-        await mUpdateEmployee.mutateAsync({
-          id: selectedEmployeeId,
-          data: {
-            fullName: employeeForm.fullName,
-            phone: employeeForm.phone,
-            email: employeeForm.email,
-            position: employeeForm.position,
-            isActive: employeeForm.isActive,
-          },
-        });
+        if (tab === "info") {
+          await mUpdateEmployee.mutateAsync({
+            id: selectedEmployeeId,
+            data: {
+              fullName: employeeForm.fullName,
+              phone: employeeForm.phone,
+              email: employeeForm.email,
+              position: employeeForm.position,
+              isActive: employeeForm.isActive,
+            },
+          });
+        } else {
+          await mResetPassword.mutateAsync({
+            id: selectedEmployeeId,
+            data: {
+              newPassword: employeeForm.newPassword,
+            },
+          });
+        }
       }
       resetEmployeeForm();
       onCloseDialog();
@@ -120,9 +143,8 @@ const useEmployee = () => {
   );
 
   const { data, isLoading } = useQuery({
-    queryKey: ["employees", filters],
+    queryKey: ["employees", filters.limit, filters.page, filters.q],
     queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
       return await EmployeeService.list(filters);
     },
   });
@@ -189,7 +211,7 @@ const useEmployee = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["employees", filters],
+        queryKey: ["employees", filters.limit, filters.page, filters.q],
       });
 
       queryClient.invalidateQueries({
@@ -198,8 +220,44 @@ const useEmployee = () => {
 
       showSuccess("Cập nhật thông tin nhân sự thành công");
     },
-    onError: () => {
-      showError("Cập nhật thông tin nhân sự thất bại");
+    onError: (e: any) => {
+      const msg =
+        e?.response?.data?.message ||
+        e?.message ||
+        "Cập nhật thông tin nhân sự thất bại";
+      showError(msg);
+    },
+  });
+
+  const mResetPassword = useMutation({
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: number;
+      data: {
+        newPassword: string;
+      };
+    }) => {
+      return await EmployeeService.resetPassword(id, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["employees", filters.limit, filters.page, filters.q],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["employee", selectedEmployeeId],
+      });
+
+      showSuccess("Thay đổi mật khẩu thành công");
+    },
+    onError: (e: any) => {
+      const msg =
+        e?.response?.data?.message ||
+        e?.message ||
+        "Thay đổi mật khẩu thất bại";
+      showError(msg);
     },
   });
 
@@ -218,7 +276,7 @@ const useEmployee = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["employees", filters],
+        queryKey: ["employees", filters.limit, filters.page, filters.q],
       });
 
       queryClient.invalidateQueries({
@@ -226,9 +284,10 @@ const useEmployee = () => {
       });
       showSuccess("Tạo nhân sự thành công");
     },
-    onError: (e) => {
-      const msg = e?.message;
-      showError(msg || "Tạo nhân sự thất bại");
+    onError: (e: any) => {
+      const msg =
+        e?.response?.data?.message || e?.message || "Tạo nhân sự thất bại";
+      showError(msg);
     },
   });
 
@@ -249,6 +308,8 @@ const useEmployee = () => {
     dialogState,
     onChangeEmployeeForm,
     onSubmitEmployeeForm,
+    tab,
+    onChangeTab,
   };
 };
 export default useEmployee;

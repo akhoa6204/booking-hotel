@@ -9,7 +9,7 @@ export async function list(req, res) {
 
     const isManager = role === "ADMIN" || role === "MANAGER";
 
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, q, position } = req.query;
 
     if (!startDate || !endDate) {
       return bad(res, "Thiếu startDate hoặc endDate", 400);
@@ -23,9 +23,31 @@ export async function list(req, res) {
       })
     ).id;
 
+    const nameQuery = q?.trim();
+
+    const managerPositions = ["MANAGER", "RECEPTION", "HOUSEKEEPING"];
+
     const staffWhere = isManager
-      ? { user: { isActive: true } }
-      : { id: staffId, user: { isActive: true } };
+      ? {
+          position: {
+            in: position ? [position] : managerPositions,
+          },
+          user: {
+            isActive: true,
+            ...(nameQuery
+              ? {
+                  fullName: {
+                    contains: nameQuery,
+                  },
+                }
+              : {}),
+          },
+          isAdmin: false,
+        }
+      : {
+          id: staffId,
+          user: { isActive: true },
+        };
 
     const staffs = await prisma.staff.findMany({
       where: staffWhere,
@@ -41,7 +63,6 @@ export async function list(req, res) {
       orderBy: { id: "asc" },
     });
 
-    // Lấy danh sách ca trong khoảng thời gian
     const assignments = await prisma.staffShiftAssignment.findMany({
       where: {
         workDate: {

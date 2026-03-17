@@ -28,7 +28,7 @@ export function ProtectedRoute({
 
     if (user.role === "RECEPTION") return "/manager/front-desk";
 
-    if (user.role === "HOUSEKEEPING") return "/manager/housekeeping";
+    if (user.role === "HOUSEKEEPING") return "/manager/housekeeping-tasks";
 
     return "/";
   }, [user.role]);

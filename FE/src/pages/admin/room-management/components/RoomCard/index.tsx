@@ -17,24 +17,30 @@ import {
 } from "@mui/icons-material";
 import { Room, RoomStatus } from "@constant/types";
 
+export const ROOM_STATUS_LABEL: Record<RoomStatus, string> = {
+  VACANT_CLEAN: "Trống - Sạch",
+  VACANT_DIRTY: "Trống - Cần dọn",
+  OCCUPIED_CLEAN: "Đang ở - Sạch",
+  OCCUPIED_DIRTY: "Đang ở - Cần dọn",
+  OUT_OF_SERVICE: "Bảo trì",
+};
+
+const STATUS_VIEW: Record<
+  NonNullable<RoomStatus>,
+  { label: string; color: "success" | "warning" | "error" | "default" }
+> = {
+  VACANT_CLEAN: { label: "Trống - Sạch", color: "success" },
+  VACANT_DIRTY: { label: "Trống - Cần dọn", color: "warning" },
+  OCCUPIED_CLEAN: { label: "Đang ở - Sạch", color: "success" },
+  OCCUPIED_DIRTY: { label: "Đang ở - Cần dọn", color: "warning" },
+  OUT_OF_SERVICE: { label: "Bảo trì", color: "error" },
+};
+
 type Props = {
   room: Room;
   onEdit?: (room: Room) => void;
   onDelete?: (id: number) => void;
   onEditStatus?: (id: number, status: NonNullable<RoomStatus>) => void;
-};
-
-const STATUS_VIEW: Record<
-  NonNullable<RoomStatus>,
-  {
-    label: string;
-    color: "success" | "warning" | "default" | "info";
-  }
-> = {
-  AVAILABLE: { label: "Còn trống", color: "success" },
-  BOOKED: { label: "Đã đặt", color: "warning" },
-  MAINTENANCE: { label: "Bảo trì", color: "default" },
-  CLEANING: { label: "Đang dọn phòng", color: "info" },
 };
 
 const RoomCard: React.FC<Props> = ({
@@ -43,8 +49,9 @@ const RoomCard: React.FC<Props> = ({
   onDelete,
   onEditStatus,
 }) => {
-  const image = room.roomType.images?.[0]?.url;
-  ("https://via.placeholder.com/400x250?text=No+Image");
+  const image =
+    room.roomType?.images?.[0]?.url ||
+    "https://via.placeholder.com/400x250?text=No+Image";
 
   const formatPrice = (price: number) =>
     Number(price).toLocaleString("vi-VN", {
@@ -52,7 +59,14 @@ const RoomCard: React.FC<Props> = ({
       currency: "VND",
     });
 
-  const status = STATUS_VIEW[room.status || "AVAILABLE"];
+  const status = STATUS_VIEW[(room.status || "VACANT_CLEAN") as NonNullable<RoomStatus>];
+
+  const currentStatus = (room.status || "VACANT_CLEAN") as NonNullable<RoomStatus>;
+
+  const statusOptions: NonNullable<RoomStatus>[] =
+    currentStatus === "OUT_OF_SERVICE"
+      ? ["VACANT_CLEAN"] // nếu đang bảo trì thì chỉ cho chuyển về Trống - Sạch
+      : [currentStatus, "OUT_OF_SERVICE"]; // trạng thái bình thường -> cho chuyển sang Bảo trì
 
   return (
     <Card
@@ -92,7 +106,7 @@ const RoomCard: React.FC<Props> = ({
             variant="standard"
             IconComponent={KeyboardArrowDown}
             disableUnderline
-            value={room.status || "AVAILABLE"}
+            value={currentStatus}
             onChange={(e) =>
               onEditStatus?.(room.id, e.target.value as NonNullable<RoomStatus>)
             }
@@ -120,17 +134,20 @@ const RoomCard: React.FC<Props> = ({
               );
             }}
           >
-            {Object.entries(STATUS_VIEW).map(([key, config]) => (
-              <MenuItem key={key} value={key}>
-                <Chip
-                  label={config.label}
-                  color={config.color}
-                  size="small"
-                  variant="filled"
-                  sx={{ fontWeight: 600 }}
-                />
-              </MenuItem>
-            ))}
+            {statusOptions.map((key) => {
+              const config = STATUS_VIEW[key];
+              return (
+                <MenuItem key={key} value={key}>
+                  <Chip
+                    label={config.label}
+                    color={config.color}
+                    size="small"
+                    variant="filled"
+                    sx={{ fontWeight: 600 }}
+                  />
+                </MenuItem>
+              );
+            })}
           </Select>
         </Stack>
 

@@ -1,5 +1,10 @@
 import { Router } from "express";
-import { auth, notRequireRole, notRequireRoles, requireRoles } from "../middleware/auth.js";
+import {
+  auth,
+  notRequireRole,
+  notRequireRoles,
+  requireRoles,
+} from "../middleware/auth.js";
 import * as AdminPaymentController from "../controllers/admin/payments.controller.js";
 
 export const adminPaymentRouter = Router();
@@ -12,22 +17,15 @@ adminPaymentRouter.post(
 );
 
 adminPaymentRouter.post(
-  "/:id/checkout",
+  "/:id/checkout-link",
   auth(true),
   notRequireRoles(["CUSTOMER", "HOUSEKEEPING"]),
-  AdminPaymentController.createPaymentOnlineLink,
+  AdminPaymentController.createCheckoutLink,
 );
 
 adminPaymentRouter.patch(
-  "/:id/confirm",
+  "/:id",
   auth(true),
   notRequireRoles(["CUSTOMER", "HOUSEKEEPING"]),
-  AdminPaymentController.markAsPaid,
-);
-
-adminPaymentRouter.patch(
-  "/:id/cancel",
-  auth(true),
-  notRequireRoles(["CUSTOMER", "HOUSEKEEPING"]),
-  AdminPaymentController.markAsFailed,
+  AdminPaymentController.updateStatus,
 );

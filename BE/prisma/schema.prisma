@@ -8,15 +8,14 @@ datasource db {
 }
 
 model Hotel {
-  id          Int      @id @default(autoincrement())
+  id          Int          @id @default(autoincrement())
   name        String
   address     String?
   description String?
   policies    String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  images HotelImage[]
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  images      HotelImage[]
 }
 
 model HotelImage {
@@ -26,61 +25,55 @@ model HotelImage {
   alt       String?
   isPrimary Boolean  @default(false) @map("is_primary")
   createdAt DateTime @default(now()) @map("created_at")
-
-  hotel Hotel @relation(fields: [hotelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  hotel     Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
 
   @@index([hotelId])
 }
 
 model RoomType {
-  id          Int      @id @default(autoincrement())
-  name        String
-  basePrice   Decimal  @db.Decimal(10, 2)
-  capacity    Int
-  description String?  @db.Text
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  promotions Promotion[] @relation("PromotionRoomTypes")
-
-  images            RoomTypeImage[]
-  amenities         RoomTypeAmenity[]
-  rooms             Room[]
+  id                Int                 @id @default(autoincrement())
+  name              String
+  capacity          Int
+  description       String?             @db.Text
+  isActive          Boolean             @default(true) @map("is_active")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  basePrice         Decimal             @db.Decimal(10, 2)
   PromotionRoomType PromotionRoomType[]
+  rooms             Room[]
+  amenities         RoomTypeAmenity[]
+  images            RoomTypeImage[]
+  promotions        Promotion[]         @relation("PromotionRoomTypes")
 
   @@index([name])
 }
 
 model RoomTypeImage {
-  id         Int     @id @default(autoincrement())
-  roomTypeId Int     @map("room_type_id")
+  id         Int      @id @default(autoincrement())
+  roomTypeId Int      @map("room_type_id")
   url        String
   alt        String?
-  isPrimary  Boolean @default(false) @map("is_primary")
-
-  roomType RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  isPrimary  Boolean  @default(false) @map("is_primary")
+  roomType   RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
 
   @@index([roomTypeId])
 }
 
 model Amenity {
-  id        Int      @id @default(autoincrement())
-  code      String   @unique
-  label     String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
+  id                Int               @id @default(autoincrement())
+  code              String            @unique
+  label             String
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
   roomTypeAmenities RoomTypeAmenity[]
 }
 
 model RoomTypeAmenity {
-  id         Int @id @default(autoincrement())
-  roomTypeId Int @map("room_type_id")
-  amenityId  Int @map("amenity_id")
-
-  roomType RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  amenity  Amenity  @relation(fields: [amenityId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  id         Int      @id @default(autoincrement())
+  roomTypeId Int      @map("room_type_id")
+  amenityId  Int      @map("amenity_id")
+  amenity    Amenity  @relation(fields: [amenityId], references: [id])
+  roomType   RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
 
   @@unique([roomTypeId, amenityId])
   @@index([roomTypeId])
@@ -88,49 +81,46 @@ model RoomTypeAmenity {
 }
 
 model Room {
-  id         Int        @id @default(autoincrement())
-  name       String?
-  roomTypeId Int        @map("room_type_id")
-  status     RoomStatus @default(AVAILABLE)
-  isActive   Boolean    @default(true) @map("is_active")
-  createdAt  DateTime   @default(now()) @map("created_at")
-  updatedAt  DateTime   @updatedAt @map("updated_at")
-
-  roomType RoomType  @relation(fields: [roomTypeId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  bookings Booking[]
+  id                Int                @id @default(autoincrement())
+  name              String?
+  roomTypeId        Int                @map("room_type_id")
+  status            Room_status        @default(VACANT_CLEAN)
+  isActive          Boolean            @default(true) @map("is_active")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  bookings          Booking[]
+  roomType          RoomType           @relation(fields: [roomTypeId], references: [id])
+  housekeepingTasks HousekeepingTask[]
 
   @@index([roomTypeId])
   @@index([status])
 }
 
 model Promotion {
-  id                Int        @id @default(autoincrement())
+  id                Int                 @id @default(autoincrement())
   name              String
-  code              String?
-  description       String?    @db.Text
-  autoApply         Boolean    @default(false) @map("auto_apply")
+  code              String?             @unique
+  autoApply         Boolean             @default(false) @map("auto_apply")
   type              PromoType
-  value             Decimal    @db.Decimal(10, 2)
-  startAt           DateTime   @map("start_at")
-  endAt             DateTime   @map("end_at")
-  isActive          Boolean    @default(true) @map("is_active")
-  eligibleFor         CustomerType @default(ALL) @map("eligible_for")
-  priority          Int        @default(100)
-  isStackable       Boolean    @default(false) @map("is_stackable")
-  quotaUsed         Int        @default(0) @map("quota_used")
-  quotaTotal        Int        @default(100) @map("quota_total")
+  value             Decimal             @db.Decimal(10, 2)
+  startAt           DateTime            @map("start_at")
+  endAt             DateTime            @map("end_at")
+  isActive          Boolean             @default(true) @map("is_active")
+  priority          Int                 @default(100)
+  isStackable       Boolean             @default(false) @map("is_stackable")
+  quotaUsed         Int                 @default(0) @map("quota_used")
+  quotaTotal        Int                 @default(100) @map("quota_total")
   scope             PromoScope
-  minTotal          Decimal?   @db.Decimal(10, 2)
-  maxDiscountAmount Decimal?   @db.Decimal(10, 2)
-  createdAt         DateTime   @default(now()) @map("created_at")
-  updatedAt         DateTime   @updatedAt @map("updated_at")
-
-  roomTypes RoomType[] @relation("PromotionRoomTypes")
-
-  bookings          Booking[]
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  maxDiscountAmount Decimal?            @db.Decimal(10, 2)
+  minTotal          Decimal?            @db.Decimal(10, 2)
+  description       String?             @db.Text
+  eligibleFor       CustomerType        @default(ALL) @map("eligible_for")
   PromotionRoomType PromotionRoomType[]
+  roomTypes         RoomType[]          @relation("PromotionRoomTypes")
+  InvoiceItem       InvoiceItem[]
 
-  @@unique([code])
   @@index([scope])
   @@index([startAt, endAt])
 }
@@ -138,9 +128,8 @@ model Promotion {
 model PromotionRoomType {
   promotionId Int
   roomTypeId  Int
-
-  promotion Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
-  roomType  RoomType  @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  roomType    RoomType  @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
 
   @@id([promotionId, roomTypeId])
   @@index([promotionId])
@@ -148,34 +137,33 @@ model PromotionRoomType {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  fullName     String   @map("full_name")
-  email        String?  @unique
-  phone        String?  @unique
-  passwordHash String   @map("password_hash")
-  type         UserType @default(CUSTOMER)
-  isActive  Boolean   @default(true) @map("is_active")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  staff       Staff?
-  customer    Customer?
-  resetTokens PasswordResetToken[]
+  id           Int                  @id @default(autoincrement())
+  fullName     String               @map("full_name")
+  email        String?              @unique
+  phone        String?              @unique
+  passwordHash String               @map("password_hash")
+  type         UserType             @default(CUSTOMER)
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+  isActive     Boolean              @default(true) @map("is_active")
+  customer     Customer?
+  resetTokens  PasswordResetToken[]
+  staff        Staff?
 }
 
 model Staff {
-  id        Int            @id @default(autoincrement())
-  userId    Int            @unique @map("user_id")
-  position  StaffPosition
-  isAdmin   Boolean        @default(false) @map("is_admin")
-  createdAt DateTime       @default(now()) @map("created_at")
-  updatedAt DateTime       @updatedAt @map("updated_at")
-
-  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  bookings     Booking[]
-  Review       Review[]
-  CancelReason CancelReason[]
-  shiftAssignments StaffShiftAssignment[]
+  id                Int                    @id @default(autoincrement())
+  userId            Int                    @unique @map("user_id")
+  position          StaffPosition
+  isAdmin           Boolean                @default(false) @map("is_admin")
+  createdAt         DateTime               @default(now()) @map("created_at")
+  updatedAt         DateTime               @updatedAt @map("updated_at")
+  bookings          Booking[]
+  CancelReason      CancelReason[]
+  Review            Review[]
+  user              User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shiftAssignments  StaffShiftAssignment[]
+  housekeepingTasks HousekeepingTask[]
 }
 
 model Customer {
@@ -183,90 +171,73 @@ model Customer {
   userId    Int       @unique @map("user_id")
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   bookings  Booking[]
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model PasswordResetToken {
-  id Int @id @default(autoincrement())
-
-  userId Int @map("user_id")
-
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
   token     String   @unique
   expiresAt DateTime @map("expires_at")
   used      Boolean  @default(false)
   createdAt DateTime @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiresAt])
 }
 
 model Booking {
-  id         Int      @id @default(autoincrement())
-  customerId Int?     @map("customer_id")
-  staffId    Int?     @map("staff_id")
-  roomId     Int      @map("room_id")
-  checkIn    DateTime @map("check_in")
-  checkOut   DateTime @map("check_out")
-
+  id          Int       @id @default(autoincrement())
+  customerId  Int?      @map("customer_id")
+  staffId     Int?      @map("staff_id")
+  roomId      Int       @map("room_id")
+  checkIn     DateTime  @map("check_in")
+  checkOut    DateTime  @map("check_out")
   fullName    String    @map("full_name")
   phone       String
   email       String?
   guestType   GuestType @default(OTHER) @map("guest_type")
   arrivalTime String?   @map("arrival_time")
 
-  promotionId    Int?          @map("promotion_id")
-  baseAmount     Decimal       @map("base_amount") @db.Decimal(10, 2)
-  discountAmount Decimal       @default(0) @map("discount_amount") @db.Decimal(10, 2)
-  paymentStatus  PaymentStatus @default(UNPAID) @map("payment_status")
-  totalPaid      Decimal       @default(0) @map("total_paid") @db.Decimal(10, 2)
-  status         BookingStatus @default(PENDING)
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  customer  Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  staff     Staff?     @relation(fields: [staffId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  room      Room       @relation(fields: [roomId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  promotion Promotion? @relation(fields: [promotionId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-
-  review       Review?
+  status       BookingStatus @default(PENDING)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  customer     Customer?     @relation(fields: [customerId], references: [id])
+  room         Room          @relation(fields: [roomId], references: [id])
+  staff        Staff?        @relation(fields: [staffId], references: [id])
   cancelReason CancelReason?
-  payments     Payment[]
+  review       Review?
+  invoice      Invoice?
+  housekeepingTasks HousekeepingTask[] 
 
   @@index([roomId, checkIn, checkOut])
   @@index([customerId])
   @@index([staffId])
-  @@index([promotionId])
   @@index([status, checkIn])
 }
 
 model Review {
-  id            Int     @id @default(autoincrement())
-  bookingId     Int     @unique @map("booking_id")
+  id            Int          @id @default(autoincrement())
+  bookingId     Int          @unique @map("booking_id")
   overall       Int
   amenities     Int?
   cleanliness   Int?
   comfort       Int?
-  locationScore Int?    @map("location_score")
-  valueForMoney Int?    @map("value_for_money")
+  locationScore Int?         @map("location_score")
+  valueForMoney Int?         @map("value_for_money")
   hygiene       Int?
-  comment       String? @db.Text
-
-  isActive Boolean      @default(true) @map("is_active")
-  status   ReviewStatus @default(PUBLISHED)
-
-  staffId      Int?      @map("staff_id")
-  staffReply   String?   @map("staff_reply") @db.Text
-  staffReplyAt DateTime? @map("staff_reply_at")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  staff   Staff?  @relation(fields: [staffId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  comment       String?      @db.Text
+  isActive      Boolean      @default(true) @map("is_active")
+  status        ReviewStatus @default(PUBLISHED)
+  staffId       Int?         @map("staff_id")
+  staffReply    String?      @map("staff_reply") @db.Text
+  staffReplyAt  DateTime?    @map("staff_reply_at")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+  booking       Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  staff         Staff?       @relation(fields: [staffId], references: [id])
 
   @@index([status])
   @@index([staffId])
@@ -280,56 +251,120 @@ model CancelReason {
   content   String   @db.Text
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-
-  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  staff   Staff?  @relation(fields: [staffId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  staff     Staff?   @relation(fields: [staffId], references: [id])
 
   @@index([userId])
   @@index([staffId])
 }
 
 model Payment {
-  id        Int           @id @default(autoincrement())
-  bookingId Int           @map("booking_id")
-  amount    Decimal       @db.Decimal(10, 2)
-  method    PaymentMethod
-  paidAt    DateTime?     @map("paid_at")
-  status    PaymentStatus @default(UNPAID)
-  createdAt DateTime      @default(now()) @map("created_at")
-  updatedAt DateTime      @updatedAt @map("updated_at")
+  id        Int @id @default(autoincrement())
+  invoiceId Int @map("invoice_id")
 
-  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  type PaymentType @default(ROOM)
 
-  @@index([bookingId])
-  @@index([status, createdAt])
-}
+  amount Decimal       @db.Decimal(10, 2)
+  method PaymentMethod
+  paidAt DateTime?     @map("paid_at")
 
-model Shift {
-  id        Int    @id @default(autoincrement())
-  code      String @unique
-  name      String
-
-  startTime DateTime @db.Time @map("start_time")
-  endTime   DateTime @db.Time @map("end_time")
+  status PaymentStatus @default(UNPAID)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([status, createdAt])
+}
+
+model Invoice {
+  id        Int           @id @default(autoincrement())
+  bookingId Int           @unique @map("booking_id")
+  status    InvoiceStatus @default(DRAFT)
+
+  subtotal   Decimal @default(0.00) @db.Decimal(10, 2)
+  discount   Decimal @default(0.00) @db.Decimal(10, 2)
+  tax        Decimal @default(0.00) @db.Decimal(10, 2)
+  paidAmount Decimal @default(0.00) @map("paid_amount") @db.Decimal(10, 2)
+
+  note String? @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  booking  Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  items    InvoiceItem[]
+  payments Payment[]
+
+  @@index([bookingId])
+}
+
+model InvoiceItem {
+  id          Int             @id @default(autoincrement())
+  invoiceId   Int             @map("invoice_id")
+  type        InvoiceItemType
+  description String?
+  quantity    Int             @default(1)
+
+  unitPrice  Decimal @map("unit_price") @db.Decimal(10, 2)
+  totalPrice Decimal @map("total_price") @db.Decimal(10, 2)
+
+  serviceId   Int? @map("service_id")
+  promotionId Int? @map("promotion_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  invoice   Invoice    @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  service   Service?   @relation(fields: [serviceId], references: [id])
+  promotion Promotion? @relation(fields: [promotionId], references: [id])
+
+  @@index([invoiceId])
+  @@index([serviceId])
+}
+
+model Service {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String? @db.Text
+  price       Decimal @db.Decimal(10, 2)
+
+  type ServiceType @default(SERVICE)
+
+  isActive Boolean @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  invoiceItems InvoiceItem[]
+
+  @@index([name])
+  @@index([type])
+}
+
+model Shift {
+  id          Int                    @id @default(autoincrement())
+  code        String                 @unique
+  name        String
+  startTime   DateTime               @map("start_time") @db.Time(0)
+  endTime     DateTime               @map("end_time") @db.Time(0)
+  createdAt   DateTime               @default(now()) @map("created_at")
+  updatedAt   DateTime               @updatedAt @map("updated_at")
   assignments StaffShiftAssignment[]
 }
 
 model StaffShiftAssignment {
-  id        Int      @id @default(autoincrement())
-  staffId   Int      @map("staff_id")
-  shiftId   Int      @map("shift_id")
-  workDate  DateTime @map("work_date") @db.Date
+  id        Int           @id @default(autoincrement())
+  staffId   Int           @map("staff_id")
+  shiftId   Int           @map("shift_id")
+  workDate  DateTime      @map("work_date") @db.Date
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
   position  StaffPosition @map("position_at_that_time")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  staff Staff @relation(fields: [staffId], references: [id], onDelete: Cascade)
-  shift Shift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  shift     Shift         @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  staff     Staff         @relation(fields: [staffId], references: [id], onDelete: Cascade)
 
   @@unique([staffId, shiftId, workDate])
   @@index([workDate])
@@ -337,11 +372,27 @@ model StaffShiftAssignment {
   @@index([shiftId])
 }
 
-enum RoomStatus {
-  AVAILABLE
-  BOOKED
-  MAINTENANCE
-  CLEANING
+model HousekeepingTask {
+  id        Int                  @id @default(autoincrement())
+  roomId    Int                  @map("room_id")
+  bookingId Int?                 @map("booking_id")   
+  staffId   Int?                 @map("staff_id")
+  workDate  DateTime             @map("work_date")
+  type      HousekeepingTaskType @default(CLEANING)
+  status    TaskStatus           @default(PENDING)
+  note      String?              @db.Text
+  createdAt DateTime             @default(now()) @map("created_at")
+  updatedAt DateTime             @updatedAt @map("updated_at")
+
+  room    Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  booking Booking? @relation(fields: [bookingId], references: [id])
+  staff   Staff?   @relation(fields: [staffId], references: [id])
+
+  @@unique([roomId, workDate, type])
+  @@index([roomId])
+  @@index([bookingId]) 
+  @@index([staffId])
+  @@index([workDate])
 }
 
 enum BookingStatus {
@@ -367,6 +418,19 @@ enum PaymentStatus {
   PAID
   REFUNDED
   FAILED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ACTIVE
+  PAID
+  CANCELLED
+}
+
+enum InvoiceItemType {
+  ROOM
+  SERVICE
+  EXTRA_FEE
 }
 
 enum PromoType {
@@ -406,4 +470,34 @@ enum CustomerType {
   REGISTERED_MEMBER
   GUEST
   ALL
+}
+
+enum Room_status {
+  VACANT_CLEAN
+  VACANT_DIRTY
+  OCCUPIED_CLEAN
+  OCCUPIED_DIRTY
+  OUT_OF_SERVICE
+}
+
+enum HousekeepingTaskType {
+  INSPECTION
+  CLEANING
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  DONE
+}
+
+enum ServiceType {
+  SERVICE
+  EXTRA_FEE
+}
+
+enum PaymentType {
+  DEPOSIT
+  ROOM
+  SERVICE
 }

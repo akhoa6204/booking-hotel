@@ -35,7 +35,7 @@ const useLogin = () => {
     }
 
     if (user.role === "HOUSEKEEPING") {
-      navigate("/manager/housekeeping", { replace: true });
+      navigate("/manager/housekeeping-tasks", { replace: true });
       return;
     }
 

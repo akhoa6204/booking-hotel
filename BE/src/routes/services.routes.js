@@ -1,9 +1,38 @@
 import { Router } from "express";
-import { auth, requireRole } from "../middleware/auth.js";
-import { listServices, createService, updateService, deleteService } from "../controllers/services.controller.js";
+import { auth, notRequireRole } from "../middleware/auth.js";
+import * as serviceController from "../controllers/admin/services.controller.js";
 
 export const servicesRouter = Router();
-servicesRouter.get("/", auth(false), listServices);
-servicesRouter.post("/", auth(), requireRole("MANAGER"), createService);
-servicesRouter.put("/:id", auth(), requireRole("MANAGER"), updateService);
-servicesRouter.delete("/:id", auth(), requireRole("MANAGER"), deleteService);
+servicesRouter.get(
+  "/",
+  auth(true),
+  notRequireRole("CUSTOMER"),
+  serviceController.list,
+);
+
+servicesRouter.get(
+  "/:id",
+  auth(true),
+  notRequireRole("CUSTOMER"),
+  serviceController.getById,
+);
+
+servicesRouter.post(
+  "/",
+  auth(true),
+  notRequireRole("CUSTOMER"),
+  serviceController.create,
+);
+servicesRouter.patch(
+  "/:id",
+  auth(true),
+  notRequireRole("CUSTOMER"),
+  serviceController.update,
+);
+
+servicesRouter.delete(
+  "/:id",
+  auth(true),
+  notRequireRole("CUSTOMER"),
+  serviceController.remove,
+);

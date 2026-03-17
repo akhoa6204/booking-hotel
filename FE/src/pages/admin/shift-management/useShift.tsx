@@ -2,15 +2,21 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ShiftService from "@services/ShiftService";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useAuth from "@hooks/useAuth";
 import useSnackbar from "@hooks/useSnackbar";
 import useForm from "@hooks/useForm";
+import EmployeeService from "@services/EmployeeService";
+import { useEntityPicker } from "@hooks/useEntityPickerDialog";
 dayjs.extend(isoWeek);
 
 const useShift = () => {
   const queryClient = useQueryClient();
   const [currentDate, setCurrentDate] = useState(dayjs());
+  const [filters, setFilters] = useState({
+    q: "",
+    position: "ALL",
+  });
   const { canAccessManager } = useAuth();
   const { alert, closeSnackbar, showSuccess, showError } = useSnackbar();
   const { form: dialog, onChangeField: onChangeDialog } = useForm<{
@@ -41,6 +47,22 @@ const useShift = () => {
       closeDialog();
     },
   );
+  const [filtersEmployee, setFiltersEmployee] = useState<{
+    q?: string;
+    page: number;
+    limit: number;
+  }>({ q: "", page: 1, limit: 4 });
+  const {
+    selectedId,
+    selectedRow,
+    setSelectedId,
+    open: openEntityPickerDialog,
+    openPicker,
+    closePicker,
+    select,
+    mergeOptions,
+    resetEntityPicker,
+  } = useEntityPicker();
   const start = useMemo(
     () => currentDate.startOf("isoWeek").format("YYYY-MM-DD"),
     [currentDate],
@@ -67,11 +89,13 @@ const useShift = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["shift-list", start, end],
+    queryKey: ["shift-list", start, end, filters],
     queryFn: async () => {
       const res = await ShiftService.list({
         startDate: start,
         endDate: end,
+        ...(filters.q ? { q: filters.q } : {}),
+        ...(filters.position !== "ALL" ? { position: filters.position } : {}),
       });
       return res;
     },
@@ -82,7 +106,7 @@ const useShift = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["shift-list", start, end],
+        queryKey: ["shift-list", start, end, filters],
       });
       showSuccess("Xóa lịch làm thành công");
     },
@@ -99,7 +123,7 @@ const useShift = () => {
     }) => await ShiftService.create(form),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["shift-list", start, end],
+        queryKey: ["shift-list", start, end, filters],
       });
       showSuccess("Tạo ca làm thành công");
     },
@@ -115,25 +139,63 @@ const useShift = () => {
   const nextWeek = () => setCurrentDate((prev) => prev.add(7, "day"));
   const prevWeek = () => setCurrentDate((prev) => prev.subtract(7, "day"));
   const onRemove = async (id: number) => await mRemoveShift.mutateAsync(id);
-  const openDialog = (
-    staff: { id: number; fullName: string },
-    workDate: string,
-  ) => {
+  const openDialog = (staff: { id: number; fullName: string } | null) => {
     if (shiftDefinitions.length === 0) {
       showError("Có lỗi xảy ra");
       return;
     }
     onChangeDialog("open", true);
     updateForm({
-      staff,
-      workDate,
+      staff: staff ?? { id: null, fullName: "" },
+      workDate: dayjs().format("YYYY-MM-DD"),
       shiftId: shiftDefinitions[0].id,
     });
+    if (staff?.id) {
+      select(staff);
+    }
   };
 
   const closeDialog = () => {
     onChangeDialog("open", false);
     resetForm();
+    resetEntityPicker();
+  };
+
+  const { data: employeesResponse, isLoading: isLoadingEmployees } = useQuery({
+    queryKey: [
+      "employees",
+      filtersEmployee.page,
+      filtersEmployee.q,
+      filtersEmployee.limit,
+    ],
+    queryFn: async () => await EmployeeService.list(filtersEmployee),
+  });
+
+  const employees = employeesResponse?.items || [];
+  const meta = employeesResponse?.meta;
+  const options = mergeOptions(employees);
+  const onChangePage = (page: number) =>
+    setFiltersEmployee((prev) => ({ ...prev, page }));
+
+  const handleOpenPicker = () => {
+    setFiltersEmployee((prev) => ({ ...prev, limit: 10, page: 1, q: "" }));
+    openPicker();
+  };
+  const handleClosePicker = () => {
+    setFiltersEmployee((prev) => ({ ...prev, limit: 4, page: 1, q: "" }));
+    closePicker();
+  };
+  const onSearchEmployee = (value: string) =>
+    setFiltersEmployee((prev) => ({ ...prev, q: value }));
+
+  const changeFormHandler = (
+    field: "staff" | "workDate" | "shiftId",
+    value: any,
+  ) => {
+    if (field === "staff") {
+      select(value);
+    }
+    onChangeField(field, value);
   };
   return {
     shifts,
@@ -153,7 +215,28 @@ const useShift = () => {
     closeDialog,
     onSubmit,
     open: dialog.open,
-    onChangeForm: onChangeField,
+    onChangeForm: changeFormHandler,
+
+    filters,
+    setFilters,
+    currentDate,
+    setCurrentDate,
+
+    options,
+    meta,
+
+    selectedId,
+    selectedRow,
+    setSelectedId,
+    openEntityPickerDialog,
+    openPicker: handleOpenPicker,
+    closePicker: handleClosePicker,
+    select,
+    mergeOptions,
+    onChangePage,
+    onSearchEmployee,
+    filtersEmployee,
+    isLoadingEmployees,
   };
 };
 

@@ -2,41 +2,29 @@ import { success, bad } from "../../utils/response.js";
 import { prisma } from "../../lib/prisma.js";
 import { resolvePromotionForBooking } from "../../utils/promo.js";
 import * as DateUtils from "../../utils/date.js";
+import { buildOffsetMeta, parsePageLimit } from "../../utils/pagination.js";
 
-export async function getAvailable(req, res) {
-  const { checkIn, checkOut, roomTypeId } = req.body;
-  if (!checkIn || !checkOut) return bad(res, "Thiếu thông tin bắt buộc", 400);
+function normalizeRoomType(roomType) {
+  const { id, name, basePrice, capacity, images, amenities } = roomType;
 
-  const start = new Date(checkIn);
-  const end = new Date(checkOut);
-
-  try {
-    const rooms = await prisma.room.findMany({
-      where: {
-        ...(roomTypeId ? { roomTypeId: Number(roomTypeId) } : {}),
-        isActive: true,
-        roomType: { isActive: true },
-        bookings: {
-          none: {
-            status: { in: ["CONFIRMED", "CHECKED_IN"] },
-            checkIn: { lt: end },
-            checkOut: { gt: start },
-          },
-        },
-        status: "AVAILABLE",
-      },
-      select: {
-        id: true,
-        name: true,
-        status: true,
-      },
-    });
-
-    if (!rooms.length) return bad(res, "Không có phòng trống", 404);
-    return success(res, rooms, "Lấy phòng trống thành công");
-  } catch (err) {
-    return bad(res, err.message || "Lỗi máy chủ", 500);
-  }
+  const flatImages = images.map((image) => ({
+    url: image.url,
+    alt: image.alt,
+    isPrimary: image.isPrimary,
+  }));
+  const flatAmenities = amenities.map((a) => ({
+    id: a.amenity.id,
+    code: a.amenity.code,
+    label: a.amenity.label,
+  }));
+  return {
+    id,
+    name,
+    basePrice,
+    capacity,
+    images: flatImages,
+    amenities: flatAmenities,
+  };
 }
 
 export async function quote(req, res) {
@@ -111,5 +99,118 @@ export async function quote(req, res) {
   } catch (error) {
     console.error(error);
     return bad(res, "Có lỗi xảy ra", 500);
+  }
+}
+
+export async function list(req, res) {
+  try {
+    const { checkIn, checkOut, roomTypeId, q } = req.query;
+
+    const { page, limit, skip } = parsePageLimit(req, { defaultLimit: 6 });
+
+    const start = checkIn ? new Date(checkIn) : null;
+    const end = checkOut ? new Date(checkOut) : null;
+
+    const where = {
+      ...(roomTypeId ? { roomTypeId: Number(roomTypeId) } : {}),
+      ...(q
+        ? {
+            name: {
+              contains: q,
+            },
+          }
+        : {}),
+
+      isActive: true,
+      roomType: { isActive: true },
+
+      ...(start && end
+        ? {
+            status: {
+              in: ["VACANT_CLEAN", "VACANT_DIRTY"],
+            },
+            bookings: {
+              none: {
+                status: { in: ["CONFIRMED", "CHECKED_IN"] },
+                checkIn: { lt: end },
+                checkOut: { gt: start },
+              },
+            },
+          }
+        : {}),
+    };
+
+    const [rooms, total] = await Promise.all([
+      prisma.room.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          status: true,
+          roomType: {
+            include: {
+              images: true,
+              amenities: {
+                include: { amenity: true },
+              },
+            },
+          },
+        },
+        orderBy: { id: "asc" },
+        skip,
+        take: limit,
+      }),
+      prisma.room.count({ where }),
+    ]);
+
+    const normalizeRooms = rooms.map((room) => ({
+      ...room,
+      roomType: normalizeRoomType(room.roomType),
+    }));
+
+    return success(res, {
+      items: normalizeRooms,
+      meta: buildOffsetMeta({ page, limit, total }),
+    });
+  } catch (e) {
+    console.error(e);
+
+    return bad(res, e.message || "Lỗi máy chủ", 500);
+  }
+}
+
+export async function getById(req, res) {
+  try {
+    const id = Number(req.params.id);
+    if (Number.isNaN(id)) return bad(res, "ID không hợp lệ", 400);
+
+    const room = await prisma.room.findUnique({
+      where: { id, isActive: true },
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        roomType: {
+          include: {
+            images: true,
+            amenities: {
+              include: { amenity: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!room) return bad(res, "Không tìm thấy phòng", 404);
+
+    return success(res, {
+      ...{
+        ...room,
+        roomType: normalizeRoomType(room.roomType),
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return bad(res, error.message || "Lỗi máy chủ", 500);
   }
 }

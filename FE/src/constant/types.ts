@@ -51,12 +51,16 @@ export type RoomType = {
 
 export type RoomTypeGuest = Omit<RoomType, "rooms"> & { image: string };
 
-export type RoomStatus = "AVAILABLE" | "BOOKED" | "MAINTENANCE" | "CLEANING";
+export type RoomStatus =
+  | "VACANT_CLEAN"
+  | "VACANT_DIRTY"
+  | "OCCUPIED_CLEAN"
+  | "OCCUPIED_DIRTY"
+  | "OUT_OF_SERVICE";
 
 export type Room = {
   id: number;
   name: string;
-  description?: string | null;
   status: RoomStatus;
   roomType: RoomType;
 };
@@ -103,28 +107,68 @@ export type PaymentStatus =
   | "REFUNDED"
   | "FAILED";
 
+export type InvoiceStatus = "DRAFT" | "ACTIVE" | "PAID";
+export interface Payment {
+  id: number;
+
+  type: "ROOM" | "SERVICE";
+
+  method: PaymentMethod;
+
+  amount: string;
+
+  status: PaymentStatus;
+
+  paidAt?: string;
+}
+
+export interface InvoiceItem {
+  id: number;
+
+  type: "ROOM" | "SERVICE" | "EXTRA_FEE";
+
+  name?: string;
+
+  quantity: number;
+
+  unitPrice: string;
+
+  totalPrice: string;
+
+  serviceId: number;
+
+  service?: Service;
+}
+export interface Invoice {
+  invoiceId: number;
+
+  status: InvoiceStatus;
+
+  subtotal: string;
+  discount: string;
+  tax: string;
+  paidAmount: string;
+
+  items: InvoiceItem[];
+
+  payments: Payment[];
+}
+
 export interface Booking {
   id: number;
   fullName: string;
   phone: string;
   email?: string;
+
   checkIn: string;
   checkOut: string;
+
   status: BookingStatus;
-  baseAmount: string;
-  discountAmount: string;
-  createdAt: string;
-  room: {
-    name: string;
-    roomType: {
-      name: string;
-      basePrice?: string;
-    };
-  };
-  promotion: {
-    name: string;
-  };
-  paymentStatus: PaymentStatus;
+
+  room: Pick<Room, "id" | "name" | "roomType">;
+  invoice: { id: number };
+  inspected: boolean;
+  inspectionTaskId?: number;
 }
 
 export interface QuoteResponse {
@@ -316,3 +360,34 @@ export interface StaffShiftAssignment {
   position: Omit<UserRole, "CUSTOMER">;
   shift: Shift;
 }
+
+export type TaskStatus = "PENDING" | "IN_PROGRESS" | "DONE";
+export type TaskType = "CLEANING" | "INSPECTION";
+
+export type HouseKeepingTask = {
+  id: number;
+  room: Room;
+  staff?: {
+    id: number;
+    position: Omit<UserRole, "CUSTOMER">;
+    user: Pick<User, "id" | "fullName">;
+  };
+  roomId: number;
+  staffId?: number;
+  type: TaskType;
+  status: TaskStatus;
+  workDate: string;
+  note?: string;
+  updatedAt: string;
+};
+
+export type ServiceType = "SERVICE" | "EXTRA_FEE";
+export type PaymentType = "ROOM" | "DEPOSIT" | "SERVICE";
+
+export type Service = {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  type: ServiceType;
+};

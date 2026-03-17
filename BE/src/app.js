@@ -15,7 +15,6 @@ import { servicesRouter } from "./routes/services.routes.js";
 import { promosRouter } from "./routes/promotions.routes.js";
 import { notificationsRouter } from "./routes/notifications.routes.js";
 import { reviewsRouter } from "./routes/reviews.routes.js";
-import { searchRouter } from "./routes/search.routes.js";
 import {
   roomTypeRoute,
   roomTypeAdminRoute,
@@ -24,6 +23,8 @@ import { dashboardRoutes } from "./routes/dashboard.routes.js";
 import { amenitiesRouter } from "./routes/amenities.routes.js";
 import { employeesRouter } from "./routes/employees.routes.js";
 import { shiftsRouter } from "./routes/shifts.routes.js";
+import { houseKeepingRoutes } from "./routes/housekeepings.routes.js";
+import { invoiceRoutes } from "./routes/invoices.routes.js";
 
 dotenv.config();
 
@@ -41,7 +42,6 @@ app.get("/health", (req, res) => res.json({ ok: true }));
 // Public
 app.use("/api/auth", authRouter);
 // app.use("/api/hotels", hotelsRouter);
-// app.use("/api/services", servicesRouter);
 app.use("/api/promotions", promosRouter);
 app.use("/api/rooms", roomsRouter);
 app.use("/api/bookings", bookingsRouter);
@@ -60,3 +60,6 @@ app.use("/api/admin/promotions", promosRouter);
 app.use("/api/admin/payments", adminPaymentRouter);
 app.use("/api/admin/employees", employeesRouter);
 app.use("/api/admin/shifts", shiftsRouter);
+app.use("/api/admin/housekeepings", houseKeepingRoutes);
+app.use("/api/admin/invoices", invoiceRoutes);
+app.use("/api/admin/services", servicesRouter);

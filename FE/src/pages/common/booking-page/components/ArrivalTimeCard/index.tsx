@@ -10,7 +10,7 @@ import {
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import dayjs from "dayjs";
 import { useMemo } from "react";
-import { fmtDate } from "@utils/format";
+import { formatDate } from "@utils/format";
 
 type Option = { value: string; label: string };
 
@@ -67,7 +67,7 @@ const buildArrivalOptions = (checkInDate?: string): Option[] => {
 const ArrivalTimeCard = ({ value, onChange, checkInDate }: Props) => {
   const options = useMemo(
     () => buildArrivalOptions(checkInDate),
-    [checkInDate]
+    [checkInDate],
   );
 
   const handleChange = (e: SelectChangeEvent<string>) => {
@@ -96,7 +96,7 @@ const ArrivalTimeCard = ({ value, onChange, checkInDate }: Props) => {
         />
         <Typography variant="body2">
           Bạn có thể nhận chỗ nghỉ trong khoảng từ 14:00 - 22:00 ngày
-          {fmtDate(checkInDate)}
+          {formatDate(checkInDate)}
         </Typography>
       </Box>
 

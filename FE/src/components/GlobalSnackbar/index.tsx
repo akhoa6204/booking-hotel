@@ -1,5 +1,11 @@
 import { Alert, Snackbar } from "@mui/material";
 
+const severityColor = {
+  success: "#24AB70",
+  error: "#D32F2F",
+  warning: "#ED6C02",
+};
+
 const GlobalSnackbar = ({ alert, closeSnackbar }) => (
   <Snackbar
     open={alert.open}
@@ -12,8 +18,10 @@ const GlobalSnackbar = ({ alert, closeSnackbar }) => (
       onClose={closeSnackbar}
       variant="filled"
       sx={{
-        backgroundColor: alert.severity === "success" ? "#24AB70" : "#D32F2F",
+        alignItems: "center",
+        backgroundColor: severityColor[alert.severity] || "#1976D2",
         color: "#fff",
+        whiteSpace: "pre-line",
       }}
     >
       {alert.message}

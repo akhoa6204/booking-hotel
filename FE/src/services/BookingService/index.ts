@@ -101,11 +101,12 @@ export default class BookingService {
     checkIn: string;
     checkOut: string;
     promoCode?: string;
-  }): Promise<{ bookingId: number }> {
-    const { data } = await httpClient.post<{
-      success: boolean;
-      data: { bookingId: number };
-    }>(`${ADMIN_BASE}/`, payload);
+  }): Promise<{
+    bookingId: number;
+    invoiceId: number;
+    remainingAmount: number;
+  }> {
+    const { data } = await httpClient.post(`${ADMIN_BASE}/`, payload);
     return data;
   }
 

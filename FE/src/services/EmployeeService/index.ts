@@ -1,5 +1,6 @@
 import { Employee, UserRole } from "@constant/types";
 import httpClient from "..";
+import { PaginatedResponse } from "@constant/response/paginated";
 
 const BASE = "/admin/employees";
 
@@ -8,17 +9,20 @@ export default class EmployeeService {
     q,
     page = 1,
     limit = 10,
+    position,
   }: {
     q?: string;
     page?: number;
     limit?: number;
-  }) {
+    position?: Omit<UserRole, "CUSTOMER">;
+  }): Promise<PaginatedResponse<Employee>> {
     try {
       const res = await httpClient.get(BASE, {
         params: {
           q,
           page,
           limit,
+          position,
         },
       });
       return res.data;
@@ -49,7 +53,7 @@ export default class EmployeeService {
       const res = await httpClient.patch(`${BASE}/${id}`, data);
       return res.data;
     } catch (e) {
-      throw new Error("Có lỗi xảy ra khi cập nhật thông tin nhân viên");
+      throw e;
     }
   }
 
@@ -73,7 +77,18 @@ export default class EmployeeService {
       });
       return res.data;
     } catch (e) {
-      throw new Error("Có lỗi xảy ra khi tạo nhân viên mới");
+      throw e;
+    }
+  }
+
+  static async resetPassword(id: number, data: { newPassword: string }) {
+    try {
+      const res = await httpClient.patch(`${BASE}/${id}/reset-password`, {
+        ...data,
+      });
+      return res.data;
+    } catch (e) {
+      throw e;
     }
   }
 }

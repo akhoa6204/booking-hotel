@@ -196,7 +196,7 @@ export async function getDashboardCheckins(req, res) {
 
     const where = {
       checkIn: { gte: start, lt: end },
-      status: { notIn: ["CANCELLED"] },
+      status: "CONFIRMED",
     };
 
     const [items, total] = await Promise.all([
@@ -244,7 +244,7 @@ export async function getDashboardCheckouts(req, res) {
 
     const where = {
       checkOut: { gte: start, lt: end },
-      status: { in: ["CHECKED_IN", "CHECKED_OUT"] },
+      status: "CHECKED_IN",
     };
 
     const [items, total] = await Promise.all([

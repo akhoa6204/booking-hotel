@@ -13,8 +13,8 @@ import {
 } from "@mui/material";
 import { Delete as DeleteIcon, Visibility } from "@mui/icons-material";
 import { Promotion } from "@constant/types";
-import { fmtDate } from "@utils/format";
 import { getPromotionLabels } from "../../usePromotionManagement";
+import { formatDate } from "@utils/format";
 
 export default function PromotionsTable({
   rows,
@@ -104,7 +104,8 @@ export default function PromotionsTable({
                   <TableCell>{scopeLabel}</TableCell>
                   <TableCell align="right">{usedLabel}</TableCell>
                   <TableCell align="center">
-                    {fmtDate(promotion.startAt)} - {fmtDate(promotion.endAt)}
+                    {formatDate(promotion.startAt)} -{" "}
+                    {formatDate(promotion.endAt)}
                   </TableCell>
                   <TableCell align="center">
                     {new Date() < new Date(promotion.endAt)

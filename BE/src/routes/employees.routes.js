@@ -24,6 +24,13 @@ employeesRouter.patch(
   EmployeesController.update,
 );
 
+employeesRouter.patch(
+  "/:id/reset-password",
+  auth(true),
+  requireRoles(["ADMIN", "MANAGER"]),
+  EmployeesController.changePassword,
+);
+
 employeesRouter.post(
   "/",
   auth(true),

@@ -32,8 +32,6 @@ export async function list(req, res) {
           checkIn: true,
           checkOut: true,
           status: true,
-          baseAmount: true,
-          discountAmount: true,
           createdAt: true,
           room: {
             select: {
@@ -45,12 +43,6 @@ export async function list(req, res) {
               },
             },
           },
-          promotion: {
-            select: {
-              name: true,
-            },
-          },
-          paymentStatus: true,
         },
         take: limit,
         skip,
@@ -65,6 +57,7 @@ export async function list(req, res) {
       200,
     );
   } catch (e) {
+    console.error(e);
     return bad(res, "Có lỗi xảy ra", 500);
   }
 }
@@ -123,13 +116,12 @@ export async function create(req, res) {
     }
 
     const nights = DateUtils.computeNight(startDate, endDate);
-    const base = Number(room.roomType.basePrice);
-    const totalBefore = base * nights;
+    const basePrice = Number(room.roomType.basePrice);
+    const totalBefore = basePrice * nights;
 
     const {
       promoApplied,
       discountAmount: rawDiscountAmount,
-      appliedPromoIds,
       reason,
     } = await resolvePromotionForBooking({
       roomTypeId: Number(room.roomTypeId),
@@ -154,25 +146,56 @@ export async function create(req, res) {
           roomId: roomId,
           checkIn: startDate,
           checkOut: endDate,
-
           fullName,
           phone,
           status: "CONFIRMED",
-          promotionId: promoId,
-          baseAmount: totalBefore,
-          discountAmount,
         },
       });
 
-      if (appliedPromoIds.length > 0) {
-        await tx.promotion.updateMany({
-          where: { id: { in: appliedPromoIds } },
-          data: { quotaUsed: { increment: 1 } },
-        });
-      }
-      return booking;
+      const invoice = await tx.invoice.create({
+        data: {
+          bookingId: booking.id,
+          subtotal: totalBefore,
+          discount: discountAmount,
+          tax: 0,
+          paidAmount: 0,
+          status: "DRAFT",
+        },
+        select: {
+          id: true,
+          subtotal: true,
+          discount: true,
+          tax: true,
+          paidAmount: true,
+        },
+      });
+
+      await tx.invoiceItem.create({
+        data: {
+          invoiceId: invoice.id,
+          type: "ROOM",
+          quantity: nights,
+          unitPrice: basePrice,
+          totalPrice: totalBefore,
+          promotionId: promoId,
+        },
+      });
+      const subtotal = Number(invoice.subtotal || 0);
+      const discount = Number(invoice.discount || 0);
+      const tax = Number(invoice.tax || 0);
+      const total = subtotal - discount + tax;
+      const paidAmount = Number(invoice.paidAmount || 0);
+
+      const remainingAmount = total - paidAmount;
+
+      return {
+        bookingId: booking.id,
+        invoiceId: invoice.id,
+        remainingAmount,
+      };
     });
-    return success(res, { bookingId: result.id }, 200);
+
+    return success(res, result, 200);
   } catch (e) {
     console.error(e);
     return bad(res, "Có lỗi xảy ra", 500);
@@ -182,44 +205,129 @@ export async function create(req, res) {
 export async function update(req, res) {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status } = req.body || {};
 
-    if (!status) {
-      return bad(res, "Trạng thái là bắt buộc", 400);
-    }
+    if (!id) return bad(res, "Thiếu bookingId", 400);
 
-    if (
-      !["CONFIRMED", "CHECKED_IN", "CHECKED_OUT", "CANCELLED"].includes(status)
-    ) {
-      return bad(res, "Trạng thái không hợp lệ", 400);
-    }
-
-    let updatedRoomStatus = null;
-
-    if (status === "CHECKED_IN") {
-      updatedRoomStatus = "BOOKED";
-    } else if (status === "CHECKED_OUT") {
-      updatedRoomStatus = "CLEANING";
-    }
-
-    const booking = await prisma.booking.update({
+    const booking = await prisma.booking.findUnique({
       where: { id: Number(id) },
-      data: {
-        status,
-        ...(updatedRoomStatus && {
-          room: {
-            update: {
-              status: updatedRoomStatus,
-            },
-          },
-        }),
-      },
-      include: {
-        room: true,
-      },
+      include: { room: true },
     });
 
-    return success(res, booking, 200);
+    if (!booking) return bad(res, "Không tồn tại booking", 404);
+
+    if (!status) return bad(res, "Thiếu status", 400);
+
+    if (!["CHECKED_IN", "CHECKED_OUT", "CANCELLED"].includes(status)) {
+      return bad(res, "Status không hợp lệ", 400);
+    }
+
+    const now = new Date();
+    const today = new Date(now.toISOString().slice(0, 10));
+
+    const result = await prisma.$transaction(async (tx) => {
+      if (status === "CANCELLED") {
+        if (booking.status === "CHECKED_IN") {
+          throw new Error("Không thể huỷ booking đã check-in");
+        }
+
+        return tx.booking.update({
+          where: { id: Number(id) },
+          data: {
+            status: "CANCELLED",
+            room: {
+              update: { status: "VACANT_CLEAN" },
+            },
+          },
+        });
+      }
+
+      if (status === "CHECKED_IN") {
+        if (booking.status !== "CONFIRMED") {
+          throw new Error("Booking không ở trạng thái có thể check-in");
+        }
+
+        return tx.booking.update({
+          where: { id: Number(id) },
+          data: {
+            status: "CHECKED_IN",
+            room: {
+              update: { status: "OCCUPIED_CLEAN" },
+            },
+          },
+          include: { room: true },
+        });
+      }
+
+      if (status === "CHECKED_OUT") {
+        if (booking.status !== "CHECKED_IN") {
+          throw new Error("Booking chưa check-in");
+        }
+
+        const updatedBooking = await tx.booking.update({
+          where: { id: Number(id) },
+          data: {
+            status: "CHECKED_OUT",
+            room: {
+              update: { status: "VACANT_DIRTY" },
+            },
+          },
+          include: { room: true },
+        });
+
+        const currentShift = await tx.shift.findFirst({
+          where: {
+            startTime: { lte: now },
+            endTime: { gt: now },
+          },
+        });
+
+        let assignedStaffId = null;
+
+        if (currentShift) {
+          const staffOnShift = await tx.staffShiftAssignment.findMany({
+            where: {
+              workDate: today,
+              shiftId: currentShift.id,
+              position: "HOUSEKEEPING",
+            },
+          });
+
+          if (staffOnShift.length > 0) {
+            const taskCounts = await Promise.all(
+              staffOnShift.map(async (s) => {
+                const count = await tx.housekeepingTask.count({
+                  where: {
+                    staffId: s.staffId,
+                    status: { in: ["PENDING", "IN_PROGRESS"] },
+                  },
+                });
+                return { staffId: s.staffId, count };
+              }),
+            );
+
+            taskCounts.sort((a, b) => a.count - b.count);
+            assignedStaffId = taskCounts[0].staffId;
+          }
+        }
+
+        const taskData = {
+          roomId: updatedBooking.roomId,
+          workDate: now,
+          type: "CLEANING",
+        };
+
+        if (assignedStaffId) taskData.staffId = assignedStaffId;
+
+        await tx.housekeepingTask.create({
+          data: taskData,
+        });
+
+        return updatedBooking;
+      }
+    });
+
+    return success(res, { booking: result }, 200);
   } catch (e) {
     console.error(e);
     return bad(res, "Có lỗi xảy ra", 500);
@@ -237,18 +345,18 @@ export async function getById(req, res) {
       where: {
         id: Number(id),
       },
+
       select: {
         id: true,
         fullName: true,
         phone: true,
+        email: true,
         checkIn: true,
         checkOut: true,
         status: true,
-        baseAmount: true,
-        discountAmount: true,
-        createdAt: true,
         room: {
           select: {
+            id: true,
             name: true,
             roomType: {
               select: {
@@ -257,17 +365,43 @@ export async function getById(req, res) {
             },
           },
         },
-        promotion: {
-          select: {
-            name: true,
-          },
+        invoice: {
+          select: { id: true },
         },
-        paymentStatus: true,
       },
     });
 
+    let inspected = false;
+    let inspectionTaskId = null;
+
+    if (booking) {
+      const inspectionTask = await prisma.housekeepingTask.findFirst({
+        where: {
+          bookingId: Number(id),
+          type: "INSPECTION",
+        },
+        select: {
+          id: true,
+          status: true,
+        },
+      });
+
+      if (inspectionTask) {
+        inspectionTaskId = inspectionTask.id;
+        inspected = inspectionTask.status === "DONE";
+      }
+    }
+
     if (!booking) return bad(res, "Không tồn tại đặt phòng", 400);
-    return success(res, booking, 200);
+    return success(
+      res,
+      {
+        ...booking,
+        inspectionTaskId,
+        inspected,
+      },
+      200,
+    );
   } catch (error) {
     console.error(error);
     return bad(res, "Có lỗi xảy ra", 500);
