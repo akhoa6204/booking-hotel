@@ -22,3 +22,5 @@ export { default as FrontDeskPage } from "./admin/front-desk";
 export { default as HouseKeepingPage } from "./admin/housekeeping";
 export { default as ShiftManagementPage } from "./admin/shift-management";
 export { default as ServiceManagementPage } from "./admin/service-management";
+export { default as SearchPage } from "./common/search-page";
+export { default as PaymentPage } from "./common/payment-page";

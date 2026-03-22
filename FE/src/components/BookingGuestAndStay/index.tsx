@@ -11,15 +11,10 @@ export const formatTime = (iso?: string) => {
 
 type Props = {
   title: string;
-  booking: Pick<Booking, "checkIn" | "checkOut">;
-  customer: {
-    fullName: string;
-    email: string;
-    phone: string;
-  };
+  booking: Booking;
 };
 
-const BookingGuestAndStay = ({ title, booking, customer }: Props) => {
+const BookingGuestAndStay = ({ title, booking }: Props) => {
   const nights = diffNights(booking.checkIn, booking.checkOut);
 
   return (
@@ -38,14 +33,14 @@ const BookingGuestAndStay = ({ title, booking, customer }: Props) => {
         {/* Guest info */}
         <Box sx={{ minWidth: 260 }}>
           <Typography fontWeight={600} mb={1}>
-            {customer.fullName}
+            {booking.fullName}
           </Typography>
           <Stack spacing={0.5}>
             <Typography variant="body2">
-              📞 {customer.phone || "Chưa có số điện thoại"}
+              📞 {booking.phone || "Chưa có số điện thoại"}
             </Typography>
             <Typography variant="body2">
-              ✉️ {customer.email || "Chưa có email"}
+              ✉️ {booking.email || "Chưa có email"}
             </Typography>
           </Stack>
         </Box>

@@ -20,9 +20,8 @@ export function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { user, hasRole, hasAnyRole } = useAuth();
 
-  if (!user) return <Navigate to={fallbackPath} replace />;
-
   const defaultUnauthorized = useMemo(() => {
+    if (!user) return "/";
     if (user.role === "ADMIN" || user.role === "MANAGER")
       return "/manager/dashboard";
 
@@ -31,7 +30,9 @@ export function ProtectedRoute({
     if (user.role === "HOUSEKEEPING") return "/manager/housekeeping-tasks";
 
     return "/";
-  }, [user.role]);
+  }, [user?.role]);
+
+  if (!user) return <Navigate to={fallbackPath} replace />;
 
   if (requiredRole && !hasRole(requiredRole)) {
     return <Navigate to={defaultUnauthorized} replace />;

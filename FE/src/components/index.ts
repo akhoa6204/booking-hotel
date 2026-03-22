@@ -12,3 +12,4 @@ export { default as BookingGuestAndStaySkeleton } from "./BookingGuestAndStaySke
 export { default as Loading } from "./Loading";
 export { default as EntityPickerDialog } from "./entity-picker-dialog";
 export { default as EntityPickerField } from "./entity-picker-field";
+export { default as BookingStepper } from "./BookingStepper";

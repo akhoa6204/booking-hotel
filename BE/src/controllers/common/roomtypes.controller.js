@@ -1,18 +1,13 @@
 import { prisma } from "../../lib/prisma.js";
 import { success, bad } from "../../utils/response.js";
 import { parsePageLimit, buildOffsetMeta } from "../../utils/pagination.js";
+import { findAutoApplyPromotion } from "../../utils/promo.js";
 
 export async function list(req, res) {
   try {
-    const {
-      hotelId = 1,
-      q,
-      capacity,
-      checkIn,
-      checkOut,
-      sort,
-    } = req.query || {};
-    const capacityNum = capacity ? Number(capacity) : undefined;
+    const { q, capacity, checkIn, checkOut, sort } = req.query || {};
+    const capacityNum =
+      capacity && !isNaN(Number(capacity)) ? Number(capacity) : undefined;
     const { page, limit, skip } = parsePageLimit(req, { defaultLimit: 10 });
 
     let dateFilter = {};
@@ -29,7 +24,7 @@ export async function list(req, res) {
           rooms: {
             some: {
               isActive: true,
-              status: "AVAILABLE",
+              status: "VACANT_CLEAN",
               bookings: {
                 none: {
                   status: { in: ["CONFIRMED", "CHECKED_IN"] },
@@ -51,7 +46,6 @@ export async function list(req, res) {
         : [{ basePrice: "asc" }, { id: "desc" }];
 
     const where = {
-      hotelId,
       isActive: true,
       ...(q && {
         OR: [
@@ -94,14 +88,50 @@ export async function list(req, res) {
       prisma.roomType.count({ where }),
     ]);
 
-    const items = rows.map(({ images, ...rest }) => ({
-      ...rest,
-      image: images?.[0]?.url ?? null,
-    }));
+    const items = await Promise.all(
+      rows.map(async ({ images, basePrice, id, ...rest }) => {
+        const { discount } = await findAutoApplyPromotion({
+          roomTypeId: id,
+          totalBefore: Number(basePrice ?? 0),
+        });
+
+        const availableRoom = await prisma.room.findFirst({
+          where: {
+            roomTypeId: id,
+            isActive: true,
+            status: "VACANT_CLEAN",
+            ...(checkIn && checkOut
+              ? {
+                  bookings: {
+                    none: {
+                      status: { in: ["CONFIRMED", "CHECKED_IN"] },
+                      AND: [
+                        { checkIn: { lt: new Date(checkOut) } },
+                        { checkOut: { gt: new Date(checkIn) } },
+                      ],
+                    },
+                  },
+                }
+              : {}),
+          },
+          select: { id: true },
+        });
+
+        return {
+          ...rest,
+          id,
+          roomId: availableRoom?.id ?? null,
+          basePrice: Number(basePrice),
+          discount,
+          image: images?.[0]?.url ?? null,
+        };
+      }),
+    );
     const meta = buildOffsetMeta({ page, limit, total });
 
     return success(res, { items, meta });
   } catch (e) {
+    console.error(e);
     return bad(res, e.message, 500);
   }
 }
@@ -133,12 +163,18 @@ export async function getById(req, res) {
 
     if (!roomType) return bad(res, "Không tìm thấy loại phòng", 404);
 
+    const { discount } = await findAutoApplyPromotion({
+      roomTypeId: roomType.id,
+      totalBefore: Number(roomType.basePrice ?? 0),
+    });
+
     const data = {
       id: roomType.id,
       name: roomType.name,
       description: roomType.description,
       capacity: roomType.capacity,
       basePrice: Number(roomType.basePrice ?? 0),
+      discount: Number(discount ?? 0),
       amenities: roomType.amenities.map((amenity) => amenity.amenity),
       images: roomType.images.map((img) => ({
         id: img.id,

@@ -6,16 +6,10 @@ import { User } from "@constant/types";
 
 interface AuthState {
   user?: User;
-  token?: string;
-  loading: boolean;
-  error: boolean;
 }
 
 const initialState: AuthState = {
   user: null,
-  token: "",
-  loading: false,
-  error: false,
 };
 
 const accountSlice = createSlice({
@@ -24,46 +18,10 @@ const accountSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.user = null;
-      state.token = null;
-      localStorage.removeItem("accessToken");
     },
-    loginSuccess: (state, action: PayloadAction<LoginResponse>) => {
-      state.user = action.payload.user;
-      state.token = action.payload.token;
+    loginSuccess: (state, action: PayloadAction<User>) => {
+      state.user = action.payload;
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addMatcher(
-        isAnyOf(
-          AccountThunk.initializeAuth.pending,
-          AccountThunk.login.pending
-        ),
-        (state) => {
-          state.loading = true;
-          state.error = false;
-        }
-      )
-      .addMatcher(
-        isAnyOf(
-          AccountThunk.initializeAuth.fulfilled,
-          AccountThunk.login.fulfilled
-        ),
-        (state, action: PayloadAction<LoginResponse>) => {
-          state.user = action.payload.user;
-          state.token = action.payload.token;
-        }
-      )
-      .addMatcher(
-        isAnyOf(
-          AccountThunk.initializeAuth.rejected,
-          AccountThunk.login.rejected
-        ),
-        (state) => {
-          state.loading = false;
-          state.error = true;
-        }
-      );
   },
 });
 

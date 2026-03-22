@@ -24,7 +24,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import PersonOutline from "@mui/icons-material/PersonOutline";
 import LockReset from "@mui/icons-material/LockReset";
 import Logout from "@mui/icons-material/Logout";
-import { NavLink, Link, useNavigate } from "react-router-dom";
+import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import useAuth from "@hooks/useAuth";
 import { useAppDispatch } from "@hooks/useRedux";
@@ -43,8 +43,12 @@ function HideOnScroll({ children }: { children: React.ReactElement }) {
 }
 
 const navLinks = [
-  { label: "Trang chủ", link: "/" },
-  { label: "Đặt phòng", link: "/booking" },
+  { label: "Trang chủ", link: "/", matchPaths: ["/"] },
+  {
+    label: "Đặt phòng",
+    link: "/search",
+    matchPaths: ["/search", "/booking", "/payment"],
+  },
 ];
 
 function UserMenu({
@@ -63,7 +67,6 @@ function UserMenu({
 
   return (
     <>
-      {/* Trigger – dùng Tailwind cho hover, không dùng onMouseEnter/onMouseLeave */}
       <button
         type="button"
         onClick={(e) => setAnchorEl(e.currentTarget)}
@@ -136,6 +139,7 @@ const Header = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
   const transition = { type: "spring", stiffness: 260, damping: 20 } as const;
 
@@ -150,24 +154,29 @@ const Header = () => {
         alignItems: mobile ? "flex-start" : "center",
       }}
     >
-      {navLinks.map((n, i) => (
-        <MotionBox
-          key={n.link}
-          initial={{ opacity: 0, y: -10 }}
-          animate={{
-            opacity: 1,
-            y: 0,
-            transition: { delay: i * 0.06, ...transition },
-          }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <NavLink
-            to={n.link}
-            onClick={() => mobile && setOpen(false)}
-            className="no-underline"
+      {navLinks.map((n, i) => {
+        const isActive =
+          n.link === "/"
+            ? location.pathname === "/"
+            : n.matchPaths.some((path) => location.pathname.startsWith(path));
+
+        return (
+          <MotionBox
+            key={n.link}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              transition: { delay: i * 0.06, ...transition },
+            }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            {({ isActive }) => (
+            <NavLink
+              to={n.link}
+              onClick={() => mobile && setOpen(false)}
+              className="no-underline"
+            >
               <span
                 className={[
                   "relative px-2 py-1 text-sm font-medium transition-colors",
@@ -180,18 +189,19 @@ const Header = () => {
               >
                 {n.label}
               </span>
-            )}
-          </NavLink>
-        </MotionBox>
-      ))}
+            </NavLink>
+          </MotionBox>
+        );
+      })}
     </Box>
   );
 
   const goProfile = () => navigate("/account/profile?tab=info");
   const goChangePassword = () => navigate("/account/profile?tab=security");
-  const doLogout = () => {
+  const handleLogOut = () => {
+    localStorage.removeItem("accessToken");
     dispatch(logout());
-    navigate("/login");
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -236,7 +246,7 @@ const Header = () => {
                     userName={user.fullName || user.name || "User"}
                     onProfile={goProfile}
                     onChangePassword={goChangePassword}
-                    onLogout={doLogout}
+                    onLogout={handleLogOut}
                   />
                 ) : (
                   <MotionBox
@@ -347,7 +357,7 @@ const Header = () => {
                     variant="contained"
                     onClick={() => {
                       setOpen(false);
-                      doLogout();
+                      handleLogOut();
                     }}
                     sx={{ borderRadius: "999px", py: 1.2 }}
                   >

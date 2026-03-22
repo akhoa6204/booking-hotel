@@ -5,7 +5,6 @@ import crypto from "crypto";
 import { success, bad } from "../../utils/response.js";
 import { sendResetPasswordEmail } from "../../utils/mailer.js";
 
-// --- Helpers riêng ---
 const assertEnv = (key) => {
   if (!process.env[key]) throw new Error(`${key} is not set`);
 };
@@ -75,7 +74,6 @@ export async function login(req, res) {
     const isStaff = user.type === "STAFF";
     let role = "CUSTOMER";
     if (isStaff) role = roleFromStaff(user.staff);
-    console.log("role:", role);
     const token = jwt.sign(
       { sub: user.id, role: role, email: user.email },
       process.env.JWT_SECRET,
@@ -90,6 +88,7 @@ export async function login(req, res) {
           id: user.id,
           fullName: user.fullName,
           email: user.email,
+          phone: user.phone,
           role: role,
         },
       },
@@ -205,10 +204,10 @@ export async function me(req, res) {
 
 export async function changePassword(req, res) {
   try {
-    const { currentPassword, newPassword } = req.body;
+    const { password, newPassword } = req.body;
     const userId = req.user.id;
 
-    if (!currentPassword || !newPassword) {
+    if (!password || !newPassword) {
       return bad(
         res,
         "Vui lòng nhập đầy đủ mật khẩu hiện tại và mật khẩu mới.",
@@ -226,7 +225,7 @@ export async function changePassword(req, res) {
 
     if (!user) return bad(res, "Không tìm thấy người dùng.", 404);
 
-    const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
       return bad(res, "Mật khẩu hiện tại không đúng.");
     }
@@ -247,15 +246,15 @@ export async function changePassword(req, res) {
 
 export async function updateAccount(req, res) {
   try {
-    const { name, email, phone } = req.body;
+    const { fullName, email, phone } = req.body;
     const userId = req.user.id;
 
-    if (!name && !email && !phone) {
+    if (!fullName && !email && !phone) {
       return bad(res, "Không có dữ liệu để cập nhật.");
     }
 
     const data = {};
-    if (name) data.fullName = name;
+    if (fullName) data.fullName = fullName;
     if (email) data.email = email;
     if (phone) data.phone = phone;
 
@@ -267,11 +266,14 @@ export async function updateAccount(req, res) {
         fullName: true,
         email: true,
         phone: true,
-        role: true,
       },
     });
 
-    return success(res, user, "Cập nhật tài khoản thành công.");
+    return success(
+      res,
+      { ...user, role: "CUSTOMER" },
+      "Cập nhật tài khoản thành công.",
+    );
   } catch (err) {
     console.error("Update Account Error:", err);
 

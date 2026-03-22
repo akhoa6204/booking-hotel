@@ -29,6 +29,8 @@ import {
   HouseKeepingPage,
   ShiftManagementPage,
   ServiceManagementPage,
+  SearchPage,
+  PaymentPage,
 } from "@pages";
 import { Navigate, createBrowserRouter } from "react-router-dom";
 import { CustomerRoute, AdminRoute, StaffRoute } from "./ProtectedRoute";
@@ -56,6 +58,14 @@ const paths = [
               {
                 path: "/booking",
                 element: <BookingPage />,
+              },
+              {
+                path: "/search",
+                element: <SearchPage />,
+              },
+              {
+                path: "/payment",
+                element: <PaymentPage />,
               },
             ],
           },

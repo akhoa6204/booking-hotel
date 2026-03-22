@@ -43,12 +43,14 @@ import LocalHotelIcon from "@mui/icons-material/LocalHotel";
 
 import type { Amenity } from "@constant/types";
 import { Call, CallRounded, Check, Person } from "@mui/icons-material";
+import { fmtVND } from "@utils/format";
 
 type Props = {
   name: string;
   description?: string | null;
   capacity: number;
   basePrice: number;
+  discount: number;
   amenities?: Amenity[];
   rating: number;
   handleBookingRoom: () => void;
@@ -57,42 +59,45 @@ type Props = {
 const iconColor = "#24AB70";
 
 const amenityIconMap: Record<string, React.JSX.Element> = {
-  AIR_CONDITIONER: <AcUnitIcon sx={{ color: iconColor }} />,
+  WIFI: <WifiIcon sx={{ color: iconColor }} />,
+  AC: <AcUnitIcon sx={{ color: iconColor }} />,
   FAN: <AirIcon sx={{ color: iconColor }} />,
   HEATER: <WhatshotIcon sx={{ color: iconColor }} />,
-  WARDROBE: <CheckroomIcon sx={{ color: iconColor }} />,
-  DESK: <DeskIcon sx={{ color: iconColor }} />,
-  SOFA: <WeekendIcon sx={{ color: iconColor }} />,
-  BALCONY: <BalconyIcon sx={{ color: iconColor }} />,
-  WINDOW: <WindowIcon sx={{ color: iconColor }} />,
 
   TV: <TvIcon sx={{ color: iconColor }} />,
   SMART_TV: <SmartDisplayIcon sx={{ color: iconColor }} />,
   NETFLIX: <MovieIcon sx={{ color: iconColor }} />,
   CABLE_TV: <CableIcon sx={{ color: iconColor }} />,
 
-  WIFI: <WifiIcon sx={{ color: iconColor }} />,
-  HIGH_SPEED_INTERNET: <NetworkCheckIcon sx={{ color: iconColor }} />,
+  MINIBAR: <KitchenIcon sx={{ color: iconColor }} />,
+  FRIDGE: <KitchenOutlinedIcon sx={{ color: iconColor }} />,
+  KETTLE: <KettleIcon sx={{ color: iconColor }} />,
+  COFFEE_TEA: <KettleIcon sx={{ color: iconColor }} />,
 
+  DESK: <DeskIcon sx={{ color: iconColor }} />,
+  WARDROBE: <CheckroomIcon sx={{ color: iconColor }} />,
+  SAFE: <LocalHotelIcon sx={{ color: iconColor }} />,
+
+  BALCONY: <BalconyIcon sx={{ color: iconColor }} />,
+  WINDOW: <WindowIcon sx={{ color: iconColor }} />,
+  CITY_VIEW: <WindowIcon sx={{ color: iconColor }} />,
+  SEA_VIEW: <WindowIcon sx={{ color: iconColor }} />,
+
+  BATHROOM_PRIVATE: <BathroomIcon sx={{ color: iconColor }} />,
   SHOWER: <ShowerIcon sx={{ color: iconColor }} />,
   BATHTUB: <BathtubIcon sx={{ color: iconColor }} />,
   HAIR_DRYER: <LocalLaundryServiceIcon sx={{ color: iconColor }} />,
   TOWELS: <LocalLaundryServiceIcon sx={{ color: iconColor }} />,
-  HOT_WATER: <WbTwilightIcon sx={{ color: iconColor }} />,
   TOILETRIES: <BathroomIcon sx={{ color: iconColor }} />,
+  SLIPPERS: <CheckroomIcon sx={{ color: iconColor }} />,
 
-  KITCHEN: <KitchenIcon sx={{ color: iconColor }} />,
-  MICROWAVE: <MicrowaveIcon sx={{ color: iconColor }} />,
-  KETTLE: <KettleIcon sx={{ color: iconColor }} />,
-  FRIDGE: <KitchenOutlinedIcon sx={{ color: iconColor }} />,
-  STOVE: <KitchenIcon sx={{ color: iconColor }} />,
-  WASHER: <LocalLaundryServiceIcon sx={{ color: iconColor }} />,
-  DRYER: <LocalLaundryServiceIcon sx={{ color: iconColor }} />,
-  IRON: <IronIcon sx={{ color: iconColor }} />,
+  SOUNDPROOF: <NetworkCheckIcon sx={{ color: iconColor }} />,
+  NON_SMOKING: <CheckCircleOutlineIcon sx={{ color: iconColor }} />,
 
   FIRE_EXTINGUISHER: <LocalFireDepartmentIcon sx={{ color: iconColor }} />,
   SMOKE_DETECTOR: <LocalFireDepartmentIcon sx={{ color: iconColor }} />,
   FIRST_AID_KIT: <LocalHospitalIcon sx={{ color: iconColor }} />,
+
   ROOM_SERVICE: <RoomServiceIcon sx={{ color: iconColor }} />,
   DAILY_CLEANING: <CleaningServicesIcon sx={{ color: iconColor }} />,
 };
@@ -106,6 +111,7 @@ const RoomDescription = ({
   description,
   capacity,
   basePrice,
+  discount,
   amenities,
   rating,
   handleBookingRoom,
@@ -189,14 +195,27 @@ const RoomDescription = ({
             }}
           >
             <Typography fontSize={14}>Giá/ phòng/ đêm từ</Typography>
-            <Typography
-              variant="h6"
-              fontWeight={700}
-              color="#F6781E"
-              textAlign={"center"}
-            >
-              {basePrice?.toLocaleString("vi-VN")} VND
-            </Typography>
+            <Stack direction={"row"} spacing={1} justifyContent={"center"}>
+              {discount ? (
+                <>
+                  <Typography
+                    fontSize={16}
+                    fontWeight={700}
+                    sx={{ color: "#ccc", textDecoration: "line-through" }}
+                  >
+                    {fmtVND(basePrice)} VND
+                  </Typography>
+                  <Typography fontSize={16} fontWeight={700}>
+                    -
+                  </Typography>
+                </>
+              ) : (
+                ""
+              )}
+              <Typography fontSize={16} fontWeight={700} color="primary">
+                {fmtVND(Number(basePrice) - Number(discount))} VND
+              </Typography>
+            </Stack>
             <Stack
               fontSize={12}
               direction={"row"}

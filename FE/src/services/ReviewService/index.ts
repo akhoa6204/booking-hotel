@@ -5,7 +5,6 @@ import httpClient from "@services";
 const BASE = "/reviews";
 
 export default class ReviewService {
-  // ===== Người dùng =====
   static async create(payload: {
     bookingId: number;
     overall: number;
@@ -40,7 +39,7 @@ export default class ReviewService {
   // ===== Quản lý =====
   static async updateStatus(
     id: number,
-    payload: { status: ReviewStatus; reason?: string }
+    payload: { status: ReviewStatus; reason?: string },
   ) {
     const { data } = await httpClient.patch<{
       success: boolean;
@@ -56,7 +55,7 @@ export default class ReviewService {
     const { data } = await httpClient.get<{
       success: boolean;
       data: PaginatedResponse<Review>;
-    }>(`${BASE}/customer`, { params });
+    }>(`${BASE}`, { params });
     return data;
   }
   static async getStats(params?: { roomId?: number; hotelId?: number }) {
@@ -71,7 +70,7 @@ export default class ReviewService {
     const { data } = await httpClient.get<{
       success: boolean;
       data: Omit<Review, "room">;
-    }>(`${BASE}/customer/${id}`);
+    }>(`${BASE}/${id}`);
     return data;
   }
 }

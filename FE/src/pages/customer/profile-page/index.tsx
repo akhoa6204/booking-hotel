@@ -6,16 +6,18 @@ import ChangePasswordTab from "./components/change-password";
 
 const AccountProfilePage = () => {
   const {
-    user,
     activeTab,
-    setActiveTab,
-    infoTabProps,
-    changePasswordTabProps,
+    onChangeTab,
+
+    form,
+    onChange,
+    onSubmit,
+    errors,
+
     alert,
     closeSnackbar,
   } = useAccountProfilePage();
 
-  if (!user || !infoTabProps) return null;
   return (
     <>
       <Card
@@ -33,7 +35,7 @@ const AccountProfilePage = () => {
 
         <Tabs
           value={activeTab}
-          onChange={(_, v) => setActiveTab(v)}
+          onChange={(_, v) => onChangeTab(v)}
           sx={{
             borderBottom: "1px solid",
             borderColor: "grey.200",
@@ -51,11 +53,23 @@ const AccountProfilePage = () => {
           />
         </Tabs>
 
-        <Box>
-          {activeTab === "info" && <InfoTab {...infoTabProps} />}
+        <Box mt={3}>
+          {activeTab === "info" && (
+            <InfoTab
+              form={form}
+              onChange={onChange}
+              onSubmit={onSubmit}
+              errors={errors}
+            />
+          )}
 
           {activeTab === "security" && (
-            <ChangePasswordTab {...changePasswordTabProps} />
+            <ChangePasswordTab
+              form={form}
+              onChangeField={onChange}
+              onSubmit={onSubmit}
+              errors={errors}
+            />
           )}
         </Box>
       </Card>

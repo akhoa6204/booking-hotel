@@ -49,7 +49,6 @@ const useReviewDetail = () => {
   const [mode, setMode] = useState<Mode>("add");
   const [form, setForm] = useState<ReviewForm | null>(null);
 
-  // xác định mode theo URL
   useEffect(() => {
     if (!id) {
       navigate("/account/reviews");
@@ -57,7 +56,6 @@ const useReviewDetail = () => {
     }
 
     if (id === "create") {
-      // tạo mới review phải có bookingId
       if (!bookingId) {
         navigate("/account/reviews");
         return;
@@ -79,13 +77,11 @@ const useReviewDetail = () => {
   } = useQuery({
     queryKey: ["booking-detail", bookingId],
     queryFn: async () => {
-      await sleep(1000); // fake loading 1s
-      return BookingService.getById(Number(bookingId));
+      return BookingService.getByIdCustomer(Number(bookingId));
     },
     enabled: !!bookingId,
   });
 
-  // ===== REVIEW DETAIL (view mode) =====
   const {
     data: review,
     isLoading,
@@ -93,13 +89,11 @@ const useReviewDetail = () => {
   } = useQuery({
     queryKey: ["review-detail", id],
     queryFn: async () => {
-      await sleep(1000); // fake loading 1s
       return ReviewService.getById(Number(id));
     },
     enabled: isViewMode,
   });
 
-  // fill form ở view mode
   useEffect(() => {
     if (review && isViewMode) {
       setForm({
@@ -123,15 +117,13 @@ const useReviewDetail = () => {
     setForm((prev) => (prev ? { ...prev, comment: value } : prev));
   };
 
-  // ===== SUBMIT (tạo mới review) =====
   const submitMutation = useMutation({
     mutationFn: async () => {
       if (!form) return;
 
       if (mode === "add") {
         if (!bookingId) throw new Error("Thiếu bookingId");
-        // fake loading 1s khi submit nếu muốn cảm giác mượt hơn
-        await sleep(1000);
+
         return ReviewService.create({
           bookingId,
           ...form,

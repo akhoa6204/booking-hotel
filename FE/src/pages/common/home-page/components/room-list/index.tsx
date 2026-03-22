@@ -77,6 +77,7 @@ const RoomList: React.FC<Props> = ({
                   name={room.name}
                   type={room.name || "Hạng phòng"}
                   price={Number(room.basePrice)}
+                  discount={Number(room.discount)}
                   capacity={room.capacity}
                   image={room.image || fallbackImg}
                   onBooking={() => onClickRoomCard(room.capacity)}

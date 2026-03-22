@@ -1,6 +1,6 @@
 import { Router } from "express";
 import * as AdminController from "../controllers/admin/roomtypes.controller.js";
-import * as CustomerController from "../controllers/customer/roomtypes.controller.js";
+import * as CustomerController from "../controllers/common/roomtypes.controller.js";
 import {
   auth,
   notRequireRole,
@@ -13,15 +13,12 @@ import {
 } from "../middleware/upload.js";
 
 export const roomTypeRoute = Router();
-export const roomTypeAdminRoute = Router();
-
-/** Public (guest) */
 roomTypeRoute.get("/", CustomerController.list);
 roomTypeRoute.get("/:id", CustomerController.getById);
 roomTypeRoute.get("/:id/reviews", CustomerController.getReviews);
 roomTypeRoute.get("/:id/review-stats", CustomerController.getReviewStats);
 
-/** Admin */
+export const roomTypeAdminRoute = Router();
 roomTypeAdminRoute.get(
   "/",
   auth(true),

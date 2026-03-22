@@ -14,7 +14,7 @@ import useSnackbar from "@hooks/useSnackbar";
 import GlobalSnackbar from "@components/GlobalSnackbar";
 
 const LoginPage = () => {
-  const { form, onChange, onSubmit, alert, closeSnackbar } = useLogin();
+  const { form, onChange, onSubmit, alert, closeSnackbar, errors } = useLogin();
   return (
     <>
       <Container maxWidth="md">
@@ -47,6 +47,8 @@ const LoginPage = () => {
                   name="email"
                   onChange={onChange}
                   value={form.email}
+                  error={!!errors.email}
+                  helperText={errors.email}
                 />
                 <TextField
                   label="Mật khẩu"
@@ -55,6 +57,8 @@ const LoginPage = () => {
                   name="password"
                   onChange={onChange}
                   value={form.password}
+                  error={!!errors.password}
+                  helperText={errors.password}
                 />
 
                 <Button

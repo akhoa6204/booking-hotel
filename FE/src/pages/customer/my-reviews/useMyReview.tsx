@@ -14,7 +14,6 @@ const useMyReview = () => {
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ["my-reviews", page],
     queryFn: async () => {
-      await sleep(1000); // fake loading 1s
       return ReviewService.listMy({
         page,
         limit: PAGE_SIZE,

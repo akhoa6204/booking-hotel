@@ -13,7 +13,6 @@ export const AxiosInstanceDefault = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// ---------- request interceptor ----------
 AxiosInstanceDefault.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem("accessToken");
@@ -22,10 +21,9 @@ AxiosInstanceDefault.interceptors.request.use(
     }
     return config;
   },
-  (error: any) => Promise.reject(error)
+  (error: any) => Promise.reject(error),
 );
 
-// ---------- refresh logic ----------
 let isRefreshing = false;
 let queue: Array<(token: string | null) => void> = [];
 
@@ -40,7 +38,7 @@ const refreshAccessToken = async (): Promise<string> => {
   const res = await axios.post(
     `${BASE_URL}/auth/refresh`,
     { token: refreshToken },
-    { withCredentials: true }
+    { withCredentials: true },
   );
   const newToken = res.data?.token as string;
   if (!newToken) throw new Error("No new token");
@@ -48,7 +46,6 @@ const refreshAccessToken = async (): Promise<string> => {
   return newToken;
 };
 
-// ---------- response interceptor ----------
 AxiosInstanceDefault.interceptors.response.use(
   (response) => response.data,
   async (error: AxiosError) => {
@@ -57,11 +54,22 @@ AxiosInstanceDefault.interceptors.response.use(
     };
     const status = error.response?.status;
 
+    const url = original?.url || "";
+    const isAuthRoute =
+      url.includes("/auth/login") || url.includes("/auth/register");
+    if (isAuthRoute) {
+      return Promise.reject(error);
+    }
+
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (!refreshToken) {
+      return Promise.reject(error);
+    }
+
     if (!original || original._retry || (status !== 401 && status !== 403)) {
       return Promise.reject(error);
     }
 
-    // đã retry rồi
     original._retry = true;
 
     if (isRefreshing) {
@@ -82,17 +90,15 @@ AxiosInstanceDefault.interceptors.response.use(
       return AxiosInstanceDefault(original);
     } catch (e) {
       runQueue(null);
-      // localStorage.removeItem("accessToken");
-      // localStorage.removeItem("refreshToken");
-      // if (typeof window !== "undefined") window.location.href = "/login";
+      localStorage.removeItem("accessToken");
+      if (typeof window !== "undefined") window.location.href = "/login";
       return Promise.reject(e);
     } finally {
       isRefreshing = false;
     }
-  }
+  },
 );
 
-// --------- thin wrapper ----------
 const httpClient = {
   get<T = any>(url: string, config?: AxiosRequestConfig) {
     return AxiosInstanceDefault.get<T, T>(url, config); // <T, T>

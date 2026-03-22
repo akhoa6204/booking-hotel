@@ -98,18 +98,7 @@ const MyBookingPage = () => {
               {bookings.map((b) => (
                 <BookingCard
                   key={b.id}
-                  image={
-                    b.room.roomType.images?.[0]?.url ||
-                    "/images/placeholder-room.jpg"
-                  }
-                  roomName={b.room.name}
-                  roomType={b.room.roomType.name}
-                  fromDate={formatDate(b.checkIn)}
-                  toDate={formatDate(b.checkOut)}
-                  guests={b.room.roomType.capacity}
-                  totalPrice={b.finalPrice ?? b.totalPrice}
-                  status={b.status}
-                  canReview={b.canReview}
+                  booking={b}
                   onCancel={
                     tab === "upcoming" ? () => openCancelDialog(b) : undefined
                   }

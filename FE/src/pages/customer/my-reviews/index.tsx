@@ -3,12 +3,7 @@ import useMyReview from "./useMyReview";
 import Pager from "@components/pager";
 import ReviewCard from "./components/review-card";
 import ReviewCardSkeleton from "./components/ReviewCardSkeleton";
-
-const formatDate = (iso?: string) => {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleDateString("vi-VN");
-};
+import { formatDate } from "@utils/format";
 
 const MyReviewPage = () => {
   const {
@@ -54,13 +49,17 @@ const MyReviewPage = () => {
                   <ReviewCard
                     key={r.id}
                     image={
-                      r.room.roomType.images?.[0]?.url ||
+                      r.booking.room.roomType.images?.[0]?.url ||
                       "/images/placeholder-room.jpg"
                     }
-                    roomName={r.room.name}
-                    roomType={r.room.roomType.name}
-                    fromDate={formatDate(r.booking.checkIn)}
-                    toDate={formatDate(r.booking.checkOut)}
+                    roomName={r.booking.room.name}
+                    roomType={r.booking.room.roomType.name}
+                    fromDate={formatDate(r.booking.checkIn, {
+                      withWeekday: true,
+                    })}
+                    toDate={formatDate(r.booking.checkOut, {
+                      withWeekday: true,
+                    })}
                     comment={r.comment}
                     rating={r.overall}
                     onClick={() => onClickReviewCard(r.id)}

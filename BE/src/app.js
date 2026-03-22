@@ -9,7 +9,7 @@ import {
   adminBookingsRouter,
   bookingsRouter,
 } from "./routes/bookings.routes.js";
-import { adminPaymentRouter } from "./routes/payments.routes.js";
+import { adminPaymentRouter, paymentRouter } from "./routes/payments.routes.js";
 import { hotelsRouter } from "./routes/hotels.routes.js";
 import { servicesRouter } from "./routes/services.routes.js";
 import { promosRouter } from "./routes/promotions.routes.js";
@@ -24,7 +24,10 @@ import { amenitiesRouter } from "./routes/amenities.routes.js";
 import { employeesRouter } from "./routes/employees.routes.js";
 import { shiftsRouter } from "./routes/shifts.routes.js";
 import { houseKeepingRoutes } from "./routes/housekeepings.routes.js";
-import { invoiceRoutes } from "./routes/invoices.routes.js";
+import {
+  customerInvoiceRoutes,
+  invoiceRoutes,
+} from "./routes/invoices.routes.js";
 
 dotenv.config();
 
@@ -41,14 +44,14 @@ app.get("/health", (req, res) => res.json({ ok: true }));
 
 // Public
 app.use("/api/auth", authRouter);
-// app.use("/api/hotels", hotelsRouter);
 app.use("/api/promotions", promosRouter);
+app.use("/api/invoices", customerInvoiceRoutes);
 app.use("/api/rooms", roomsRouter);
 app.use("/api/bookings", bookingsRouter);
-// app.use("/api/notifications", notificationsRouter);
 app.use("/api/reviews", reviewsRouter);
 app.use("/api/room-types", roomTypeRoute);
 app.use("/api/rooms", roomsRouter);
+app.use("/api/payments", paymentRouter);
 
 // Admin
 app.use("/api/admin/room-types", roomTypeAdminRoute);

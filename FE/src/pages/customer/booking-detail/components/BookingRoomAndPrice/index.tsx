@@ -1,20 +1,19 @@
 import { Box, Divider, Stack, Typography } from "@mui/material";
 import { CalendarMonthRounded, Person } from "@mui/icons-material";
-import type { Booking } from "@constant/types";
+import type { Booking, Invoice } from "@constant/types";
 import { formatDate } from "@utils/format";
 
 type Props = {
   booking: Booking;
+  invoice: Invoice;
 };
 
-const BookingRoomAndPrice = ({ booking }: Props) => {
-  const primaryImage =
-    booking.room.roomType.images?.find((i) => i.isPrimary)?.url ??
-    booking.room.roomType.images?.[0]?.url ??
-    "/images/placeholder-room.jpg";
-
+const BookingRoomAndPrice = ({ booking, invoice }: Props) => {
   const remaining =
-    Number(booking.finalPrice) - Number(booking.amountPaid || 0);
+    Number(invoice.subtotal) -
+    Number(invoice.discount) +
+    Number(invoice.tax) -
+    Number(invoice.paidAmount);
 
   return (
     <Box
@@ -29,7 +28,7 @@ const BookingRoomAndPrice = ({ booking }: Props) => {
       <Stack direction="row" spacing={3} mb={3}>
         <Box
           component="img"
-          src={primaryImage}
+          src={booking.room.roomType.images[0]?.url}
           sx={{
             width: 260,
             height: 180,
@@ -71,7 +70,8 @@ const BookingRoomAndPrice = ({ booking }: Props) => {
               Tổng giá
             </Typography>
             <Typography fontSize={22} fontWeight={700} color="primary">
-              {Number(booking.finalPrice).toLocaleString("vi-VN")} VND
+              {Number(booking.room.roomType.basePrice).toLocaleString("vi-VN")}{" "}
+              VND
             </Typography>
           </Box>
         </Stack>
@@ -83,35 +83,33 @@ const BookingRoomAndPrice = ({ booking }: Props) => {
         <Stack direction="row" justifyContent="space-between">
           <Typography>Tổng tiền</Typography>
           <Typography>
-            {Number(booking.totalPrice).toLocaleString("vi-VN")} VND
+            {Number(invoice.subtotal).toLocaleString("vi-VN")} VND
           </Typography>
         </Stack>
 
         <Stack direction="row" justifyContent="space-between">
           <Typography>Khuyến mãi</Typography>
           <Typography color="success.main">
-            -{Number(booking.discountAmount || 0).toLocaleString("vi-VN")} VND
+            -{Number(invoice.discount || 0).toLocaleString("vi-VN")} VND
           </Typography>
         </Stack>
 
         <Stack direction="row" justifyContent="space-between">
           <Typography>Đã thanh toán</Typography>
           <Typography>
-            {Number(booking.amountPaid || 0).toLocaleString("vi-VN")} VND
+            {Number(invoice.paidAmount || 0).toLocaleString("vi-VN")} VND
           </Typography>
         </Stack>
-        {booking.status === "CONFIRMED" && (
-          <Stack direction="row" justifyContent="space-between" mt={1}>
-            <Typography fontWeight={600}>
-              Trả phần còn lại khi check-in
-            </Typography>
-            <Typography fontWeight={700}>
-              {remaining > 0
-                ? remaining.toLocaleString("vi-VN") + " VND"
-                : "0 VND"}
-            </Typography>
-          </Stack>
-        )}
+        <Stack direction="row" justifyContent="space-between" mt={1}>
+          <Typography fontWeight={600}>
+            Trả phần còn lại khi check-in
+          </Typography>
+          <Typography fontWeight={700}>
+            {remaining > 0
+              ? remaining.toLocaleString("vi-VN") + " VND"
+              : "0 VND"}
+          </Typography>
+        </Stack>
       </Stack>
     </Box>
   );

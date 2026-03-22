@@ -53,12 +53,13 @@ const AccountSidebar = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const user = useAppSelector((state) => state.account.user); 
+  const user = useAppSelector((state) => state.account.user);
   const fullName = user?.fullName || user?.name || "User";
 
-  const handleLogout = () => {
+  const handleLogOut = () => {
+    localStorage.removeItem("accessToken");
     dispatch(logout());
-    navigate("/login");
+    navigate("/login", { replace: true });
   };
 
   const isActivePath = (to?: string) => {
@@ -112,7 +113,7 @@ const AccountSidebar = () => {
             return (
               <ListItemButton
                 key={item.label}
-                onClick={handleLogout}
+                onClick={handleLogOut}
                 {...commonProps}
               >
                 <ListItemIcon>{item.icon}</ListItemIcon>

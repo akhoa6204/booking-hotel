@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 const VacationCountdown = ({ checkIn }: { checkIn: string }) => {
   const countdown = diffNights(
     dayjs().toDate().toString(),
-    dayjs(checkIn).toDate().toString()
+    dayjs(checkIn).toDate().toString(),
   );
 
   return (

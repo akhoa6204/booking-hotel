@@ -388,7 +388,7 @@ export default function BookingViewDialog({
         onChange={(_, v) => onChangeBookingViewTab(v)}
       >
         <Tab label="Thông tin" value="info" />
-        {showServiceTab && <Tab label="Dịch vụ" value="service" />}
+        <Tab label="Dịch vụ" value="service" />
         <Tab label="Buồng phòng" value="housekeeping" />
         <Tab label="Thanh toán" value="payment" />
       </Tabs>
@@ -398,22 +398,20 @@ export default function BookingViewDialog({
           <BookingInfoTab booking={booking} />
         </TabPanel>
         {/* Dịch vụ */}
-        {showServiceTab && (
-          <TabPanel value={bookingViewTab} tab="service">
-            <BookingServiceTab
-              services={services}
-              invoice={invoice}
-              filterService={filterService}
-              metaServices={metaServices}
-              loadingInvoiceDetail={loadingInvoiceDetail}
-              onChangePageService={onChangePageService}
-              onChangeTabService={onChangeTabService}
-              updateService={updateService}
-              removeService={removeService}
-              canEdit={canEdit}
-            />
-          </TabPanel>
-        )}
+        <TabPanel value={bookingViewTab} tab="service">
+          <BookingServiceTab
+            services={services}
+            invoice={invoice}
+            filterService={filterService}
+            metaServices={metaServices}
+            loadingInvoiceDetail={loadingInvoiceDetail}
+            onChangePageService={onChangePageService}
+            onChangeTabService={onChangeTabService}
+            updateService={updateService}
+            removeService={removeService}
+            canEdit={canEdit}
+          />
+        </TabPanel>
 
         <TabPanel value={bookingViewTab} tab="housekeeping">
           <HousekeepingTab

@@ -4,10 +4,10 @@ const BASE = "/auth";
 
 export default class AccountService {
   static async changePassword(payload: {
-    currentPassword: string;
+    password: string;
     newPassword: string;
   }) {
-    const res = await httpClient.post(`${BASE}/change-password`, payload);
+    const res = await httpClient.patch(`${BASE}/password/`, payload);
     return res.data;
   }
 
@@ -16,7 +16,7 @@ export default class AccountService {
     email?: string;
     phone?: string;
   }) {
-    const res = await httpClient.post(`${BASE}/info`, payload);
+    const res = await httpClient.patch(`${BASE}/me`, payload);
     return res.data;
   }
 
@@ -31,15 +31,34 @@ export default class AccountService {
     return res.data;
   }
 
-  // === NEW: gửi email reset password ===
   static async requestPasswordReset(payload: { email: string }) {
-    const res = await httpClient.post(`${BASE}/password/request-reset`, payload);
-    return res.data; // { success, message, data: null }
+    const res = await httpClient.post(
+      `${BASE}/password/reset-request`,
+      payload,
+    );
+    return res.data;
   }
 
-  // === NEW: đặt lại mật khẩu với token ===
   static async resetPassword(payload: { token: string; newPassword: string }) {
     const res = await httpClient.post(`${BASE}/password/reset`, payload);
-    return res.data; // { success, message, data: null }
+    return res.data;
+  }
+
+  static async login(data: { email: string; password: string }) {
+    try {
+      const res = await httpClient.post(`${BASE}/login`, data);
+      return res.data;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  static async me() {
+    try {
+      const res = await httpClient.get(`${BASE}/me`);
+      return res.data;
+    } catch (e) {
+      throw e;
+    }
   }
 }

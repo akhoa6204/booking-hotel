@@ -6,9 +6,10 @@ import {
   requireRoles,
 } from "../middleware/auth.js";
 import * as AdminPaymentController from "../controllers/admin/payments.controller.js";
+import * as paymentController from "../controllers//common/payment.controller.js";
 
 export const adminPaymentRouter = Router();
-
+export const paymentRouter = Router();
 adminPaymentRouter.post(
   "/",
   auth(true),
@@ -16,16 +17,17 @@ adminPaymentRouter.post(
   AdminPaymentController.create,
 );
 
-adminPaymentRouter.post(
-  "/:id/checkout-link",
-  auth(true),
-  notRequireRoles(["CUSTOMER", "HOUSEKEEPING"]),
-  AdminPaymentController.createCheckoutLink,
-);
-
 adminPaymentRouter.patch(
   "/:id",
   auth(true),
   notRequireRoles(["CUSTOMER", "HOUSEKEEPING"]),
   AdminPaymentController.updateStatus,
+);
+
+paymentRouter.post("/", auth(), paymentController.create);
+paymentRouter.patch("/:id", auth(), paymentController.updateStatus);
+paymentRouter.post(
+  "/:id/checkout-link",
+  auth(),
+  paymentController.createCheckoutLink,
 );

@@ -46,14 +46,14 @@ const useHome = () => {
     },
 
     (form) => {
-      navigate("/booking", {
+      navigate("/search", {
         state: {
           from: form.from,
           to: form.to,
           capacity: form.capacity,
         },
       });
-    }
+    },
   );
   const { data, isLoading: loading } = useQuery({
     queryKey: ["roomTypes", filters],
@@ -81,7 +81,7 @@ const useHome = () => {
   };
   const onClickRoomCard = (capacity: number) => {
     const dateRange = buildDefaultSearchParams(capacity);
-    navigate("/booking", {
+    navigate("/search", {
       state: {
         ...dateRange,
       },
@@ -105,7 +105,7 @@ const useHome = () => {
           pathname: location.pathname,
           search: newParams.toString() ? `?${newParams.toString()}` : "",
         },
-        { replace: true }
+        { replace: true },
       );
     }
   }, []);

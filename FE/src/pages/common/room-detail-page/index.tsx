@@ -36,14 +36,12 @@ const RoomDetail = () => {
 
   return (
     <Container sx={{ py: 4 }}>
-      {/* ===== ẢNH PHÒNG ===== */}
       {loadingRoomBlock ? (
         <ImageGallerySkeleton />
       ) : (
         <ImageGallery images={room?.images ?? []} />
       )}
 
-      {/* ===== MÔ TẢ / TIỆN NGHI / GIÁ ===== */}
       <Box mt={4}>
         {loadingRoomBlock || !room ? (
           <RoomDescriptionSkeleton />
@@ -53,6 +51,7 @@ const RoomDetail = () => {
             description={room.description}
             capacity={room.capacity}
             basePrice={room.basePrice}
+            discount={room.discount}
             amenities={room.amenities}
             rating={reviewStats?.average.overall ?? 0}
             handleBookingRoom={handleBookingRoom}

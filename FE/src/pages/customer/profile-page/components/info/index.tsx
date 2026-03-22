@@ -2,139 +2,76 @@ import {
   Box,
   Button,
   Divider,
+  InputLabel,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
+import { Form } from "../../useAccountProfilePage";
 
-export interface EditableFieldProps {
-  value: string | null;
-  input: string;
-  isEditing: boolean;
-  saving?: boolean;
-  onClickEdit: () => void;
-  onChangeInput: (value: string) => void;
-  onCancel: () => void;
-  onSave: () => void;
-}
-
-export interface InfoTabProps {
-  name: EditableFieldProps;
-  email: EditableFieldProps;
-  phone: EditableFieldProps;
-}
-
-const labelBoxSx = {
-  flexShrink: 0,
-  minWidth: 140,
+type Props = {
+  form: Pick<Form, "fullName" | "email" | "phone">;
+  errors: Partial<
+    Record<keyof Pick<Form, "fullName" | "email" | "phone">, string>
+  >;
+  onChange: (
+    field: keyof Pick<Form, "fullName" | "email" | "phone">,
+    value: any,
+  ) => void;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 };
-
-const EditableField = (
-  label: string,
-  field: EditableFieldProps,
-  helperText?: string
-) => {
+const InfoTab = ({ form, errors, onChange, onSubmit }: Props) => {
   return (
-    <Stack direction="row" alignItems="flex-start" spacing={2} py={2}>
-      <Box sx={labelBoxSx}>
-        <Typography variant="body2" color="text.secondary">
-          {label}
-        </Typography>
-      </Box>
+    <Box component="form" onSubmit={onSubmit}>
+      <Stack spacing={3}>
+        <Box>
+          <InputLabel shrink>Họ và tên</InputLabel>
+          <TextField
+            fullWidth
+            size="small"
+            value={form.fullName || ""}
+            onChange={(e) => onChange("fullName", e.target.value)}
+            error={!!errors.fullName}
+            helperText={errors.fullName}
+          />
+        </Box>
 
-      <Box flex={1}>
-        {!field.isEditing ? (
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            <Box>
-              <Typography fontWeight={500}>
-                {field.value || "Chưa cập nhật"}
-              </Typography>
-              {helperText && (
-                <Typography variant="body2" color="text.secondary" mt={0.5}>
-                  {helperText}
-                </Typography>
-              )}
-            </Box>
+        <Box>
+          <InputLabel shrink>Email</InputLabel>
+          <TextField
+            fullWidth
+            size="small"
+            value={form.email || ""}
+            onChange={(e) => onChange("email", e.target.value)}
+            error={!!errors.email}
+            helperText={errors.email}
+          />
+        </Box>
 
-            <Typography
-              color="primary"
-              fontWeight={600}
-              fontSize={14}
-              sx={{ cursor: "pointer" }}
-              onClick={field.onClickEdit}
-            >
-              Chỉnh sửa
-            </Typography>
-          </Stack>
-        ) : (
-          <Box>
-            <Typography variant="body2" fontWeight={600} mb={0.5}>
-              {label} <small className="text-red-500">*</small>
-            </Typography>
+        <Box>
+          <InputLabel shrink>Số điện thoại</InputLabel>
+          <TextField
+            fullWidth
+            size="small"
+            value={form.phone || ""}
+            onChange={(e) => {
+              const value = e.target.value.replace(/[^0-9]/g, "");
+              onChange("phone", value);
+            }}
+            error={!!errors.phone}
+            helperText={errors.phone}
+            inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+          />
+        </Box>
 
-            <TextField
-              size="small"
-              fullWidth
-              value={field.input}
-              onChange={(e) => field.onChangeInput(e.target.value)}
-            />
+        <Divider />
 
-            {helperText && (
-              <Typography variant="body2" color="text.secondary" mt={0.5}>
-                {helperText}
-              </Typography>
-            )}
-
-            <Stack
-              direction="row"
-              justifyContent="flex-end"
-              spacing={1.5}
-              mt={2}
-            >
-              <Button
-                variant="outlined"
-                onClick={field.onCancel}
-                disabled={field.saving}
-              >
-                Hủy
-              </Button>
-              <Button
-                variant="contained"
-                onClick={field.onSave}
-                disabled={field.saving}
-              >
-                Lưu thay đổi
-              </Button>
-            </Stack>
-          </Box>
-        )}
-      </Box>
-    </Stack>
-  );
-};
-
-const InfoTab = ({ name, email, phone }: InfoTabProps) => {
-  return (
-    <Box>
-      {EditableField("Tên", name)}
-      <Divider />
-
-      {EditableField(
-        "Địa chỉ email",
-        email,
-        "Email dùng để đăng nhập và nhận thông báo."
-      )}
-      <Divider />
-
-      {EditableField(
-        "Số điện thoại",
-        phone,
-        "Khách sạn sẽ liên hệ với bạn qua số này nếu cần."
-      )}
+        <Stack direction="row" justifyContent="flex-end">
+          <Button type="submit" variant="contained">
+            Lưu thay đổi
+          </Button>
+        </Stack>
+      </Stack>
     </Box>
   );
 };

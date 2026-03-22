@@ -11,29 +11,8 @@ export const initializeAuth = createAsyncThunk(
       const response = await httpClient.get("/auth/me");
       return { user: response.data, token };
     } catch (error: any) {
-      localStorage.removeItem("token");
+      localStorage.removeItem("accessToken");
       return rejectWithValue("Session expired");
     }
-  }
-);
-
-export const login = createAsyncThunk(
-  "auth/login",
-  async (
-    credentials: { email: string; password: string },
-    { rejectWithValue }
-  ) => {
-    try {
-      console.log("email:", credentials.email);
-      console.log("password:", credentials.password);
-
-      const response = await httpClient.post("/auth/login", credentials);
-      const { user, token } = response.data;
-      localStorage.setItem("accessToken", token);
-
-      return { user, token };
-    } catch (error: any) {
-      return rejectWithValue(error.response.data.message || "Login failed");
-    }
-  }
+  },
 );

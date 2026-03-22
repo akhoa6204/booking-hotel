@@ -1,8 +1,11 @@
+import { LoginResponse } from "@constant/response/auth";
 import { Errors } from "@constant/types";
 import useForm from "@hooks/useForm";
 import { useAppDispatch, useAppSelector } from "@hooks/useRedux";
 import useSnackbar from "@hooks/useSnackbar";
-import { login } from "@store/thunk/account.thunk";
+import AccountService from "@services/AccountService";
+import { loginSuccess } from "@store/slice/account.slice";
+import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -22,26 +25,43 @@ const validate = (f: LoginForm): Errors<LoginForm> => {
 const useLogin = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { alert, closeSnackbar, showSuccess, showError } = useSnackbar();
   const callback = async (form: LoginForm) => {
-    const { user } = await dispatch(login(form)).unwrap();
-    if (user.role === "ADMIN" || user.role === "MANAGER") {
-      navigate("/manager/dashboard", { replace: true });
-      return;
-    }
-
-    if (user.role === "RECEPTION") {
-      navigate("/manager/front-desk", { replace: true });
-      return;
-    }
-
-    if (user.role === "HOUSEKEEPING") {
-      navigate("/manager/housekeeping-tasks", { replace: true });
-      return;
-    }
-
-    navigate("/", { replace: true });
+    await mLogin.mutateAsync(form);
   };
 
+  const mLogin = useMutation({
+    mutationFn: async (data: { email: string; password: string }) =>
+      await AccountService.login(data),
+    onSuccess: (data: LoginResponse) => {
+      localStorage.setItem("accessToken", data.token);
+
+      const user = data.user;
+
+      dispatch(loginSuccess(user));
+
+      if (user.role === "ADMIN" || user.role === "MANAGER") {
+        navigate("/manager/dashboard", { replace: true });
+        return;
+      }
+
+      if (user.role === "RECEPTION") {
+        navigate("/manager/front-desk", { replace: true });
+        return;
+      }
+
+      if (user.role === "HOUSEKEEPING") {
+        navigate("/manager/housekeeping-tasks", { replace: true });
+        return;
+      }
+
+      navigate("/", { replace: true });
+    },
+    onError: (e: any) => {
+      const msg = e?.response?.data?.message || "Đăng nhập thất bại";
+      showError(msg);
+    },
+  });
   const location = useLocation();
 
   const { form, errors, onChange, onSubmit } = useForm<LoginForm>(
@@ -49,7 +69,6 @@ const useLogin = () => {
     validate,
     callback,
   );
-  const { alert, closeSnackbar, showSuccess } = useSnackbar();
 
   useEffect(() => {
     if (location.state?.result) {

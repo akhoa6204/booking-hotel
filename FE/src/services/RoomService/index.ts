@@ -26,10 +26,10 @@ export default class RoomService {
     }
   }
 
-  static async get(id: number): Promise<Room> {
+  static async getById(id: number): Promise<Room> {
     try {
       const res = await httpClient.get<{ success: boolean; data: Room }>(
-        `${ADMIN_BASE}/${id}`,
+        `${BASE}/${id}`,
       );
       return res.data;
     } catch (error: any) {

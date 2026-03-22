@@ -49,7 +49,11 @@ export type RoomType = {
   images?: Image[];
 };
 
-export type RoomTypeGuest = Omit<RoomType, "rooms"> & { image: string };
+export type RoomTypeGuest = Omit<RoomType, "rooms"> & {
+  discount: number;
+  image: string;
+  roomId: number;
+};
 
 export type RoomStatus =
   | "VACANT_CLEAN"
@@ -144,10 +148,10 @@ export interface Invoice {
 
   status: InvoiceStatus;
 
-  subtotal: string;
-  discount: string;
-  tax: string;
-  paidAmount: string;
+  subtotal: number;
+  discount: number;
+  tax: number;
+  paidAmount: number;
 
   items: InvoiceItem[];
 
@@ -166,9 +170,9 @@ export interface Booking {
   status: BookingStatus;
 
   room: Pick<Room, "id" | "name" | "roomType">;
-  invoice: { id: number };
+  invoice: Invoice;
   inspected: boolean;
-  inspectionTaskId?: number;
+  canReview?: boolean;
 }
 
 export interface QuoteResponse {
@@ -242,10 +246,6 @@ export type TopCustomers = {
 };
 export interface Review {
   id: number;
-  bookingId: number;
-  userId?: number | null;
-  customerId?: number | null;
-  roomId: number;
   overall: number;
   amenities?: number | null;
   cleanliness?: number | null;
@@ -255,30 +255,7 @@ export interface Review {
   hygiene?: number | null;
   comment?: string | null;
   status: "PENDING" | "PUBLISHED" | "HIDDEN";
-  createdAt: string;
-  updatedAt: string;
-  user?: { id: number; fullName: string; email?: string };
-  customer?: { id: number; fullName: string; phone: string; email: string };
-  room?: {
-    id: number;
-    name: string;
-    roomType: {
-      id: number;
-      name: string;
-      basePrice: number;
-      capacity: number;
-      images?: {
-        id: number;
-        url: string;
-        isPrimary: boolean;
-        sortOrder: number;
-      }[];
-    };
-  };
-  booking: Pick<Booking, "checkIn" | "checkOut">;
-
-  // BE map thêm displayName
-  displayName: string;
+  booking: Booking;
 }
 export type ReviewStats = {
   average: number;

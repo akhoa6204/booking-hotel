@@ -26,7 +26,7 @@ const theme = createTheme({
     MuiButton: {
       defaultProps: { disableElevation: true },
       styleOverrides: {
-        root: { borderRadius: 64, paddingInline: 16, paddingBlock: 10 },
+        root: { borderRadius: 64, paddingInline: 12, paddingBlock: 8 },
         containedPrimary: { color: "#fff" },
         text: { paddingInline: 8 },
       },

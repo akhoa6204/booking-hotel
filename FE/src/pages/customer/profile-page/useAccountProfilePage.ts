@@ -1,166 +1,177 @@
-import { useState, type ChangeEvent } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@hooks/useRedux";
-import { useMutation } from "@tanstack/react-query";
-import type { InfoTabProps, EditableFieldProps } from "./components/info";
-import type { ChangePasswordTabProps } from "./components/change-password";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import AccountService from "@services/AccountService";
-import { initializeAuth } from "@store/thunk/account.thunk";
 import { useSearchParams } from "react-router-dom";
-
-type PwState = {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-};
+import { loginSuccess } from "@store/slice/account.slice";
+import useSnackbar from "@hooks/useSnackbar";
+import useForm from "@hooks/useForm";
+import { User } from "@constant/types";
 
 export type ActiveTab = "info" | "security";
+export type Form = {
+  fullName: string;
+  phone?: string;
+  email?: string;
+  password?: string;
+  newPassword?: string;
+  confirmPassword?: string;
+};
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const validateFormByTab = (form: Form, activeTab: ActiveTab) => {
+  const errors: Partial<Record<keyof Form, string>> = {};
+
+  const { password, newPassword, confirmPassword } = form;
+
+  if (activeTab === "security") {
+    if (!password) {
+      errors.password = "Vui lòng nhập mật khẩu hiện tại.";
+    }
+
+    if (!newPassword) {
+      errors.newPassword = "Vui lòng nhập mật khẩu mới.";
+    }
+
+    if (!confirmPassword) {
+      errors.confirmPassword = "Vui lòng xác nhận mật khẩu.";
+    }
+
+    if (newPassword && confirmPassword && newPassword !== confirmPassword) {
+      errors.confirmPassword = "Mật khẩu xác nhận không khớp.";
+    }
+
+    if (newPassword && newPassword.length < 6) {
+      errors.newPassword = "Mật khẩu mới phải từ 6 ký tự trở lên.";
+    }
+  }
+  if (activeTab === "info") {
+    if (!form.fullName) {
+      errors.fullName = "Họ và tên không được để trống.";
+    }
+    if (!form.email) {
+      errors.email = "Email không được để trống.";
+    }
+    if (form.email && !emailRegex.test(form.email)) {
+      errors.email = "Email không hợp lệ.";
+    }
+  }
+
+  return errors;
+};
 const useAccountProfilePage = () => {
-  const user = useAppSelector((s) => s.account.user);
+  const queryClient = useQueryClient();
   const dispatch = useAppDispatch();
-
-  const [alert, setAlert] = useState({
-    open: false,
-    message: "",
-    severity: "success" as "success" | "error",
-  });
-
-  const showAlert = (
-    message: string,
-    severity: "success" | "error" = "success"
-  ) => setAlert({ open: true, message, severity });
-
-  const closeSnackbar = () => setAlert((prev) => ({ ...prev, open: false }));
+  const user: User = useAppSelector((state) => state.account.user);
+  const { alert, showSuccess, showError, closeSnackbar } = useSnackbar();
 
   const [searchParams] = useSearchParams();
   const tabFromUrl = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState<ActiveTab>(
-    (tabFromUrl as ActiveTab) ?? "info"
+    tabFromUrl === "security" ? "security" : "info",
   );
-
-  // =====================================
-  // Helper factory: tạo state cho 1 field
-  // =====================================
-  const createEditableField = (
-    initialValue: string | null,
-    key: "name" | "email" | "phone"
-  ): EditableFieldProps => {
-    const [isEditing, setIsEditing] = useState(false);
-    const [input, setInput] = useState(initialValue ?? "");
-
-    const mutation = useMutation({
-      mutationFn: (value: string) =>
-        AccountService.updateAccount({ [key]: value }),
-      onSuccess: () => {
-        showAlert(`Cập nhật ${key} thành công!`, "success");
-        setIsEditing(false);
-        dispatch(initializeAuth());
+  const { form, onChangeField, updateForm, resetForm, onSubmit, errors } =
+    useForm<Form>(
+      {
+        fullName: "",
+        phone: "",
+        email: "",
+        password: "",
+        newPassword: "",
+        confirmPassword: "",
       },
-      onError: (err: any) => {
-        const msg =
-          err?.response?.data?.message || `Không thể cập nhật ${key}.`;
-        showAlert(msg, "error");
-        setIsEditing(false);
+      (f) => validateFormByTab(f, activeTab),
+      async () => {
+        if (activeTab === "info") {
+          await mUpdateMutation.mutateAsync({
+            fullName: form.fullName,
+            phone: form.phone,
+            email: form.email,
+          });
+        }
+        if (activeTab === "security") {
+          await mChangePassword.mutateAsync({
+            password: form.password,
+            newPassword: form.newPassword,
+          });
+        }
       },
-    });
-
-    return {
-      value: initialValue,
-      input,
-      isEditing,
-      saving: mutation.isPending,
-
-      onClickEdit: () => setIsEditing(true),
-      onChangeInput: (v) => setInput(v),
-
-      onCancel: () => {
-        setInput(initialValue ?? "");
-        setIsEditing(false);
-      },
-
-      onSave: async () => {
-        if (!input) return;
-        await mutation.mutateAsync(input);
-      },
-    };
-  };
-
-  // Tạo 3 field editable
-  const nameField = createEditableField(user?.fullName ?? "", "name");
-  const emailField = createEditableField(user?.email ?? "", "email");
-  const phoneField = createEditableField(user?.phone ?? "", "phone");
-
-  // ===============================
-  // PASSWORD FORM
-  // ===============================
-  const [pwState, setPwState] = useState<PwState>({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
+    );
+  const { data } = useQuery({
+    queryKey: ["user"],
+    queryFn: AccountService.me,
+    staleTime: 5 * 60 * 1000,
   });
 
-  const onChangeField: ChangePasswordTabProps["onChangeField"] = (
-    e: ChangeEvent<HTMLInputElement>
-  ) => {
-    const { name, value } = e.target;
-    setPwState((prev) => ({ ...prev, [name]: value }));
+  useEffect(() => {
+    if (data) {
+      dispatch(loginSuccess(data));
+    }
+  }, [data, dispatch]);
+
+  useEffect(() => {
+    updateForm({
+      fullName: user.fullName,
+      phone: user.phone,
+      email: user.email,
+    });
+  }, [user]);
+  const onChangeTab = (tab: ActiveTab) => {
+    updateForm({
+      fullName: user.fullName,
+      email: user.email,
+      phone: user.phone,
+      password: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+    setActiveTab(tab);
   };
 
-  const changePasswordMutation = useMutation({
-    mutationFn: (payload: { currentPassword: string; newPassword: string }) =>
+  const mUpdateMutation = useMutation({
+    mutationFn: (data: Form) => AccountService.updateAccount(data),
+    onSuccess: async () => {
+      showSuccess(`Cập nhật thông tin người dùng thành công!`);
+      queryClient.invalidateQueries({
+        queryKey: ["user"],
+      });
+    },
+    onError: (err: any) => {
+      const msg =
+        err?.response?.data?.message ||
+        `Cập nhật thông tin người dùng thất bái.`;
+      showError(msg);
+    },
+  });
+
+  const mChangePassword = useMutation({
+    mutationFn: (payload: { password: string; newPassword: string }) =>
       AccountService.changePassword(payload),
     onSuccess: () => {
-      showAlert("Đổi mật khẩu thành công!", "success");
-      setPwState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      showSuccess("Đổi mật khẩu thành công!");
+      updateForm({
+        password: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
       setActiveTab("info");
     },
     onError: (err: any) => {
       const msg = err?.response?.data?.message || "Lỗi khi đổi mật khẩu.";
-      showAlert(msg, "error");
+      showError(msg);
     },
   });
 
-  const handleSubmitPassword: ChangePasswordTabProps["onSubmit"] = async () => {
-    const { currentPassword, newPassword, confirmPassword } = pwState;
-
-    if (!currentPassword || !newPassword || !confirmPassword)
-      return showAlert("Vui lòng nhập đầy đủ các trường.", "error");
-
-    if (newPassword !== confirmPassword)
-      return showAlert("Mật khẩu xác nhận không khớp.", "error");
-
-    if (newPassword.length < 6)
-      return showAlert("Mật khẩu mới phải từ 6 ký tự trở lên.", "error");
-
-    await changePasswordMutation.mutateAsync({ currentPassword, newPassword });
-  };
-
-  // ===============================
-  // Build InfoTabProps (rất gọn)
-  // ===============================
-  const infoTabProps: InfoTabProps | null = user
-    ? {
-        name: nameField,
-        email: emailField,
-        phone: phoneField,
-      }
-    : null;
-
-  const changePasswordTabProps: ChangePasswordTabProps = {
-    currentPassword: pwState.currentPassword,
-    newPassword: pwState.newPassword,
-    confirmPassword: pwState.confirmPassword,
-    loading: changePasswordMutation.isPending,
-    onChangeField,
-    onSubmit: handleSubmitPassword,
-  };
-
   return {
-    user,
     activeTab,
-    setActiveTab,
-    infoTabProps,
-    changePasswordTabProps,
+    onChangeTab,
+
+    form,
+    onChange: onChangeField,
+    onSubmit,
+    errors,
+
     alert,
     closeSnackbar,
   };

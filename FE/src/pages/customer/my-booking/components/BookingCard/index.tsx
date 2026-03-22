@@ -1,32 +1,17 @@
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { CalendarMonthRounded, LocationOnRounded } from "@mui/icons-material";
-import { BookingStatus } from "@constant/types";
+import { Booking, BookingStatus } from "@constant/types";
+import { fmtVND, formatDate } from "@utils/format";
 
 type BookingCardProps = {
-  image: string;
-  roomName: string;
-  roomType: string;
-  fromDate: string;
-  toDate: string;
-  guests: number;
-  status: BookingStatus;
-  totalPrice: number;
-  canReview: boolean;
+  booking: Booking;
   onCancel?: () => void;
   onClick?: () => void;
   onReview?: () => void;
 };
 
 const BookingCard = ({
-  image,
-  roomName,
-  roomType,
-  fromDate,
-  toDate,
-  guests,
-  totalPrice,
-  status,
-  canReview,
+  booking,
   onCancel,
   onClick,
   onReview,
@@ -36,7 +21,7 @@ const BookingCard = ({
   };
 
   const renderActionButton = () => {
-    switch (status) {
+    switch (booking.status) {
       case "PENDING":
       case "CONFIRMED":
         if (!onCancel) return null;
@@ -76,7 +61,7 @@ const BookingCard = ({
               Đặt lại
             </Button>
 
-            {canReview && (
+            {booking.status === "CHECKED_OUT" && (
               <Button
                 variant="contained"
                 sx={{ textTransform: "none", py: 0.5, px: 2, borderRadius: 1 }}
@@ -127,7 +112,7 @@ const BookingCard = ({
     >
       <Box
         component="img"
-        src={image}
+        src={booking.room.roomType.images[0]?.url}
         sx={{
           width: 220,
           height: 150,
@@ -145,11 +130,11 @@ const BookingCard = ({
         >
           <Box>
             <Typography fontSize={20} fontWeight={600}>
-              Phòng {roomName}
+              Phòng {booking.room.name}
             </Typography>
 
             <Typography color="text.secondary" mb={1.5}>
-              {roomType}
+              {booking.room.roomType.name}
             </Typography>
 
             <Stack spacing={0.5}>
@@ -159,14 +144,15 @@ const BookingCard = ({
                   sx={{ color: "#657672" }}
                 />
                 <Typography color="text.secondary">
-                  {fromDate} - {toDate}
+                  {formatDate(booking.checkIn, { withWeekday: true })} -{" "}
+                  {formatDate(booking.checkOut, { withWeekday: true })}
                 </Typography>
               </Stack>
 
               <Stack direction="row" spacing={1} alignItems="center">
                 <LocationOnRounded fontSize="small" sx={{ color: "#657672" }} />
                 <Typography color="text.secondary">
-                  {guests ?? "-"} khách
+                  {booking.room.roomType.capacity ?? "-"} khách
                 </Typography>
               </Stack>
             </Stack>
@@ -181,9 +167,26 @@ const BookingCard = ({
               <Typography fontSize={14} color="text.secondary">
                 Tổng giá
               </Typography>
-              <Typography fontSize={22} fontWeight={700} color="primary">
-                {Number(totalPrice).toLocaleString("vi-VN")} VND
-              </Typography>
+              <Stack direction={"row"} spacing={1}>
+                <Typography
+                  fontSize={16}
+                  fontWeight={700}
+                  sx={{ color: "#ccc", textDecoration: "line-through" }}
+                >
+                  {fmtVND(booking.invoice.subtotal)} VND
+                </Typography>
+                <Typography fontSize={16} fontWeight={700}>
+                  -
+                </Typography>
+                <Typography fontSize={16} fontWeight={700} color="primary">
+                  {fmtVND(
+                    Number(booking.invoice.subtotal) -
+                      Number(booking.invoice.discount) +
+                      Number(booking.invoice.tax),
+                  )}{" "}
+                  VND
+                </Typography>
+              </Stack>
             </Box>
 
             {renderActionButton()}

@@ -1,9 +1,12 @@
 import { Router } from "express";
 import { auth, notRequireRole } from "../middleware/auth.js";
+import * as AdminBookingController from "../controllers/admin/bookings.controller.js";
+import * as bookingController from "../controllers/common/booking.controller.js";
 
 export const bookingsRouter = Router();
-
-import * as AdminBookingController from "../controllers/admin/bookings.controller.js";
+bookingsRouter.get("/", auth(true), bookingController.list);
+bookingsRouter.post("/", auth(), bookingController.create);
+bookingsRouter.get("/:id", auth(), bookingController.getById);
 
 export const adminBookingsRouter = Router();
 

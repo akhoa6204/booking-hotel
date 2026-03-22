@@ -10,21 +10,15 @@ import {
   FormControlLabel,
   Radio,
 } from "@mui/material";
-import { BookingForm, GuestType } from "../../useBooking";
+import { BookingForm } from "../../interface";
 
 type Props = {
   value: BookingForm;
-  onChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => void;
-  onChangeGuestType: (v: GuestType) => void;
+  onChange: (field: keyof BookingForm, value: any) => void;
+  errors: Partial<Record<keyof BookingForm, string>>;
 };
 
-const BookingInfoCard = ({ value, onChange, onChangeGuestType }: Props) => {
-  const handleGuestTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChangeGuestType(e.target.value as GuestType);
-  };
-
+const BookingInfoCard = ({ value, onChange, errors }: Props) => {
   return (
     <Paper
       elevation={0}
@@ -53,8 +47,10 @@ const BookingInfoCard = ({ value, onChange, onChangeGuestType }: Props) => {
           fullWidth
           value={value.fullName}
           name="fullName"
-          onChange={onChange}
+          onChange={(e) => onChange("fullName", e.target.value)}
           placeholder="Nhập họ tên"
+          error={!!errors["fullName"]}
+          helperText={errors["fullName"]}
         />
       </Box>
 
@@ -68,8 +64,10 @@ const BookingInfoCard = ({ value, onChange, onChangeGuestType }: Props) => {
             fullWidth
             value={value.phone}
             name="phone"
-            onChange={onChange}
+            onChange={(e) => onChange("phone", e.target.value)}
             placeholder="+84..."
+            error={!!errors["phone"]}
+            helperText={errors["phone"]}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
@@ -80,8 +78,10 @@ const BookingInfoCard = ({ value, onChange, onChangeGuestType }: Props) => {
             fullWidth
             value={value.email}
             name="email"
-            onChange={onChange}
+            onChange={(e) => onChange("email", e.target.value)}
             placeholder="email@example.com"
+            error={!!errors["email"]}
+            helperText={errors["email"]}
           />
         </Grid>
       </Grid>
@@ -105,7 +105,7 @@ const BookingInfoCard = ({ value, onChange, onChangeGuestType }: Props) => {
         <RadioGroup
           sx={{ mt: 1 }}
           value={value.guestType}
-          onChange={handleGuestTypeChange}
+          onChange={(e) => onChange("guestType", e.target.value)}
         >
           <FormControlLabel
             value="SELF"

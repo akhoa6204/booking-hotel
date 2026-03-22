@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { bad } from "../utils/response.js";
 
-export function auth(required = true) {
+export function auth(required = false) {
   return (req, res, next) => {
     const header = req.headers.authorization || "";
     const token = header.startsWith("Bearer ") ? header.slice(7) : null;

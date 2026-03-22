@@ -14,4 +14,6 @@ export type BookingForm = {
   email: string;
   guestType: GuestType;
   arrivalTime: string;
+  checkIn: string;
+  checkOut: string;
 };

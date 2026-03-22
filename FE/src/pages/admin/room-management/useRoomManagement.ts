@@ -114,7 +114,7 @@ export default function useRoomManagement() {
 
   const { data: roomDetail, isFetching: isRoomDetailLoading } = useQuery({
     queryKey: ["room", editingRoomId],
-    queryFn: () => RoomService.get(editingRoomId!),
+    queryFn: () => RoomService.getById(editingRoomId!),
     enabled: !!editingRoomId && dialogState.open,
   });
 

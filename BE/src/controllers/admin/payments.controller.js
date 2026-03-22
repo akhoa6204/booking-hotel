@@ -3,18 +3,16 @@ import { sendBookingConfirmationEmail } from "../../utils/mailer.js";
 import { bad, success } from "../../utils/response.js";
 import { paymentBanking } from "../../utils/paymentOnline.js";
 
-const FE_ORIGIN = process.env.FE_ORIGIN || "http://localhost:5173";
-
 export async function create(req, res) {
   try {
     const { invoiceId, method, amount, type } = req.body || {};
     if (!invoiceId) return bad(res, "invoiceId là trường bắt buộc", 400);
 
-    if (!Number.isFinite(amount) || amount <= 0)
+    if (!Number.isFinite(Number(amount)) || Number(amount) <= 0)
       return bad(res, "Số tiền cần thanh toán không hợp lệ", 400);
 
     const invoice = await prisma.invoice.findUnique({
-      where: { id: invoiceId },
+      where: { id: Number(invoiceId) },
       select: {
         status: true,
       },
@@ -32,19 +30,15 @@ export async function create(req, res) {
 
     if (!invoice) return bad(res, "Không tồn tại Hóa đơn", 400);
 
-    const subtotal = Number(invoice.subtotal || 0);
-    const discount = Number(invoice.discount || 0);
-    const tax = Number(invoice.tax || 0);
-    const total = subtotal - discount + tax;
-    const paidAmount = Number(invoice.paidAmount || 0);
+    if (invoice.status === "PAID")
+      return bad(res, "Hóa đơn đã được thanh toán", 400);
 
-    const remainingAmount = total - paidAmount;
-
-    if (remainingAmount) return bad(res, "Hóa đơn đã được thanh toán", 400);
+    if (invoice.status === "CANCELLED")
+      return bad(res, "Hóa đơn đã được hủy bỏ", 400);
 
     const existedRoomOrDeposit = await prisma.payment.findFirst({
       where: {
-        invoiceId,
+        invoiceId: Number(invoiceId),
         type: {
           in: ["ROOM", "DEPOSIT"],
         },
@@ -69,10 +63,11 @@ export async function create(req, res) {
     const payment = await prisma.payment.create({
       data: {
         invoiceId,
-        amount,
+        amount: Number(amount),
         method,
         type: paymentType,
       },
+      select: { id: true },
     });
 
     return success(
@@ -85,68 +80,6 @@ export async function create(req, res) {
     );
   } catch (e) {
     console.error(e);
-    return bad(res, e.message, 500);
-  }
-}
-
-export async function createCheckoutLink(req, res) {
-  try {
-    const paymentId = Number(req.params.id);
-
-    const payment = await prisma.payment.findUnique({
-      where: { id: paymentId },
-      include: {
-        invoice: {
-          include: {
-            booking: {
-              include: {
-                room: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!payment) {
-      return bad(res, "Không tìm thấy payment", 404);
-    }
-
-    if (payment.method !== "TRANSFER") {
-      return bad(res, "Payment này không phải ONLINE", 400);
-    }
-
-    if (payment.status !== "UNPAID") {
-      return bad(res, "Payment không ở trạng thái tạo link", 400);
-    }
-
-    const bookingId = payment.invoice?.booking?.id;
-
-    const successUrl = `${FE_ORIGIN}/manager/bookings?result=success&paymentId=${encodeURIComponent(paymentId)}&bookingId=${encodeURIComponent(bookingId)}`;
-    const errorUrl = `${FE_ORIGIN}/manager/bookings?result=fail&paymentId=${encodeURIComponent(paymentId)}&bookingId=${encodeURIComponent(bookingId)}`;
-    const cancelUrl = `${FE_ORIGIN}/manager/bookings?result=cancel&paymentId=${encodeURIComponent(paymentId)}&bookingId=${encodeURIComponent(bookingId)}`;
-
-    const { checkoutURL, fields } = paymentBanking({
-      id: payment.id,
-      amount: Math.round(Number(payment.amount)),
-      desc: `Thanh toán đặt phòng: ${payment.invoice.booking.room?.name || ""}`,
-      successUrl,
-      errorUrl,
-      cancelUrl,
-    });
-
-    return success(
-      res,
-      {
-        checkoutURL,
-        fields,
-        paymentId: payment.id,
-      },
-      "Tạo link thanh toán ONLINE thành công",
-      200,
-    );
-  } catch (e) {
-    console.error("[createPaymentOnlineLink] Error occurred", e);
     return bad(res, e.message, 500);
   }
 }
