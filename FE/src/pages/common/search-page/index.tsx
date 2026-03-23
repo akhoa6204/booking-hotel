@@ -6,14 +6,13 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import SearchBar from "./components/search-bar";
 import SearchResultsHeader from "./components/result-header";
 import useSearch from "./useSearch";
 import RoomCardSkeleton from "@components/room-card-skeleton";
 import RoomCard from "@components/room-card";
 import { MatchNotFound } from "@assets/images";
 import GlobalSnackbar from "@components/GlobalSnackbar";
-import { BookingStepper } from "@components";
+import { BookingStepper, SearchBar, SearchBarMobile } from "@components";
 
 const SearchPage = () => {
   const {
@@ -31,6 +30,8 @@ const SearchPage = () => {
 
     alert,
     closeSnackbar,
+
+    isMobile,
   } = useSearch();
   return (
     <>
@@ -38,19 +39,29 @@ const SearchPage = () => {
         <BookingStepper activeStep={1} />
       </Container>
 
-      <Stack
-        sx={{
-          bgcolor: "rgba(36,171,112,0.05)",
-          py: "44px",
-          justifyContent: "center",
-        }}
-      >
-        <SearchBar
-          form={formSearch}
-          onChange={onChangeFormSearch}
-          onSubmit={onSubmitSearch}
-        />
-      </Stack>
+      {!isMobile ? (
+        <Stack
+          sx={{
+            bgcolor: "rgba(36,171,112,0.05)",
+            py: "44px",
+            justifyContent: "center",
+          }}
+        >
+          <SearchBar
+            form={formSearch}
+            onChange={onChangeFormSearch}
+            onSubmit={onSubmitSearch}
+          />
+        </Stack>
+      ) : (
+        <Container>
+          <SearchBarMobile
+            form={formSearch}
+            onChange={onChangeFormSearch}
+            onSubmit={onSubmitSearch}
+          />
+        </Container>
+      )}
 
       <Container>
         {loadingRooms ? (

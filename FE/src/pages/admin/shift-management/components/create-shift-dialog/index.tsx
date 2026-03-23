@@ -1,4 +1,4 @@
-import EntityPickerField from "@components/entity-picker-field";
+import { EntityPickerField } from "@components";
 import { Employee } from "@constant/types";
 import {
   Dialog,

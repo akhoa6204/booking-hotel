@@ -21,10 +21,13 @@ const BookingStepper = ({ activeStep = 1 }: BookingStepperProps) => {
               key={label}
               direction="row"
               alignItems="center"
-              sx={{ flex: isLast ? "0 auto" : 1 }} 
+              sx={{ flex: isLast ? "0 auto" : 1 }}
             >
-              {/* circle + label */}
-              <Stack direction="row" spacing={1} alignItems="center">
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={1}
+                alignItems="center"
+              >
                 <Chip
                   label={stepNumber}
                   size="small"
@@ -61,7 +64,6 @@ const BookingStepper = ({ activeStep = 1 }: BookingStepperProps) => {
                 </Typography>
               </Stack>
 
-              {/* line bên phải, chỉ vẽ nếu không phải step cuối */}
               {!isLast && (
                 <Box
                   sx={{

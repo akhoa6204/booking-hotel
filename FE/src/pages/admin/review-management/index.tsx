@@ -15,23 +15,19 @@ import ReviewCard from "./components/ReviewCard";
 
 export default function ReviewManagement() {
   const {
-    // list
     rows,
     totalPages,
     currentPage,
     isLoading,
 
-    // filters
     filters,
     handleSearch,
     handleChangePage,
-    handleChangeFilter, // reserved nếu sau này lọc theo phòng/trạng thái
+    handleChangeFilter,
 
-    // stats
     stats,
     statsLoading,
 
-    // actions
     onPublish,
     onHide,
   } = useReviewManagement();
@@ -51,23 +47,22 @@ export default function ReviewManagement() {
       >
         <StatCard
           title="Đánh giá trung bình"
-          value={Number(stats?.average ?? 0)}
+          value={Number(stats?.averageRating ?? 0)}
           isStar
           loading={statsLoading}
         />
         <StatCard
           title="Tổng đánh giá"
-          value={Number(stats?.total ?? 0)}
+          value={Number(stats?.totalReviews ?? 0)}
           loading={statsLoading}
         />
         <StatCard
           title="Đánh giá ẩn"
-          value={Number(stats?.hidden ?? 0)}
+          value={Number(stats?.hiddenReviews ?? 0)}
           loading={statsLoading}
         />
       </Stack>
 
-      {/* Filters */}
       <Stack
         direction={{ xs: "column", md: "row" }}
         spacing={1.5}
@@ -89,7 +84,6 @@ export default function ReviewManagement() {
         />
       </Stack>
 
-      {/* List */}
       <Paper variant="outlined" sx={{ borderRadius: 2.5, p: 2 }}>
         <Typography fontSize={20} fontWeight={600} mb={2}>
           Danh sách đánh giá

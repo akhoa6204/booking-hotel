@@ -9,13 +9,13 @@ reviewsRouter.post("/", auth(), reviewController.create);
 
 reviewsRouter.get("/", auth(), reviewController.list);
 
+reviewsRouter.get("/stats", auth(), reviewController.getStats);
+
 reviewsRouter.get("/:id", auth(), reviewController.getById);
 
-reviewsAdminRouter.patch(
+reviewsRouter.patch(
   "/:id",
   auth(),
   notRequireRole("CUSTOMER"),
   reviewController.updateStatus,
 );
-
-// reviewsRouter.get("/stats", auth(), requireRole("MANAGER"), getStats);

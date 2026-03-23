@@ -101,14 +101,6 @@ const useDashboard = () => {
       staleTime: 30_000,
       retry: 1,
     });
-  // 6) Top customers
-  const { data: topCustomers, isLoading: loadingTopCustomers } =
-    useQuery<TopCustomers>({
-      queryKey: TOP_CUSTOMERS_QK(),
-      queryFn: () => DashboardService.getTopCustomers(),
-      staleTime: 60_000,
-      retry: 1,
-    });
 
   // handlers
   const handleChangeCheckinPage = (page: number) => setCheckinPage(page);
@@ -152,10 +144,6 @@ const useDashboard = () => {
     // monthly stats
     monthlyBookingStats,
     loadingMonthlyBookingStats,
-
-    // top customer
-    topCustomers,
-    loadingTopCustomers,
 
     // checkins
     checkins,

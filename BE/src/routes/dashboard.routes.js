@@ -43,10 +43,3 @@ dashboardRoutes.get(
   requireRoles(["ADMIN", "MANAGER"]),
   dasboardController.getMonthlyBookingStats,
 );
-
-dashboardRoutes.get(
-  "/top-customers",
-  auth(true),
-  requireRoles(["ADMIN", "MANAGER"]),
-  dasboardController.getTopCustomers,
-);

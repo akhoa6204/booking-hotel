@@ -5,10 +5,10 @@ const PropertyIntro = () => {
   return (
     <Box sx={{ my: 12.5, borderRadius: 2, bgcolor: "#F4FBF8" }}>
       <Grid container>
-        <Grid size={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Box component={"img"} src={ImageHotel} />
         </Grid>
-        <Grid size={6} sx={{ px: 9, pt: 9 }}>
+        <Grid size={{ xs: 12, sm: 6 }} sx={{ p: { xs: 4.5, sm: 9 } }}>
           <Typography variant="body2" fontSize={40} fontWeight={600}>
             Về Skyline
           </Typography>

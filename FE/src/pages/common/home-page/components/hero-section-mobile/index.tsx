@@ -1,11 +1,9 @@
 import SearchBarMobile from "@components/search-bar-mobile";
-import { Errors, FormBooking } from "@constant/types";
+import { FormBooking } from "@constant/types";
 import { Box, Container, Typography } from "@mui/material";
 interface Props {
   form: FormBooking;
-  onChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => void;
+  onChange: (field: keyof FormBooking, value: any) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 const HeroSectionMobile: React.FC<Props> = (props) => {

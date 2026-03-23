@@ -5,8 +5,6 @@ import { Review, ReviewStats, ReviewStatus } from "@constant/types";
 import ReviewService from "@services/ReviewService";
 
 type Filters = {
-  hotelId: number;
-  roomId?: number;
   status: ReviewStatus;
   q?: string;
   page: number;
@@ -14,7 +12,6 @@ type Filters = {
 };
 
 const initialFilters: Filters = {
-  hotelId: 1,
   status: "PUBLISHED",
   q: "",
   page: 1,
@@ -45,7 +42,6 @@ const useReviewManagement = () => {
       ReviewService.list({
         page: filters.page,
         limit: filters.limit,
-        roomId: filters.roomId ? Number(filters.roomId) : undefined,
         q: filters.q?.trim() || undefined,
       }),
   });
@@ -68,12 +64,9 @@ const useReviewManagement = () => {
   const { data: statsRes, isLoading: statsLoading } = useQuery({
     queryKey: [
       "reviews:stats",
-      { roomId: filters.roomId, hotelId: filters.hotelId },
     ],
     queryFn: () =>
       ReviewService.getStats({
-        roomId: filters.roomId ? Number(filters.roomId) : undefined,
-        hotelId: filters.hotelId,
       }),
     staleTime: 30_000,
   });

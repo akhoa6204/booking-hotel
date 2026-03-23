@@ -92,14 +92,22 @@ export async function create(req, res) {
 export async function list(req, res) {
   try {
     const { page, limit, skip } = parsePageLimit(req, { defaultLimit: 10 });
-    const q = req.query?.q?.toString()?.trim() || "";
-    const status = req.query?.status?.toString()?.trim() || "PUBLISHED";
-    const bookingId = Number(req.query?.bookingId || 0);
 
+    const { q, roomTypeId } = req.query;
+
+    const isAdmin = req.user?.role !== "CUSTOMER";
     const where = {
       isActive: true,
-      ...(status && status !== "ALL" ? { status } : {}),
-      ...(bookingId ? { bookingId } : {}),
+      ...(isAdmin ? {} : { status: "PUBLISHED" }),
+      ...(Number(roomTypeId)
+        ? {
+            booking: {
+              room: {
+                roomTypeId: Number(roomTypeId),
+              },
+            },
+          }
+        : {}),
       ...(q
         ? {
             OR: [
@@ -136,18 +144,9 @@ export async function list(req, res) {
         where,
         select: {
           id: true,
-          bookingId: true,
           overall: true,
-          amenities: true,
-          cleanliness: true,
-          comfort: true,
-          locationScore: true,
-          valueForMoney: true,
-          hygiene: true,
           comment: true,
           status: true,
-          staffReply: true,
-          staffReplyAt: true,
           createdAt: true,
           booking: {
             select: {
@@ -177,17 +176,6 @@ export async function list(req, res) {
               },
             },
           },
-          staff: {
-            select: {
-              id: true,
-              user: {
-                select: {
-                  id: true,
-                  fullName: true,
-                },
-              },
-            },
-          },
         },
         orderBy: { createdAt: "desc" },
         skip,
@@ -195,14 +183,8 @@ export async function list(req, res) {
       }),
     ]);
 
-    const items = rows.map((r) => ({
-      ...r,
-      displayName: r.booking?.fullName || "Khách",
-      staffDisplayName: r.staff?.user?.fullName || null,
-    }));
-
     const meta = buildOffsetMeta({ page, limit, total });
-    return success(res, { items, meta });
+    return success(res, { items: rows, meta });
   } catch (e) {
     console.error("listReviews error:", e);
     return bad(res, e.message || "Internal server error", 500);
@@ -326,5 +308,79 @@ export async function updateStatus(req, res) {
   } catch (e) {
     console.error("updateReviewStatus error:", e);
     return bad(res, e.message || "Internal server error", 500);
+  }
+}
+
+export async function getStats(req, res) {
+  try {
+    const { roomTypeId } = req.query;
+    const isManager = req.user?.role !== "CUSTOMER";
+    if (roomTypeId && isNaN(Number(roomTypeId))) {
+      return bad(res, "roomTypeId không hợp lệ", 400);
+    }
+
+    const publishedWhere = {
+      isActive: true,
+      ...(!isManager && { status: "PUBLISHED" }),
+      ...(Number(roomTypeId)
+        ? {
+            booking: {
+              room: {
+                roomTypeId: Number(roomTypeId),
+              },
+            },
+          }
+        : {}),
+    };
+
+    const hiddenWhere = {
+      ...(Number(roomTypeId)
+        ? {
+            booking: {
+              room: {
+                roomTypeId: Number(roomTypeId),
+              },
+            },
+          }
+        : {}),
+      OR: [{ isActive: false }, { status: { not: "PUBLISHED" } }],
+    };
+
+    const [publishedStats, hiddenCount] = await Promise.all([
+      prisma.review.aggregate({
+        where: publishedWhere,
+        _avg: {
+          overall: true,
+        },
+        _count: {
+          _all: true,
+        },
+      }),
+
+      prisma.review.count({
+        where: hiddenWhere,
+      }),
+    ]);
+
+    const avgRating = publishedStats._avg.overall
+      ? Number(publishedStats._avg.overall.toFixed(1))
+      : null;
+
+    const totalReviews = publishedStats._count._all || 0;
+    const hiddenReviews = hiddenCount || 0;
+
+    return success(
+      res,
+      isManager
+        ? {
+            averageRating: avgRating,
+            totalReviews,
+            hiddenReviews,
+          }
+        : { averageRating: avgRating, totalReviews },
+    );
+  } catch (e) {
+    console.error("getReviewStats error:", e);
+    return bad(res, e.message || "Lỗi server nội bộ", 500);
   }
 }

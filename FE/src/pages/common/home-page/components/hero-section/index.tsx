@@ -2,13 +2,11 @@ import { BgHome } from "@assets/images";
 import { Box, Grid, Stack, Typography } from "@mui/material";
 import RoomRoundedIcon from "@mui/icons-material/RoomRounded";
 
-import SearchBar from "../search-bar";
 import { Errors, FormBooking } from "@constant/types";
+import { SearchBar } from "@components";
 interface Props {
   form: FormBooking;
-  onChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => void;
+  onChange: (field: keyof FormBooking, value: any) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 const HeroSection: React.FC<Props> = (props) => {

@@ -31,7 +31,7 @@ const MyReviewPage = () => {
           Đánh giá của tôi
         </Typography>
 
-        {loading ? (
+        {loading && fetching ? (
           <Stack spacing={2}>
             {Array.from({ length: 3 }).map((_, idx) => (
               <ReviewCardSkeleton key={idx} />

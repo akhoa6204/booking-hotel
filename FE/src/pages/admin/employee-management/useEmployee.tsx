@@ -101,7 +101,7 @@ const useEmployee = () => {
           return;
         }
       } else {
-        if (!employeeForm.newPassword) {
+        if (tab === "password" && !employeeForm.newPassword) {
           showError("Mật khẩu không được để trống");
           return;
         }

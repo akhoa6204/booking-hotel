@@ -1,36 +1,30 @@
-import { useEffect, useState } from "react";
 import { FormBooking, RoomTypeGuest } from "@constant/types";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useForm from "@hooks/useForm";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import RoomTypeService from "@services/RoomTypeService";
 import { useMediaQuery, useTheme } from "@mui/material";
 import { buildDefaultSearchParams } from "@utils/dateRange";
 import useSnackbar from "@hooks/useSnackbar";
 import { sleep } from "@utils/sleep";
-
-const initForm: FormBooking = {
-  from: "",
-  to: "",
-  capacity: 1,
-};
+import { formatDateInput } from "@utils/format";
 
 const useHome = () => {
-  const qc = useQueryClient();
+  const today = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(today.getDate() + 1);
 
-  const [filters, setFilters] = useState({
-    hotelId: 1,
-    q: "",
-    page: 1,
-    limit: 3,
-  });
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const { alert, showError, closeSnackbar, showSuccess } = useSnackbar();
+  const { alert, showError, closeSnackbar } = useSnackbar();
 
-  const { form, errors, onChange, onSubmit } = useForm<FormBooking>(
-    initForm,
+  const { form, errors, onChangeField, onSubmit } = useForm<FormBooking>(
+    {
+      from: formatDateInput(today.toISOString()),
+      to: formatDateInput(tomorrow.toISOString()),
+      capacity: 1,
+    },
 
     (f) => {
       const errors: any = {};
@@ -56,14 +50,12 @@ const useHome = () => {
     },
   );
   const { data, isLoading: loading } = useQuery({
-    queryKey: ["roomTypes", filters],
+    queryKey: ["roomTypes"],
     queryFn: async () => {
       await sleep(500);
       return RoomTypeService.listGuest({
-        hotelId: filters.hotelId,
-        page: filters.page,
-        limit: filters.limit,
-        q: filters.q,
+        page: 1,
+        limit: 3,
       });
     },
   });
@@ -88,33 +80,11 @@ const useHome = () => {
     });
   };
 
-  const location = useLocation();
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const result = params.get("result");
-
-    if (result === "true" || result === "success") {
-      showSuccess("Đặt phòng thành công");
-
-      const newParams = new URLSearchParams(location.search);
-      newParams.delete("result");
-
-      navigate(
-        {
-          pathname: location.pathname,
-          search: newParams.toString() ? `?${newParams.toString()}` : "",
-        },
-        { replace: true },
-      );
-    }
-  }, []);
-
   return {
     loading,
     rooms: roomTypes,
     form,
-    onChange,
+    onChange: onChangeField,
     onSubmit,
     errors,
     isMobile,

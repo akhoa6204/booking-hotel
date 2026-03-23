@@ -26,7 +26,7 @@ export default class ReviewService {
   static async list(params?: {
     page?: number;
     limit?: number;
-    roomId?: number;
+    roomTypeId?: number;
     q?: string;
   }): Promise<PaginatedResponse<Review>> {
     const { data } = await httpClient.get<{
@@ -36,7 +36,6 @@ export default class ReviewService {
     return data;
   }
 
-  // ===== Quản lý =====
   static async updateStatus(
     id: number,
     payload: { status: ReviewStatus; reason?: string },
@@ -44,21 +43,11 @@ export default class ReviewService {
     const { data } = await httpClient.patch<{
       success: boolean;
       data: Review;
-    }>(`${BASE}/${id}/status`, payload);
+    }>(`${BASE}/${id}`, payload);
     return data;
   }
 
-  static async listMy(params?: {
-    page?: number;
-    limit?: number;
-  }): Promise<PaginatedResponse<Review>> {
-    const { data } = await httpClient.get<{
-      success: boolean;
-      data: PaginatedResponse<Review>;
-    }>(`${BASE}`, { params });
-    return data;
-  }
-  static async getStats(params?: { roomId?: number; hotelId?: number }) {
+  static async getStats(params?: { roomTypeId?: number }) {
     const { data } = await httpClient.get<{
       success: boolean;
       data: ReviewStats;

@@ -3,9 +3,10 @@ import RoomTypeService from "@services/RoomTypeService";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { BookingForm, FormData, GuestType, SortKey } from "./interface";
-import { SearchState } from "@constant/types";
+import { FormBooking, SearchState } from "@constant/types";
 import useForm from "@hooks/useForm";
+import { formatDateInput } from "@utils/format";
+import { useMediaQuery, useTheme } from "@mui/material";
 
 const useSearch = () => {
   const navigate = useNavigate();
@@ -13,9 +14,13 @@ const useSearch = () => {
 
   const { alert, showError, closeSnackbar } = useSnackbar();
 
-  const initForm: FormData = {
-    from: state?.from ?? "",
-    to: state?.to ?? "",
+  const today = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(today.getDate() + 1);
+
+  const initForm: FormBooking & { sort: "price-asc" | "price-desc" } = {
+    from: state?.from ?? formatDateInput(today.toISOString()),
+    to: state?.to ?? formatDateInput(tomorrow.toISOString()),
     capacity: Number(state?.capacity ?? 1),
     sort: "price-asc",
   };
@@ -23,9 +28,9 @@ const useSearch = () => {
   const {
     form: formSearch,
     errors,
-    onChange: onChangeFormSearch,
+    onChangeField: onChangeFormSearch,
     onSubmit: onSubmitSearch,
-  } = useForm<FormData>(initForm, undefined, (f) => {
+  } = useForm<FormBooking>(initForm, undefined, (f) => {
     setFilters((p) => ({
       ...p,
       from: f.from,
@@ -69,7 +74,7 @@ const useSearch = () => {
   const rooms = data?.items ?? [];
   const meta = data?.meta;
 
-  const handleSort = (s: SortKey) =>
+  const handleSort = (s: "price-asc" | "price-desc") =>
     setFilters((p) => ({ ...p, sort: s, page: 1 }));
 
   const handleRoomType = (value: string | undefined) =>
@@ -88,6 +93,8 @@ const useSearch = () => {
 
   const loadingRooms = isLoading || isFetching;
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   return {
     formSearch,
     errors,
@@ -109,6 +116,8 @@ const useSearch = () => {
     closeSnackbar,
 
     onBooking,
+
+    isMobile,
   };
 };
 

@@ -209,10 +209,12 @@ const useHouseKeeping = () => {
   useEffect(() => {
     if (!task) return;
     selectRoom(task.room);
-    selectStaff(task.staff.user);
+    if (task.staff?.user) {
+      selectStaff(task.staff.user);
+    }
     updateForm({
       roomId: task.room.id,
-      staffId: task.staff.id,
+      staffId: task.staff?.id || undefined,
       type: task.type,
       status: task.status,
       updatedAt: task.updatedAt,

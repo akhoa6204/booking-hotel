@@ -52,7 +52,6 @@ function overlapNights(aStart, aEnd, bStart, bEnd) {
   return Math.ceil((e - s) / MS);
 }
 
-// --- 1. Tổng quan + Delta ---
 export async function getDashboardSummary(req, res) {
   try {
     const { start, end } = todayRange();
@@ -63,7 +62,6 @@ export async function getDashboardSummary(req, res) {
 
     const { start: lastWeekStart, end: lastWeekEnd } = lastWeekRange();
 
-    // booking đang chiếm phòng hôm nay
     const activeBookingWhere = {
       status: { in: ["CONFIRMED", "CHECKED_IN"] },
       checkIn: { lt: end },
@@ -94,7 +92,11 @@ export async function getDashboardSummary(req, res) {
         },
       }),
 
-      prisma.room.count(),
+      prisma.room.count({
+        where: {
+          status: { not: "OUT_OF_SERVICE" },
+        },
+      }),
 
       prisma.booking.findMany({
         where: activeBookingWhere,
@@ -109,7 +111,9 @@ export async function getDashboardSummary(req, res) {
       }),
 
       prisma.room.count({
-        where: { status: "CLEANING" },
+        where: {
+          status: "VACANT_DIRTY",
+        },
       }),
 
       prisma.payment.aggregate({
@@ -143,12 +147,10 @@ export async function getDashboardSummary(req, res) {
       }),
     ]);
 
-    // ===== calculations =====
-
     const busyToday = busyRoomsToday.length;
     const busyYesterday = busyRoomsYesterday.length;
 
-    const availableRooms = Math.max(0, totalRooms - busyToday - cleanRooms);
+    const availableRooms = Math.max(0, totalRooms - busyToday);
 
     const occupancyPct =
       totalRooms > 0 ? Math.round((busyToday / totalRooms) * 100) : 0;
@@ -429,75 +431,6 @@ export async function getMonthlyBookingStats(req, res) {
       cancelled: cancelledCount,
       cancelRate,
     });
-  } catch (e) {
-    return bad(res, e.message || "Internal server error", 500);
-  }
-}
-
-// GET /api/dashboard/top-customers
-export async function getTopCustomers(req, res) {
-  try {
-    const limit = 5;
-
-    const base = req.query.month
-      ? dayjs.tz(req.query.month, VN_TZ)
-      : dayjs().tz(VN_TZ);
-    const { start, end } = monthRangeVN(base);
-
-    const bookings = await prisma.booking.findMany({
-      where: {
-        status: { not: "CANCELLED" },
-        checkIn: { gte: start, lt: end },
-        AND: [{ customerId: { not: null } }, { staffId: null }],
-      },
-      select: {
-        customerId: true,
-        customer: {
-          select: {
-            user: {
-              select: {
-                fullName: true,
-              },
-            },
-          },
-        },
-        payments: {
-          where: { status: "PAID", paidAt: { gte: start, lt: end } },
-          select: { amount: true },
-        },
-      },
-    });
-
-    const map = new Map();
-
-    for (const b of bookings) {
-      const paid = b.payments.reduce(
-        (sum, p) => sum + Number(p.amount || 0),
-        0,
-      );
-      if (!map.has(b.customerId)) {
-        map.set(b.customerId, {
-          name: b.customer?.user?.fullName || "Khách lẻ",
-          bookings: 0,
-          totalPaid: 0,
-        });
-      }
-      const agg = map.get(b.customerId);
-      agg.bookings++;
-      agg.totalPaid += paid;
-    }
-
-    const items = Array.from(map.values())
-      .sort((a, b) => b.totalPaid - a.totalPaid)
-      .slice(0, limit)
-      .map((c, i) => ({
-        rank: i + 1,
-        name: c.name,
-        bookings: c.bookings,
-        totalPaid: c.totalPaid,
-      }));
-
-    return success(res, { month: base.format("YYYY-MM"), items });
   } catch (e) {
     return bad(res, e.message || "Internal server error", 500);
   }

@@ -33,7 +33,7 @@ const ReviewCard: React.FC<Props> = ({ review, onToggleStatus }) => {
     >
       <Box>
         <Stack direction="row" alignItems="center" spacing={1}>
-          <Typography fontWeight={600}>{review.displayName}</Typography>
+          <Typography fontWeight={600}>{review.booking.fullName}</Typography>
           <Chip
             size="small"
             label={isPublished ? "Hiển thị" : "Đã ẩn"}
@@ -43,7 +43,7 @@ const ReviewCard: React.FC<Props> = ({ review, onToggleStatus }) => {
         </Stack>
 
         <Typography variant="body2" color="text.secondary" mt={0.5}>
-          Phòng {review.room?.name} •{" "}
+          Phòng {review.booking.room?.name} •{" "}
           {dayjs(review.createdAt).format("DD/MM/YYYY")}
         </Typography>
 
@@ -60,7 +60,7 @@ const ReviewCard: React.FC<Props> = ({ review, onToggleStatus }) => {
             borderColor: isPublished ? "#d32f2f" : "#24AB70",
             color: isPublished ? "#d32f2f" : "#24AB70",
             borderRadius: 2,
-            py:0.5,
+            py: 0.5,
             "&:hover": {
               backgroundColor: isPublished ? "rgba(211,47,47,0.08)" : "#b9e4c7",
               borderColor: isPublished ? "#d32f2f" : "#24AB70",

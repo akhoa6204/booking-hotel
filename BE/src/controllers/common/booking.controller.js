@@ -278,6 +278,7 @@ export async function list(req, res) {
         email: true,
         room: {
           select: {
+            name: true,
             roomType: {
               select: {
                 basePrice: true,

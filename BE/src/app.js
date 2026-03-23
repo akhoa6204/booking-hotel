@@ -10,10 +10,8 @@ import {
   bookingsRouter,
 } from "./routes/bookings.routes.js";
 import { adminPaymentRouter, paymentRouter } from "./routes/payments.routes.js";
-import { hotelsRouter } from "./routes/hotels.routes.js";
 import { servicesRouter } from "./routes/services.routes.js";
 import { promosRouter } from "./routes/promotions.routes.js";
-import { notificationsRouter } from "./routes/notifications.routes.js";
 import { reviewsRouter } from "./routes/reviews.routes.js";
 import {
   roomTypeRoute,

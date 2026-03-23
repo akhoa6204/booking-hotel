@@ -61,7 +61,7 @@ const BookingCard = ({
               Đặt lại
             </Button>
 
-            {booking.status === "CHECKED_OUT" && (
+            {booking.canReview && (
               <Button
                 variant="contained"
                 sx={{ textTransform: "none", py: 0.5, px: 2, borderRadius: 1 }}

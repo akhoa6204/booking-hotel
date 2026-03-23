@@ -6,7 +6,6 @@ import PagedSection from "./components/PagedSection";
 import BookingItemCard from "./components/BookingItemCard";
 import MonthlyRevenueChart from "./components/MonthlyRevenueChart";
 import MonthlyBookingStatsCard from "./components/MonthlyBookingStatsCard";
-import TopCustomersList from "./components/TopCustomersList";
 
 const Dashboard = () => {
   const {
@@ -18,8 +17,7 @@ const Dashboard = () => {
     loadingMonthlyRevenue,
     monthlyBookingStats,
     loadingMonthlyBookingStats,
-    topCustomers,
-    loadingTopCustomers,
+
     checkins,
     loadingCheckins,
     checkinsMeta,
@@ -176,8 +174,6 @@ const Dashboard = () => {
             />
           </Grid>
         </Grid>
-
-        <TopCustomersList data={topCustomers} loading={loadingTopCustomers} />
       </Box>
     </>
   );

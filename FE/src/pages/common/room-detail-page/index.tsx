@@ -53,7 +53,7 @@ const RoomDetail = () => {
             basePrice={room.basePrice}
             discount={room.discount}
             amenities={room.amenities}
-            rating={reviewStats?.average.overall ?? 0}
+            rating={Number(reviewStats?.averageRating) || 0}
             handleBookingRoom={handleBookingRoom}
           />
         )}

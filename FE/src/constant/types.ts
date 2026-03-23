@@ -256,11 +256,12 @@ export interface Review {
   comment?: string | null;
   status: "PENDING" | "PUBLISHED" | "HIDDEN";
   booking: Booking;
+  createdAt?: string;
 }
 export type ReviewStats = {
-  average: number;
-  total: number;
-  hidden: number;
+  averageRating: Number;
+  totalReviews: Number;
+  hiddenReviews: Number;
 };
 
 export type ReviewStatus = "PUBLISHED" | "HIDDEN";

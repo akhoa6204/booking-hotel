@@ -23,12 +23,13 @@ const pillInputSX = {
 
 interface Props {
   form: FormBooking;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (field: keyof FormBooking, value: any) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
 const SearchBarMobile: React.FC<Props> = ({ form, onChange, onSubmit }) => {
   const { from, to, capacity } = form;
+  console.log("form:", form);
   const today = useMemo(() => formatDate(new Date().toDateString()), []);
   const minCheckout = from && from > today ? from : today;
 
@@ -50,7 +51,7 @@ const SearchBarMobile: React.FC<Props> = ({ form, onChange, onSubmit }) => {
             fullWidth
             type="date"
             value={from}
-            onChange={onChange}
+            onChange={(e) => onChange("from", e.target.value)}
             variant="outlined"
             placeholder="Ngày nhận phòng"
             slotProps={{
@@ -77,7 +78,7 @@ const SearchBarMobile: React.FC<Props> = ({ form, onChange, onSubmit }) => {
             fullWidth
             type="date"
             value={to}
-            onChange={onChange}
+            onChange={(e) => onChange("to", e.target.value)}
             variant="outlined"
             placeholder="Ngày trả phòng"
             slotProps={{
@@ -104,7 +105,7 @@ const SearchBarMobile: React.FC<Props> = ({ form, onChange, onSubmit }) => {
             fullWidth
             type="number"
             value={capacity}
-            onChange={onChange}
+            onChange={(e) => onChange("capacity", e.target.value)}
             variant="outlined"
             placeholder="Số lượng khách"
             slotProps={{

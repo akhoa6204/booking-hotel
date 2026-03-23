@@ -21,7 +21,7 @@ import {
 import { Close, Search } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { BookingForm } from "../../useBookingManagement";
-import EntityPickerField from "@components/entity-picker-field";
+import { EntityPickerField } from "@components";
 
 type RoomTypeLite = {
   id?: number;

@@ -1,12 +1,11 @@
+import ReviewService from "@services/ReviewService";
 import RoomTypeService from "@services/RoomTypeService";
 import { useQuery } from "@tanstack/react-query";
 import { buildDefaultSearchParams } from "@utils/dateRange";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-const fakeDelay = (ms: number) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
-
+``;
 const useRoomDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -18,7 +17,6 @@ const useRoomDetail = () => {
     if (!id) navigate("/");
   }, [id, navigate]);
 
-  /** ===== 1. Chi tiết loại phòng ===== */
   const {
     data: room,
     isLoading: loadingRoom,
@@ -26,13 +24,11 @@ const useRoomDetail = () => {
   } = useQuery({
     queryKey: ["room-detail", id],
     queryFn: async () => {
-      await fakeDelay(1000); // FAKE LOADING 1s
       return RoomTypeService.getByIdForGuest(Number(id));
     },
     enabled: !!id,
   });
 
-  /** ===== 2. Danh sách review + phân trang ===== */
   const {
     data: reviewData,
     isLoading: loadingReviews,
@@ -40,9 +36,8 @@ const useRoomDetail = () => {
   } = useQuery({
     queryKey: ["room-reviews", id, reviewPage, reviewLimit],
     queryFn: async () => {
-      await fakeDelay(1000); // FAKE LOADING 1s
-      return RoomTypeService.getReviewsForGuest({
-        id: Number(id),
+      return ReviewService.list({
+        roomTypeId: Number(id),
         page: reviewPage,
         limit: reviewLimit,
       });
@@ -50,7 +45,6 @@ const useRoomDetail = () => {
     enabled: !!id,
   });
 
-  /** ===== 3. Stats review ===== */
   const {
     data: reviewStats,
     isLoading: loadingStats,
@@ -58,8 +52,7 @@ const useRoomDetail = () => {
   } = useQuery({
     queryKey: ["room-review-stats", id],
     queryFn: async () => {
-      await fakeDelay(1000); // FAKE LOADING 1s
-      return RoomTypeService.getReviewStatsForGuest(Number(id));
+      return ReviewService.getStats({ roomTypeId: Number(id) });
     },
     enabled: !!id,
   });
@@ -87,7 +80,6 @@ const useRoomDetail = () => {
     totalReviewPages: totalPages,
     reviewPage,
 
-    /** Loading tách riêng */
     loadingRoom,
     loadingReviews,
     loadingStats,
@@ -95,7 +87,6 @@ const useRoomDetail = () => {
     fetchingReviews,
     fetchingStats,
 
-    /** Handlers */
     handleChangePage,
     handleBookingRoom,
   };

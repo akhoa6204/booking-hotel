@@ -80,7 +80,7 @@ const menuItems = [
     label: "Quản lý đánh giá",
     icon: <Reviews />,
     path: "/manager/reviews",
-    allowedRoles: ["ADMIN", "MANAGER", "RECEPTION"],
+    allowedRoles: ["ADMIN", "MANAGER"],
   },
   {
     label: "Quản lý lịch làm",

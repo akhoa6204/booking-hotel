@@ -13,3 +13,5 @@ export { default as Loading } from "./Loading";
 export { default as EntityPickerDialog } from "./entity-picker-dialog";
 export { default as EntityPickerField } from "./entity-picker-field";
 export { default as BookingStepper } from "./BookingStepper";
+export { default as SearchBar } from "./search-bar";
+export { default as SearchBarMobile } from "./search-bar-mobile";

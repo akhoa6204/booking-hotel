@@ -139,8 +139,8 @@ model PromotionRoomType {
 model User {
   id           Int                  @id @default(autoincrement())
   fullName     String               @map("full_name")
-  email        String?              @unique
-  phone        String?              @unique
+  email        String               @unique
+  phone        String?              
   passwordHash String               @map("password_hash")
   type         UserType             @default(CUSTOMER)
   createdAt    DateTime             @default(now()) @map("created_at")
