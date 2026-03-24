@@ -1,101 +1,92 @@
-# Hệ thống quản lý đặt phòng khách sạn (Booking Hotel System)
+# Booking Hotel Management System
 
-Ứng dụng gồm frontend (React + Vite, TypeScript) và backend (Node.js + Express, Prisma). README này hướng dẫn cách chạy, cấu hình môi trường và tổng quan API/features.
+Hệ thống quản lý đặt phòng khách sạn được xây dựng theo kiến trúc Fullstack gồm:
 
-**Thư mục chính**
+- **Frontend**: ReactJS + Vite + TypeScript + MUI + Redux Toolkit + React Query
+- **Backend**: Node.js + Express + Prisma ORM
+- **Database**: MySQL
 
-- `FE/` — mã nguồn frontend (Vite, React, TypeScript, MUI, Redux Toolkit, React Query).
-- `BE/` — mã nguồn backend (Express, Prisma, migrations, seed, scripts).
-
----
-
-## Mục lục
-
-- [Tổng quan & Tính năng](#tổng-quan--tính-năng)
-- [Yêu cầu hệ thống](#yêu-cầu-hệ-thống)
-- [Chạy nhanh (Dev)](#chạy-nhanh-dev)
-- [Thiết lập Backend (chi tiết)](#thiết-lập-backend-chi-tiết)
-- [Thiết lập Frontend](#thiết-lập-frontend)
-- [Biến môi trường (env)](#biến-môi-trường-env)
-- [Database & Prisma](#database--prisma)
-- [Kiểm thử & API collection](#kiểm-thử--api-collection)
-- [Bảo mật & Lưu ý vận hành](#bảo-mật--lưu-ý-vận-hành)
-- [Đóng góp](#đóng-góp)
-- [Liên hệ](#liên-hệ)
+Hệ thống hỗ trợ quản lý đặt phòng online & offline, thanh toán, khuyến mãi, đánh giá, vận hành lễ tân và buồng phòng.
 
 ---
 
-## Tổng quan & Tính năng
+## 🚀 Tính năng chính
 
-- Giao diện cho người dùng và giao diện quản trị với các tính năng chính:
+### 1. Khách hàng
+- Tìm kiếm phòng theo ngày check-in / check-out
+- Xem chi tiết phòng (hình ảnh, tiện nghi, giá, đánh giá)
+- Đặt phòng online
+- Thanh toán online (SePay nếu có cấu hình)
+- Xem lịch sử đặt phòng
+- Đánh giá sau khi đã checkout
 
-  - **Admin / Quản trị**: quản lý phòng & loại phòng; quản lý đặt phòng (xác nhận/hủy, điều chỉnh, tạo đặt phòng offline); quản lý khuyến mãi; quản lý đánh giá; dashboard báo cáo; quản lý người dùng/nhân viên.
-  - **Khách hàng**: tìm kiếm & xem phòng; xem chi tiết phòng (hình ảnh, tiện nghi, giá); đặt phòng & thanh toán trực tuyến; quản lý hồ sơ; xem lịch sử đặt phòng; viết đánh giá.
+### 2. Lễ tân (Front Desk)
+- Tạo đặt phòng walk-in
+- Check-in / Check-out
+- Quản lý thanh toán (deposit, thanh toán đủ)
+- Quản lý phát sinh dịch vụ & phụ phí
 
-- **API (Backend)**: RESTful endpoints phục vụ các nhóm chức năng: Auth, Users, Rooms/RoomTypes, Bookings, Payments (VNPAY), Promotions, Reviews, Search/Filters, Dashboard/Reports, Uploads (images).
+### 3. Buồng phòng (Housekeeping)
+- Nhận task dọn phòng
+- Task chỉ được tạo khi booking đã checkout
+- Tự động phân công nếu trong ca có housekeeping
+
+### 4. Quản trị (Admin)
+- Quản lý loại phòng & phòng
+- Quản lý tiện nghi
+- Quản lý khuyến mãi
+- Quản lý nhân viên & phân quyền (RBAC)
+- Dashboard thống kê 6 tháng gần nhất
+- Quản lý đánh giá
 
 ---
 
-## Yêu cầu hệ thống
+## 🏗 Kiến trúc hệ thống
 
-- Node.js (>=16)
+booking-hotel/
+│
+├── FE/      # Frontend (React + Vite)
+├── BE/      # Backend (Express + Prisma)
+└── README.md
+
+---
+
+## ⚙️ Yêu cầu hệ thống
+
+- Node.js >= 16
+- MySQL >= 8
 - npm hoặc yarn
-- MySQL (theo `BE/prisma/schema.prisma`)
 
 ---
 
-## Chạy nhanh (Dev)
+## 🔧 Cài đặt & Chạy dự án (Development)
 
-1. Mở hai terminal.
-
-Backend (terminal A):
+### 1️⃣ Backend
 
 ```bash
 cd BE
 npm install
-cp .env.example .env   # chỉnh giá trị trong BE/.env
-npm run dev
+cp .env.example .env
 ```
 
-Frontend (terminal B):
+Cấu hình biến môi trường trong `.env`
 
 ```bash
-cd FE
-npm install
-npm run dev
-```
-
-Truy cập frontend (mặc định): `http://localhost:5173` (hoặc URL Vite hiển thị).
-
----
-
-## Thiết lập Backend (chi tiết)
-
-1. Sao chép `BE/.env.example` → `BE/.env` và điền các giá trị phù hợp.
-2. Tạo Prisma client & migrate:
-
-```bash
-cd BE
 npm run prisma:generate
 npm run prisma:migrate
-node prisma/seed.js   # (tùy chọn) seed dữ liệu mẫu
-```
-
-3. Chạy server:
-
-```bash
+node prisma/seed.js
 npm run dev
-# hoặc
-npm start
 ```
 
-Scripts hữu ích (từ `BE/package.json`): `dev`, `start`, `prisma:generate`, `prisma:migrate`, `prisma:studio`, `setup`.
+Backend chạy tại:
+
+```
+http://localhost:3001
+```
 
 ---
 
-## Thiết lập Frontend
-
-1. Cài đặt và chạy dev server:
+### 2️⃣ Frontend
 
 ```bash
 cd FE
@@ -103,76 +94,174 @@ npm install
 npm run dev
 ```
 
-2. Build production:
+Frontend chạy tại:
 
-```bash
-npm run build
-npm run preview
+```
+http://localhost:5173
 ```
 
 ---
 
-## Biến môi trường (env)
+## 🗄 Database & Prisma
 
-Backend sử dụng `BE/.env`. Không commit file `.env` vào git. Các biến chính:
+Thư mục:
 
-- `PORT` — cổng server (ví dụ `3001`).
-- `DATABASE_URL` — chuỗi kết nối Prisma, ví dụ MySQL:
-
-  ```text
-  DATABASE_URL="mysql://<DB_USER>:<DB_PASS>@<DB_HOST>:<DB_PORT>/<DB_NAME>"
-  ```
-
-- `JWT_SECRET` — secret dùng ký JWT (sử dụng chuỗi ngẫu nhiên, 32+ ký tự).
-- `CORS_ORIGIN` — origin frontend cho phép (ví dụ `http://localhost:5173`).
-- `FE_ORIGIN` — URL frontend (dùng khi backend cần redirect/notify).
-- `VNP_HASH_SECRET` — secret cho VNPAY (GIỮ BÍ MẬT).
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` — cấu hình SMTP gửi email (nên dùng app password cho Gmail).
-
-Gợi ý nhanh:
-
-```bash
-# tạo JWT secret mạnh
-openssl rand -hex 32
-
-# copy mẫu env
-cp BE/.env.example BE/.env
+```
+BE/prisma/
 ```
 
-Nếu `.env` lỡ commit:
-
-```bash
-git rm --cached BE/.env
-git commit -m "Remove tracked env file"
-# sau đó rotate các secrets bị lộ
-```
-
----
-
-## Database & Prisma
-
-- Schema và migrations nằm trong `BE/prisma/`.
-- Các lệnh phổ biến:
+Các lệnh quan trọng:
 
 ```bash
 npm run prisma:generate
 npm run prisma:migrate
 npm run prisma:studio
+npx prisma migrate reset
+```
+
+Seed dữ liệu:
+
+```bash
+node prisma/seed.js
+```
+
+Seed bao gồm:
+- 6 tháng booking (20 booking / tháng)
+- Online & Walk-in
+- Review chỉ cho user có tài khoản
+- Services & Extra Fees
+- Shift nhân viên
+- Housekeeping task
+
+---
+
+### ▶ Sau khi chạy seed
+
+Sau khi chạy:
+
+```bash
+node prisma/seed.js
+```
+
+Bạn có thể:
+
+1. Truy cập Prisma Studio để kiểm tra dữ liệu:
+
+```bash
+npm run prisma:studio
+```
+
+2. Đăng nhập bằng các tài khoản mẫu đã được tạo trong seed (xem trong file `prisma/seed.js` để biết email & password mặc định).
+
+3. Kiểm tra:
+   - Booking 6 tháng gần nhất (20 booking / tháng)
+   - Online booking có deposit & payment record
+   - Walk-in booking thanh toán tại quầy
+   - Review chỉ xuất hiện với khách có tài khoản
+   - Housekeeping task chỉ tạo khi booking đã checkout
+   - Services & Extra Fees được gắn ngẫu nhiên vào booking
+
+Nếu muốn reset toàn bộ database và seed lại từ đầu:
+
+```bash
+npx prisma migrate reset
 ```
 
 ---
 
-## Bảo mật & Lưu ý vận hành
+---
 
-- KHÔNG commit file `.env` chứa secrets.
-- Dùng app password hoặc OAuth cho SMTP (Gmail).
-- Nếu secrets bị lộ, ngay lập tức rotate password/keys (DB, SMTP, VNPAY, JWT).
-- Cho production, dùng Secret Manager (AWS/GCP/HashiCorp) và không lưu trực tiếp secrets trong repo.
+## 🔐 Biến môi trường (BE/.env)
+
+Tạo file `BE/.env` (không commit lên repository).
+
+Ví dụ cấu hình cho môi trường local:
+
+```
+PORT=3001
+DATABASE_URL="mysql://root:<your_password>@127.0.0.1:3307/hotel_db"
+JWT_SECRET=<your_strong_secret>
+CORS_ORIGIN=http://localhost:5173
+FE_ORIGIN=http://localhost:5173
+
+# SMTP (Gửi email)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=<your_email>
+SMTP_PASS=<your_app_password>
+
+# SePay Payment Gateway
+SEPAY_MERCHANT_ID=<your_merchant_id>
+SEPAY_SECRET_KEY=<your_secret_key>
+```
+
+### ⚠️ Lưu ý bảo mật
+
+- Không commit file `.env` lên GitHub.
+- Không chia sẻ `JWT_SECRET`, `SMTP_PASS`, `SEPAY_SECRET_KEY`.
+- Nên sử dụng mật khẩu mạnh và rotate key nếu bị lộ.
+- Trong production, nên sử dụng environment variables từ hosting provider (Render, Railway, AWS, Docker secrets...).
 
 ---
 
-## Liên hệ
+## 💳 Logic thanh toán
 
-- Email: `khoaanh662004@gmail.com` — liên hệ nếu cần README tiếng Anh, Docker/Docker Compose config, hoặc CI/CD.
+- Booking online bắt buộc có **deposit**
+- Thanh toán phần còn lại tại check-in
+- Invoice 1-1 với booking
+- Payment record lưu lịch sử giao dịch
 
+---
 
+## 🧹 Logic buồng phòng
+
+- Task kiểm tra phòng chỉ tạo khi booking checkout
+- Nếu trong ca có housekeeping → gán tự động
+- Nếu không → gán cho lễ tân trong ca
+
+---
+
+## 📊 Dashboard
+
+Hiển thị:
+- Doanh thu 6 tháng gần nhất
+- Số booking theo tháng
+- Tỉ lệ occupancy
+- Số review & điểm trung bình
+
+---
+
+## 🛡 Bảo mật
+
+- JWT Authentication
+- Role-based Access Control (RBAC)
+- Validation & Error Handling toàn hệ thống
+- Không lưu secrets trong repository
+
+---
+
+## 📦 Build Production
+
+Frontend:
+
+```bash
+cd FE
+npm run build
+```
+
+Backend:
+
+```bash
+npm start
+```
+
+---
+
+## 📬 Liên hệ
+
+Phan Nguyễn Anh Khoa  
+Email: khoaanh662004@gmail.com
+
+---
+
+Nếu cần Docker setup hoặc CI/CD config, vui lòng liên hệ.
