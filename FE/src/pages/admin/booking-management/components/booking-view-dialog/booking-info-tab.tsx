@@ -1,8 +1,13 @@
-import { Booking, Invoice } from "@constant/types";
-import { Typography, Grid, Box } from "@mui/material";
+import EntityPickerField from "@components/entity-picker-field";
+import { Booking, Invoice, Room } from "@constant/types";
+import { Typography, Grid, Box, MenuItem } from "@mui/material";
 
 type Props = {
   booking: Booking;
+  onOpenPicker: () => void;
+  isMoreOptions: boolean;
+  rooms: Room[];
+  onChangeRoom: (roomId: number) => void;
 };
 
 const getLabelStatus = {
@@ -13,7 +18,13 @@ const getLabelStatus = {
   CHECKED_OUT: "Đã trả phòng",
 };
 
-export default function BookingInfoTab({ booking }: Props) {
+export default function BookingInfoTab({
+  booking,
+  onOpenPicker,
+  isMoreOptions,
+  rooms,
+  onChangeRoom,
+}: Props) {
   return (
     <Box minHeight={400}>
       <Grid container spacing={2}>
@@ -29,9 +40,32 @@ export default function BookingInfoTab({ booking }: Props) {
 
         <Grid size={6}>
           <Typography variant="body2">Phòng</Typography>
-          <Typography fontWeight={600}>
-            {booking.room.name} - {booking.room.roomType.name}
-          </Typography>
+          {booking.status === "CANCELLED" ||
+          booking.status === "CHECKED_OUT" ? (
+            <Typography fontWeight={600}>
+              {booking.room.name} - {booking.room.roomType.name}
+            </Typography>
+          ) : (
+            <EntityPickerField
+              name="roomId"
+              value={booking.room.id}
+              onChange={(field, value) => {
+                if (value && value !== booking.room.id) {
+                  onChangeRoom(Number(value));
+                }
+              }}
+              onOpenPicker={onOpenPicker}
+              isMoreOptions={isMoreOptions}
+              placeholder="Chọn phòng trống"
+              size="small"
+            >
+              {rooms.map((room) => (
+                <MenuItem key={room.id} value={room.id}>
+                  {room.name} - {room.roomType.name}
+                </MenuItem>
+              ))}
+            </EntityPickerField>
+          )}
         </Grid>
 
         <Grid size={6}>

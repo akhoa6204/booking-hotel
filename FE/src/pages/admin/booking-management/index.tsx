@@ -82,6 +82,7 @@ export default function BookingManagement() {
     confirmCancel,
     cancelReason,
     setCancelReason,
+    handleChangeRoom,
   } = useBookingManagement();
 
   const totalPages = Math.max(1, pagination?.totalPages ?? 1);
@@ -181,6 +182,10 @@ export default function BookingManagement() {
           selectedTaskId={selectedTaskId}
           onChangePageHousekeeping={onChangePageHousekeeping}
           metaHousekeepingList={metaHousekeepingList}
+          onOpenPicker={openPickerHandler}
+          isMoreOptions={metaAvailabelRooms?.totalPages > 1}
+          rooms={availableRooms}
+          onChangeRoom={handleChangeRoom}
         />
       ) : null}
 
@@ -203,7 +208,9 @@ export default function BookingManagement() {
         ]}
         onSelect={(row) => {
           select(row);
-          handleChangeBookingForm("roomId", row.id);
+          dialog.type === "CREATE"
+            ? handleChangeBookingForm("roomId", row.id)
+            : handleChangeRoom(row.id);
         }}
         onPageChange={onChangePage}
         totalPages={metaAvailabelRooms?.totalPages}

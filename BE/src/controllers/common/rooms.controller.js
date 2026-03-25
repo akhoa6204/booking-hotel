@@ -127,7 +127,7 @@ export async function list(req, res) {
       ...(start && end
         ? {
             status: {
-              in: ["VACANT_CLEAN", "VACANT_DIRTY"],
+              in: ["VACANT_CLEAN"],
             },
             bookings: {
               none: {

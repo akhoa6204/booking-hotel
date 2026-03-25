@@ -128,4 +128,22 @@ export default class BookingService {
     }>(`${ADMIN_BASE}/${id}`, { status, reason });
     return data;
   }
+
+  static async updateRoom({
+    id,
+    roomId,
+  }: {
+    id: number;
+    roomId: number;
+  }): Promise<Booking> {
+    try {
+      const { data } = await httpClient.patch<{
+        success: boolean;
+        data: Booking;
+      }>(`${ADMIN_BASE}/${id}`, { roomId });
+      return data;
+    } catch (e) {
+      throw e;
+    }
+  }
 }

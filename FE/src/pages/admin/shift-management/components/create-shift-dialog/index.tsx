@@ -1,5 +1,5 @@
 import { EntityPickerField } from "@components";
-import { Employee } from "@constant/types";
+import { Employee, UserRole } from "@constant/types";
 import {
   Dialog,
   DialogTitle,
@@ -13,7 +13,18 @@ import {
   InputLabel,
 } from "@mui/material";
 import { formatTime } from "@utils/format";
-
+const getPositionLabel = (position: Omit<UserRole, "CUSTOMER">) => {
+  switch (position) {
+    case "RECEPTION":
+      return "Lễ tân";
+    case "HOUSEKEEPING":
+      return "Dọn phòng";
+    case "MANAGER":
+      return "Quản lý";
+    default:
+      return "Không xác định";
+  }
+};
 interface Shift {
   id: number;
   name: string;
@@ -26,7 +37,7 @@ interface Props {
   onClose: () => void;
   shifts: Shift[];
   workDate: string;
-  staff: { id: number; fullName: string };
+  staff: Employee | null;
   shiftId: string | number;
   onChangeShift: (field: string, value: any) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -56,23 +67,27 @@ export default function CreateShiftDialog({
           <Grid container spacing={2}>
             <Grid size={6}>
               <InputLabel shrink>Nhân viên</InputLabel>
-              {/* <TextField value={staff.fullName} fullWidth disabled /> */}
               <EntityPickerField
                 name="staffId"
-                value={staff.id}
-                options={options}
+                value={staff?.id ?? ""}
                 isMoreOptions={isMoreOptions}
                 onChange={(name, value) => {
                   const employee = options.find((e) => e.id === value);
-
-                  onChangeShift("staff", {
-                    id: value,
-                    fullName: employee?.fullName || employee?.name || "",
-                  });
+                  if (!employee) return;
+                  onChangeShift("staff", employee);
                 }}
                 onOpenPicker={seeMore}
                 placeholder="Chọn nhân viên"
-              />
+              >
+                {options.map((staff) => {
+                  return (
+                    <MenuItem key={staff.id} value={staff.id}>
+                      {staff.fullName} -{" "}
+                      {getPositionLabel(staff.staff?.position)}
+                    </MenuItem>
+                  );
+                })}
+              </EntityPickerField>
             </Grid>
             <Grid size={6}>
               <InputLabel shrink>Ngày làm</InputLabel>

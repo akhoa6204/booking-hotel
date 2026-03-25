@@ -317,9 +317,10 @@ export interface Employee {
   phone: string;
   email: string;
   fullName: string;
-  type: "STAFF" | "CUSTOMER";
+  type: "STAFF";
   isActive: boolean;
   staff: {
+    id: number;
     position: UserRole;
     isAdmin: boolean;
   };

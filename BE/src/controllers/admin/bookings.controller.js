@@ -205,7 +205,7 @@ export async function create(req, res) {
 export async function update(req, res) {
   try {
     const { id } = req.params;
-    const { status, reason } = req.body || {};
+    const { status, reason, roomId } = req.body || {};
     const userId = req.user.id;
     if (!id) return bad(res, "Thiếu bookingId", 400);
 
@@ -216,9 +216,41 @@ export async function update(req, res) {
 
     if (!booking) return bad(res, "Không tồn tại booking", 404);
 
-    if (!status) return bad(res, "Thiếu status", 400);
+    if (roomId && !status) {
+      if (Number(roomId) === booking.roomId) {
+        return bad(res, "Phòng mới trùng với phòng hiện tại", 400);
+      }
 
-    if (!["CHECKED_IN", "CHECKED_OUT", "CANCELLED"].includes(status)) {
+      const now = new Date();
+      const startDate = booking.status === "CHECKED_IN" ? now : booking.checkIn;
+
+      const endDate = booking.checkOut;
+
+      const existedRoom = await prisma.room.findFirst({
+        where: {
+          id: Number(roomId),
+          isActive: true,
+          status: "VACANT_CLEAN",
+          bookings: {
+            none: {
+              status: { notIn: ["CANCELLED", "PENDING"] },
+              AND: [
+                { checkIn: { lt: endDate } },
+                { checkOut: { gt: startDate } },
+              ],
+            },
+          },
+        },
+      });
+      if (!existedRoom) {
+        return bad(res, "Phòng mới không sạch hoặc đã được đặt", 400);
+      }
+    }
+
+    if (
+      status &&
+      !["CHECKED_IN", "CHECKED_OUT", "CANCELLED"].includes(status)
+    ) {
       return bad(res, "Status không hợp lệ", 400);
     }
 
@@ -226,6 +258,35 @@ export async function update(req, res) {
     const today = new Date(now.toISOString().slice(0, 10));
 
     const result = await prisma.$transaction(async (tx) => {
+      if (roomId && !status) {
+        const oldRoomId = booking.roomId;
+
+        const updatedBooking = await tx.booking.update({
+          where: { id: Number(id) },
+          data: {
+            roomId: Number(roomId),
+          },
+          include: { room: true },
+        });
+        await tx.room.update({
+          where: {
+            id: Number(oldRoomId),
+          },
+          data: {
+            status: "VACANT_DIRTY",
+          },
+        });
+        await tx.housekeepingTask.create({
+          data: {
+            roomId: Number(oldRoomId),
+            workDate: new Date(),
+            type: "CLEANING",
+          },
+        });
+
+        return updatedBooking;
+      }
+
       if (status === "CANCELLED") {
         if (booking.status === "CHECKED_IN") {
           throw new Error("Không thể huỷ booking đã check-in");
@@ -369,6 +430,7 @@ export async function getById(req, res) {
             roomType: {
               select: {
                 name: true,
+                capacity: true,
               },
             },
           },

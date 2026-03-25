@@ -7,34 +7,28 @@ import {
 } from "@mui/material";
 import React from "react";
 
-export interface EntityOption {
-  id: number | string;
-  name?: string;
-  fullName?: string;
-}
-
 interface Props {
   name: string;
   value?: number | string | null;
-  options?: EntityOption[];
   onChange?: (name: string, value: number | string | boolean) => void;
   onOpenPicker?: () => void;
   isMoreOptions?: boolean;
   placeholder?: string;
   size?: "medium" | "small";
   disabled?: boolean;
+  children: React.ReactNode;
 }
 
 const EntityPickerField: React.FC<Props> = ({
   name,
   value,
-  options = [],
   onChange,
   onOpenPicker,
   isMoreOptions = false,
   placeholder,
   size = "medium",
   disabled,
+  children,
 }) => {
   return (
     <TextField
@@ -53,11 +47,7 @@ const EntityPickerField: React.FC<Props> = ({
         </MenuItem>
       )}
 
-      {options.map((item) => (
-        <MenuItem key={item.id} value={item.id}>
-          {item.name || item.fullName}
-        </MenuItem>
-      ))}
+      {children}
 
       {isMoreOptions && <Divider />}
 

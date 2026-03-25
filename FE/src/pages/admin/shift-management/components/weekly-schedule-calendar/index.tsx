@@ -3,7 +3,7 @@ import { Box, Typography, IconButton, Paper, Grid } from "@mui/material";
 import { Add, ArrowBack, ArrowForward, Close } from "@mui/icons-material";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
-import { StaffShiftAssignment, UserRole } from "@constant/types";
+import { Employee, StaffShiftAssignment, UserRole } from "@constant/types";
 import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -13,15 +13,11 @@ dayjs.locale("vi");
 
 type Props = {
   shifts: {
-    id: number;
-    position: Omit<UserRole, "CUSTOMER">;
-    user: {
-      fullName: string;
-    };
+    user: Employee;
     assignments: StaffShiftAssignment[];
   }[];
   start: string;
-  onAdd?: (staff: { id: number; fullName: string }) => void;
+  onAdd?: (staff: Employee) => void;
   onRemove: (id: number) => void;
   canEdit: boolean;
 };
@@ -122,8 +118,8 @@ export default function WeeklyScheduleCalendar({
             </Grid>
 
             {/* STAFF ROWS */}
-            {shifts?.map((staff) => (
-              <Grid container wrap="nowrap" key={staff.id}>
+            {shifts?.map((item) => (
+              <Grid container wrap="nowrap" key={item.user.staff.id}>
                 <Grid
                   sx={{
                     flex: "0 0 200px",
@@ -137,14 +133,14 @@ export default function WeeklyScheduleCalendar({
                     backgroundColor: "#fff",
                   }}
                 >
-                  {staff.user.fullName}
+                  {item.user.fullName}
                   <br />
-                  <small>{getPositionLabel(staff.position)}</small>
+                  <small>{getPositionLabel(item.user.staff.position)}</small>
                 </Grid>
 
                 {weekDays.map((day) => {
                   const assignmentsOfDay = getAssignmentsByDate(
-                    staff.assignments || [],
+                    item.assignments || [],
                     day.format("YYYY-MM-DD"),
                   );
 
@@ -205,10 +201,7 @@ export default function WeeklyScheduleCalendar({
                         (assignmentsOfDay.length === 0 ? (
                           <Box
                             onClick={() =>
-                              onAdd?.({
-                                id: staff.id,
-                                fullName: staff.user.fullName,
-                              })
+                              onAdd?.(item.user)
                             }
                             className="opacity-0 group-hover:opacity-100 cursor-pointer"
                             sx={{
@@ -227,10 +220,7 @@ export default function WeeklyScheduleCalendar({
                         ) : (
                           <Box
                             onClick={() =>
-                              onAdd?.({
-                                id: staff.id,
-                                fullName: staff.user.fullName,
-                              })
+                              onAdd?.(item.user)
                             }
                             className="opacity-0 group-hover:opacity-100 transition cursor-pointer"
                             sx={{

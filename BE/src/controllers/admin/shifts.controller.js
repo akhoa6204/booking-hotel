@@ -56,7 +56,10 @@ export async function list(req, res) {
         position: true,
         user: {
           select: {
+            id: true,
             fullName: true,
+            phone: true,
+            email: true,
           },
         },
       },
@@ -98,7 +101,16 @@ export async function list(req, res) {
     }
 
     const grouped = staffs.map((staff) => ({
-      ...staff,
+      user: {
+        id: staff.user.id,
+        fullName: staff.user.fullName,
+        phone: staff.user.phone,
+        email: staff.user.email,
+        staff: {
+          id: staff.id,
+          position: staff.position,
+        },
+      },
       assignments: assignmentMap[staff.id] || [],
     }));
 

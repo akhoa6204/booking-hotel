@@ -8,6 +8,7 @@ import useSnackbar from "@hooks/useSnackbar";
 import useForm from "@hooks/useForm";
 import EmployeeService from "@services/EmployeeService";
 import { useEntityPicker } from "@hooks/useEntityPickerDialog";
+import { Employee } from "@constant/types";
 dayjs.extend(isoWeek);
 
 const useShift = () => {
@@ -25,20 +26,18 @@ const useShift = () => {
     open: false,
   });
   const { form, onChangeField, onSubmit, resetForm, updateForm } = useForm<{
-    staff: { id: number; fullName: string };
+    staff?: Employee;
     workDate: string;
-    shiftId: number;
+    shiftId: number | null;
   }>(
     {
-      staff: {
-        id: null,
-        fullName: "",
-      },
+      staff: null,
       workDate: "",
       shiftId: null,
     },
     null,
     async () => {
+      if (!form.staff || !form.shiftId) return;
       await mCreateShift.mutateAsync({
         shiftId: form.shiftId,
         staffId: form.staff.id,
@@ -139,16 +138,16 @@ const useShift = () => {
   const nextWeek = () => setCurrentDate((prev) => prev.add(7, "day"));
   const prevWeek = () => setCurrentDate((prev) => prev.subtract(7, "day"));
   const onRemove = async (id: number) => await mRemoveShift.mutateAsync(id);
-  const openDialog = (staff: { id: number; fullName: string } | null) => {
+  const openDialog = (staff: Employee | null) => {
     if (shiftDefinitions.length === 0) {
       showError("Có lỗi xảy ra");
       return;
     }
     onChangeDialog("open", true);
     updateForm({
-      staff: staff ?? { id: null, fullName: "" },
+      staff: staff ?? null,
       workDate: dayjs().format("YYYY-MM-DD"),
-      shiftId: shiftDefinitions[0].id,
+      shiftId: shiftDefinitions[0]?.id ?? null,
     });
     if (staff?.id) {
       select(staff);

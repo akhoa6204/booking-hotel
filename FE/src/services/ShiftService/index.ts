@@ -1,15 +1,16 @@
-import { Shift, StaffShiftAssignment, UserRole } from "@constant/types";
+import {
+  Employee,
+  Shift,
+  StaffShiftAssignment,
+  UserRole,
+} from "@constant/types";
 import httpClient from "..";
 
 const BASE = "/admin/shifts";
 export default class ShiftService {
   static async list(params: { startDate: string; endDate: string }): Promise<
     {
-      id: number;
-      position: Omit<UserRole, "CUSTOMER">;
-      user: {
-        fullName: string;
-      };
+      user: Employee;
       assignments: StaffShiftAssignment[];
     }[]
   > {

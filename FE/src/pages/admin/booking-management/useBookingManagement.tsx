@@ -253,7 +253,9 @@ export default function useBookingManagement() {
 
   const { data: bookingDetail, isLoading: loadingCheckInDetail } = useQuery({
     queryKey: ["booking-detail", selectedBookingId],
-    queryFn: async () => await BookingService.getById(selectedBookingId!),
+    queryFn: async () => {
+      return await BookingService.getById(selectedBookingId!);
+    },
     enabled: !!selectedBookingId,
   });
 
@@ -402,38 +404,89 @@ export default function useBookingManagement() {
   const onSearch = (value: string) =>
     setFiltersAvailableRooms((prev) => ({ ...prev, q: value }));
 
-  const {
-    data: availableRoomsResponse,
-    refetch: availableRoomRefetch,
-    isLoading: loadingRooms,
-  } = useQuery({
-    queryKey: [
-      "available-rooms",
-      bookingForm.checkIn,
-      bookingForm.checkOut,
-      bookingForm.roomTypeId,
-      filtersAvailableRooms.page,
-      filtersAvailableRooms.q,
-      filtersAvailableRooms.limit,
-    ],
-    queryFn: async () => {
-      const res = await RoomService.list({
-        checkIn: bookingForm.checkIn,
-        checkOut: bookingForm.checkOut,
-        roomTypeId: bookingForm.roomTypeId
-          ? Number(bookingForm.roomTypeId)
-          : undefined,
-        limit: filtersAvailableRooms.limit,
-        page: filtersAvailableRooms.page,
-        q: filtersAvailableRooms.q,
-      });
+  const isViewMode = dialog.type === "VIEW";
 
-      return res;
-    },
-    enabled: canCheckRooms,
-  });
+  // ===== Available rooms for CREATE booking =====
+  const { data: createAvailableRoomsResponse, isLoading: loadingCreateRooms } =
+    useQuery({
+      queryKey: [
+        "available-rooms-create",
+        bookingForm.checkIn,
+        bookingForm.checkOut,
+        bookingForm.roomTypeId,
+        filtersAvailableRooms.page,
+        filtersAvailableRooms.q,
+        filtersAvailableRooms.limit,
+      ],
+      queryFn: async () =>
+        await RoomService.list({
+          checkIn: bookingForm.checkIn,
+          checkOut: bookingForm.checkOut,
+          roomTypeId: bookingForm.roomTypeId
+            ? Number(bookingForm.roomTypeId)
+            : undefined,
+          limit: filtersAvailableRooms.limit,
+          page: filtersAvailableRooms.page,
+          q: filtersAvailableRooms.q,
+        }),
+      enabled: canCheckRooms && !isViewMode,
+    });
 
-  const availableRooms = mergeOptions(availableRoomsResponse?.items);
+  const { data: changeAvailableRoomsResponse, isLoading: loadingChangeRooms } =
+    useQuery({
+      queryKey: [
+        "available-rooms-change",
+        bookingDetail?.id,
+        bookingDetail?.checkOut,
+        filtersAvailableRooms.page,
+        filtersAvailableRooms.q,
+        filtersAvailableRooms.limit,
+      ],
+      queryFn: async () => {
+        const today = dayjs().startOf("day");
+        const bookingCheckIn = dayjs(bookingDetail.checkIn).startOf("day");
+
+        const effectiveCheckIn = bookingCheckIn.isAfter(today)
+          ? bookingCheckIn
+          : today;
+
+        return await RoomService.list({
+          checkIn: effectiveCheckIn.format("YYYY-MM-DD"),
+          checkOut: bookingDetail.checkOut,
+          limit: filtersAvailableRooms.limit,
+          page: filtersAvailableRooms.page,
+          q: filtersAvailableRooms.q,
+        });
+      },
+      enabled: !!bookingDetail?.id && isViewMode,
+    });
+
+  const availableRoomsResponse = isViewMode
+    ? changeAvailableRoomsResponse
+    : createAvailableRoomsResponse;
+
+  const loadingRooms = isViewMode ? loadingChangeRooms : loadingCreateRooms;
+
+  const availableRooms = useMemo(() => {
+    const items = availableRoomsResponse?.items || [];
+
+    if (isViewMode && bookingDetail?.room) {
+      const exists = items.some((r: any) => r.id === bookingDetail.room.id);
+
+      const merged = exists ? items : [bookingDetail.room, ...items];
+
+      return mergeOptions(merged);
+    }
+
+    return mergeOptions(items);
+  }, [availableRoomsResponse?.items, bookingDetail?.room?.id, isViewMode]);
+
+  useEffect(() => {
+    if (!isViewMode) return;
+    if (!bookingDetail?.room) return;
+
+    select(bookingDetail.room);
+  }, [isViewMode, bookingDetail?.room?.id]);
   const metaAvailabelRooms = availableRoomsResponse?.meta;
 
   const mQuoteBooking = useMutation({
@@ -596,13 +649,34 @@ export default function useBookingManagement() {
     },
   });
 
+  const mUpdateRoom = useMutation({
+    mutationFn: async ({ roomId }: { roomId: number }) =>
+      await BookingService.updateRoom({ id: selectedBookingId, roomId }),
+    onSuccess: async (_data) => {
+      showSuccess("Thay đổi phòng thành công");
+
+      await qc.invalidateQueries({
+        queryKey: ["booking-detail", selectedBookingId],
+      });
+
+      qc.invalidateQueries({ queryKey: ["admin-bookings"] });
+
+      qc.invalidateQueries({
+        queryKey: ["available-rooms-change"],
+      });
+    },
+    onError: (e: any) => {
+      const msg = e.response?.data?.message || "Thay đổi phòng thất bại";
+      showError(msg);
+    },
+  });
   const mConfirmCheckIn = useMutation({
     mutationFn: (bookingId: number) =>
       BookingService.updateStatus(bookingId, "CHECKED_IN"),
-    onSuccess: (_data, bookingId) => {
+    onSuccess: (_data) => {
       showSuccess("Nhận phòng thành công");
       qc.invalidateQueries({ queryKey: ["admin-bookings", filter] });
-      qc.invalidateQueries({ queryKey: ["booking-detail", bookingId] });
+      qc.invalidateQueries({ queryKey: ["booking-detail", selectedBookingId] });
     },
     onError: () => {
       showError("Nhận phòng thất bại");
@@ -640,6 +714,9 @@ export default function useBookingManagement() {
       showError("Hủy phòng thất bại");
     },
   });
+  const handleChangeRoom = async (roomId: number) => {
+    await mUpdateRoom.mutateAsync({ roomId });
+  };
 
   const handleCancelled = async ({
     bookingId,
@@ -874,6 +951,7 @@ export default function useBookingManagement() {
     handleCheckIn,
     handleCheckout,
     handleCancelled,
+    handleChangeRoom,
     showLoadingOverlay: mMarkPaymentAsPaid.isPending,
     onChangePageService,
     services,

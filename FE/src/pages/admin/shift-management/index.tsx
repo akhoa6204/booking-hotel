@@ -172,7 +172,7 @@ const ShiftManagement = () => {
         ]}
         onSelect={(row) => {
           select(row);
-          onChangeForm("staff", { id: row.id, fullName: row.fullName });
+          onChangeForm("staff", row);
         }}
         onPageChange={onChangePage}
         totalPages={meta?.totalPages}

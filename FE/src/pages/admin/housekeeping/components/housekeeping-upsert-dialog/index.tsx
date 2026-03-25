@@ -1,5 +1,5 @@
 import EntityPickerField from "@components/entity-picker-field";
-import { DialogMode, Room } from "@constant/types";
+import { DialogMode, Room, Employee } from "@constant/types";
 import {
   Box,
   Button,
@@ -28,7 +28,7 @@ interface Props {
   optionsRoom: Room[];
   isMoreRoom: boolean;
   onOpenPickerRoom: () => void;
-  optionsStaff: Room[];
+  optionsStaff: Employee[];
   isMoreStaff: boolean;
   onOpenPickerStaff: () => void;
   loadingTask: boolean;
@@ -78,7 +78,6 @@ const HousekeepingUpsertDialog = ({
                   <EntityPickerField
                     name="roomId"
                     value={form.roomId}
-                    options={optionsRoom}
                     onChange={(field, value) => {
                       onChange(field, value);
                     }}
@@ -87,14 +86,19 @@ const HousekeepingUpsertDialog = ({
                     placeholder="Chọn phòng"
                     size="small"
                     disabled={!canEdit || !notHouseKeeping}
-                  />
+                  >
+                    {optionsRoom.map((room) => (
+                      <MenuItem key={room.id} value={room.id}>
+                        {room.name} - {room.roomType.name}
+                      </MenuItem>
+                    ))}
+                  </EntityPickerField>
                 </Grid>
                 <Grid size={6}>
                   <InputLabel shrink>Nhân viên</InputLabel>
                   <EntityPickerField
                     name="staffId"
                     value={form.staffId}
-                    options={optionsStaff}
                     onChange={(field, value) => {
                       onChange(field, value);
                     }}
@@ -103,7 +107,13 @@ const HousekeepingUpsertDialog = ({
                     placeholder="Chọn nhân viên"
                     size="small"
                     disabled={!canEdit || !notHouseKeeping}
-                  />
+                  >
+                    {optionsStaff.map((staff) => (
+                      <MenuItem key={staff.id} value={staff.id}>
+                        {staff.fullName} - {staff.staff.position}
+                      </MenuItem>
+                    ))}
+                  </EntityPickerField>
                 </Grid>
                 <Grid size={6}>
                   <InputLabel shrink>Loại nhiệm vụ</InputLabel>

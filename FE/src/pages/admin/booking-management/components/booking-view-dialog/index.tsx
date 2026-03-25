@@ -3,6 +3,7 @@ import {
   HouseKeepingTask,
   Invoice,
   PaymentMethod,
+  Room,
   Service,
   ServiceType,
   TaskStatus,
@@ -61,6 +62,11 @@ type Props = {
   onSubmitFormViewBooking: (e: React.FormEvent<HTMLFormElement>) => void;
   onChangePageHousekeeping: (page: number) => void;
   metaHousekeepingList: Meta;
+
+  onOpenPicker: () => void;
+  isMoreOptions: boolean;
+  rooms: Room[];
+  onChangeRoom: (roomId: number) => void;
 };
 
 function TabPanel({
@@ -108,6 +114,11 @@ export default function BookingViewDialog({
   onSubmitFormViewBooking,
   onChangePageHousekeeping,
   metaHousekeepingList,
+
+  onOpenPicker,
+  isMoreOptions,
+  rooms,
+  onChangeRoom,
 }: Props) {
   const showServiceTab = !["CONFIRMED", "PENDING", "CANCELLED"].includes(
     booking.status,
@@ -393,7 +404,13 @@ export default function BookingViewDialog({
       <DialogContent dividers>
         {/* Thông tin */}
         <TabPanel value={bookingViewTab} tab="info">
-          <BookingInfoTab booking={booking} />
+          <BookingInfoTab
+            booking={booking}
+            isMoreOptions={isMoreOptions}
+            rooms={rooms}
+            onOpenPicker={onOpenPicker}
+            onChangeRoom={onChangeRoom}
+          />
         </TabPanel>
         {/* Dịch vụ */}
         <TabPanel value={bookingViewTab} tab="service">

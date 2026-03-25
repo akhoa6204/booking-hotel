@@ -22,6 +22,7 @@ import { Close, Search } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { BookingForm } from "../../useBookingManagement";
 import { EntityPickerField } from "@components";
+import { Room } from "@constant/types";
 
 type RoomTypeLite = {
   id?: number;
@@ -29,13 +30,12 @@ type RoomTypeLite = {
   basePrice?: number;
   capacity?: number;
 };
-type RoomLite = { id: number; name: string };
 
 type Props = {
   open: boolean;
   values: BookingForm;
   roomTypes: RoomTypeLite[];
-  rooms: RoomLite[];
+  rooms: Room[];
   nights?: number;
   pricing?: {
     unitPrice: number;
@@ -197,7 +197,6 @@ export default function BookingCreateDialog({
                     <EntityPickerField
                       name="roomId"
                       value={values.roomId}
-                      options={rooms}
                       onChange={(field, value) => {
                         onChange("roomId", value);
                       }}
@@ -205,7 +204,13 @@ export default function BookingCreateDialog({
                       isMoreOptions={isMoreOptions}
                       placeholder="Chọn phòng trống"
                       size="small"
-                    />
+                    >
+                      {rooms.map((room) => (
+                        <MenuItem key={room.id} value={room.id}>
+                          {room.name} - {room.roomType.name}
+                        </MenuItem>
+                      ))}
+                    </EntityPickerField>
                   </Grid>
                   <Grid size={5}>
                     <InputLabel shrink>Mã khuyến mãi</InputLabel>
