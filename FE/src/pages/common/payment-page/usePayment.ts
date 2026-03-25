@@ -42,6 +42,7 @@ const usePayment = () => {
       paymentIdFromParams
     ) {
       mMarkPaymentAsCancelled.mutateAsync(Number(paymentIdFromParams));
+      mCancelledBooking.mutateAsync(Number(bookingId));
       setShowNotice({
         open: true,
         type: "error",
@@ -151,6 +152,11 @@ const usePayment = () => {
       await PaymentService.customerUpdateStatus(paymentId, {
         status: "FAILED",
       }),
+  });
+
+  const mCancelledBooking = useMutation({
+    mutationFn: async (bookingId: number) =>
+      await BookingService.cancel(bookingId, "Thanh toán đặt phòng thất bại"),
   });
 
   const onPayment = async () => {

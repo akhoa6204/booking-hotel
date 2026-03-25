@@ -15,6 +15,7 @@ import {
 export const roomTypeRoute = Router();
 roomTypeRoute.get("/", CustomerController.list);
 roomTypeRoute.get("/:id", CustomerController.getById);
+roomTypeRoute.get("/:id/avaibility", CustomerController.getRoomAvailable);
 roomTypeRoute.get("/:id/reviews", CustomerController.getReviews);
 roomTypeRoute.get("/:id/review-stats", CustomerController.getReviewStats);
 

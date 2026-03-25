@@ -53,7 +53,7 @@ export default class BookingService {
   }
 
   static async cancel(id: number, reason: string): Promise<void> {
-    await httpClient.post(`${BASE}/${id}/cancel`, { reason });
+    await httpClient.patch(`${BASE}/${id}`, { reason });
   }
 
   static async quote(payload: {
@@ -120,11 +120,12 @@ export default class BookingService {
   static async updateStatus(
     id: number,
     status: BookingStatus,
+    reason?: string,
   ): Promise<Booking> {
     const { data } = await httpClient.patch<{
       success: boolean;
       data: Booking;
-    }>(`${ADMIN_BASE}/${id}`, { status });
+    }>(`${ADMIN_BASE}/${id}`, { status, reason });
     return data;
   }
 }

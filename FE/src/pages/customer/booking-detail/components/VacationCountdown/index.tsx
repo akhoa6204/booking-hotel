@@ -3,7 +3,13 @@ import { Box, Button, Divider, Paper, Stack, Typography } from "@mui/material";
 import { diffNights } from "@utils/format";
 import dayjs from "dayjs";
 
-const VacationCountdown = ({ checkIn }: { checkIn: string }) => {
+const VacationCountdown = ({
+  checkIn,
+  onCancel,
+}: {
+  checkIn: string;
+  onCancel?: () => void;
+}) => {
   const countdown = diffNights(
     dayjs().toDate().toString(),
     dayjs(checkIn).toDate().toString(),
@@ -52,6 +58,10 @@ const VacationCountdown = ({ checkIn }: { checkIn: string }) => {
           variant="contained"
           color="primary"
           sx={{ py: 0.5, px: 2, borderRadius: 1 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onCancel?.();
+          }}
         >
           Hủy phòng
         </Button>

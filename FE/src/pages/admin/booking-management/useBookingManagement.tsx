@@ -557,7 +557,7 @@ export default function useBookingManagement() {
       return await PaymentService.updateStatus(paymentId, { status: "PAID" });
     },
     onSuccess: (data) => {
-      qc.invalidateQueries({ queryKey: ["admin-bookings"] });
+      qc.invalidateQueries({ queryKey: ["admin-bookings", filter] });
       showSuccess(
         `Thanh toán thành công cho đặt phòng ID BK${String(data.invoice.bookingId).padStart(4, "0")}`,
       );
@@ -571,7 +571,7 @@ export default function useBookingManagement() {
     mutationFn: async (paymentId: number) =>
       await PaymentService.updateStatus(paymentId, { status: "FAILED" }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["admin-bookings"] });
+      qc.invalidateQueries({ queryKey: ["admin-bookings", filter] });
       showSuccess("Hủy thanh toán thành công");
     },
     onError: () => {
@@ -601,7 +601,7 @@ export default function useBookingManagement() {
       BookingService.updateStatus(bookingId, "CHECKED_IN"),
     onSuccess: (_data, bookingId) => {
       showSuccess("Nhận phòng thành công");
-      qc.invalidateQueries({ queryKey: ["admin-bookings"] });
+      qc.invalidateQueries({ queryKey: ["admin-bookings", filter] });
       qc.invalidateQueries({ queryKey: ["booking-detail", bookingId] });
     },
     onError: () => {
@@ -614,7 +614,7 @@ export default function useBookingManagement() {
       BookingService.updateStatus(bookingId, "CHECKED_OUT"),
     onSuccess: (_data, bookingId) => {
       showSuccess("Trả phòng thành công");
-      qc.invalidateQueries({ queryKey: ["admin-bookings"] });
+      qc.invalidateQueries({ queryKey: ["admin-bookings", filter] });
       qc.invalidateQueries({ queryKey: ["booking-detail", bookingId] });
     },
     onError: () => {
@@ -623,20 +623,32 @@ export default function useBookingManagement() {
   });
 
   const mConfirmCancelled = useMutation({
-    mutationFn: (bookingId: number) =>
-      BookingService.updateStatus(bookingId, "CANCELLED"),
+    mutationFn: ({
+      bookingId,
+      reason,
+    }: {
+      bookingId: number;
+      reason?: string;
+    }) => BookingService.updateStatus(bookingId, "CANCELLED", reason),
     onSuccess: (_data, bookingId) => {
       showSuccess("Hủy phòng thành công");
-      qc.invalidateQueries({ queryKey: ["admin-bookings"] });
-      qc.invalidateQueries({ queryKey: ["booking-detail", bookingId] });
+      closeCancelDialog();
+      qc.invalidateQueries({ queryKey: ["admin-bookings", filter] });
+      qc.invalidateQueries({ queryKey: ["booking-detail", selectedBookingId] });
     },
     onError: () => {
       showError("Hủy phòng thất bại");
     },
   });
 
-  const handleCancelled = async (bookingId: number) => {
-    await mConfirmCancelled.mutateAsync(bookingId);
+  const handleCancelled = async ({
+    bookingId,
+    reason,
+  }: {
+    bookingId: number;
+    reason: string;
+  }) => {
+    await mConfirmCancelled.mutateAsync({ bookingId, reason });
   };
 
   const handleCheckout = async (bookingId: number, remain: number) => {
@@ -806,6 +818,32 @@ export default function useBookingManagement() {
   const onSelectTask = (id: number) => setSelectedTaskId(id);
   const onChangePageHousekeeping = (page: number) =>
     setFiltersHouseKeepingList((pre) => ({ ...pre, page }));
+
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+
+  const openCancelDialog = () => {
+    setCancelReason("");
+    setCancelOpen(true);
+  };
+
+  const closeCancelDialog = () => {
+    setCancelOpen(false);
+    setCancelReason("");
+  };
+
+  const confirmCancel = () => {
+    if (!cancelReason.trim()) {
+      showError("Vui lòng nhập lý do hủy phòng.");
+      return;
+    }
+
+    handleCancelled({
+      bookingId: Number(selectedBookingId),
+      reason: cancelReason.trim(),
+    });
+  };
+
   return {
     dialog,
     openDialog,
@@ -873,5 +911,12 @@ export default function useBookingManagement() {
     selectedTaskId,
     onChangePageHousekeeping,
     metaHousekeepingList,
+
+    cancelOpen,
+    openCancelDialog,
+    closeCancelDialog,
+    confirmCancel,
+    cancelReason,
+    setCancelReason,
   };
 }

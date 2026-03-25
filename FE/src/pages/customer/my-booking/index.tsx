@@ -6,7 +6,7 @@ import Pager from "@components/pager";
 import CancelBookingDialog from "./components/CancelBookingDialog";
 import GlobalSnackbar from "@components/GlobalSnackbar";
 import NoBooking from "./components/NoBooking";
-import { formatDate } from "@utils/format";
+import { diffNights, formatDate } from "@utils/format";
 
 const MyBookingPage = () => {
   const {
@@ -20,6 +20,7 @@ const MyBookingPage = () => {
     loading,
     onSelectBooking,
     onReview,
+    onReBook,
 
     // cancel
     cancelOpen,
@@ -104,6 +105,12 @@ const MyBookingPage = () => {
                   }
                   onClick={() => onSelectBooking(b.id)}
                   onReview={() => onReview(b.id)}
+                  onReBook={() =>
+                    onReBook(
+                      b.room.roomType.id,
+                      diffNights(b.checkIn, b.checkOut),
+                    )
+                  }
                 />
               ))}
             </Stack>

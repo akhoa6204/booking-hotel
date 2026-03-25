@@ -35,7 +35,7 @@ type Props = {
   onClose: () => void;
   onCheckIn?: (id: number, remain: number) => void;
   onCheckOut?: (id: number, remain: number) => void;
-  onCancel: (bookingId: number) => void;
+  onOpenCancelDialog: () => void;
   filterService: ServiceFilter;
   onChangePageService: (page: number) => void;
   onChangeTabService: (tab: ServiceType) => void;
@@ -85,7 +85,7 @@ export default function BookingViewDialog({
   onClose,
   onCheckIn,
   onCheckOut,
-  onCancel,
+  onOpenCancelDialog,
   filterService,
   onChangePageService,
   onChangeTabService,
@@ -129,7 +129,7 @@ export default function BookingViewDialog({
             size="small"
             variant="outlined"
             color="error"
-            onClick={() => onCancel(booking.id)}
+            onClick={onOpenCancelDialog}
             sx={{
               borderRadius: 1.5,
               py: 1,
@@ -166,7 +166,7 @@ export default function BookingViewDialog({
             size="small"
             variant="outlined"
             color="error"
-            onClick={() => onCancel(booking.id)}
+            onClick={onOpenCancelDialog}
             sx={{
               borderRadius: 1.5,
               py: 1,
@@ -219,7 +219,6 @@ export default function BookingViewDialog({
     }
 
     if (booking.status === "CHECKED_IN") {
-      // Đã tạo task kiểm tra nhưng chưa hoàn tất
       if (!booking.inspected && booking.inspectionTaskId) {
         return (
           <Button
@@ -238,7 +237,6 @@ export default function BookingViewDialog({
         );
       }
 
-      // Chưa có task kiểm tra -> cho phép tạo
       if (!booking.inspected && !booking.inspectionTaskId) {
         return (
           <Button

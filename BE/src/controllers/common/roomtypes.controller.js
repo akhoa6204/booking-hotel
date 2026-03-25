@@ -291,3 +291,50 @@ export async function getReviewStats(req, res) {
     return bad(res, e.message || "Internal server error", 500);
   }
 }
+
+export async function getRoomAvailable(req, res) {
+  try {
+    const { id } = req.params;
+    const { checkIn, checkOut } = req.query;
+    if (!id || !checkIn || !checkOut) {
+      console.error("Thiếu thông tin ID, ngày đến, ngày đi.");
+      return bad(res, "Thiếu thông tin ID, ngày đến, ngày đi.", 400);
+    }
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+
+    const roomType = await prisma.roomType.findUnique({
+      where: {
+        id: Number(id),
+      },
+    });
+    if (!roomType) {
+      console.error("Không tồn tại loại phòng.");
+      return bad(res, "Không tồn tại loại phòng.", 400);
+    }
+
+    const availableRoom = await prisma.room.findFirst({
+      where: {
+        roomTypeId: Number(id),
+        isActive: true,
+        status: "VACANT_CLEAN",
+        bookings: {
+          none: {
+            status: { in: ["CONFIRMED", "CHECKED_IN"] },
+            AND: [{ checkIn: { lt: end } }, { checkOut: { gt: start } }],
+          },
+        },
+      },
+      select: { id: true },
+    });
+
+    if (!availableRoom) {
+      console.error("Không còn phòng trống cho loại phòng này.");
+      return bad(res, "Không còn phòng trống cho loại phòng này.", 400);
+    }
+    return success(res, { roomId: availableRoom.id }, 200);
+  } catch (e) {
+    console.error(e);
+    return bad(res, "Có lỗi xảy ra", 500);
+  }
+}

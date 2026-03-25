@@ -1,7 +1,7 @@
 import useSnackbar from "@hooks/useSnackbar";
 import RoomTypeService from "@services/RoomTypeService";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { FormBooking, SearchState } from "@constant/types";
 import useForm from "@hooks/useForm";
@@ -10,13 +10,15 @@ import { useMediaQuery, useTheme } from "@mui/material";
 
 const useSearch = () => {
   const navigate = useNavigate();
-  const { state } = useLocation() as { state?: Partial<SearchState> };
+  const { state } = useLocation() as {
+    state?: Partial<SearchState & { roomTypeId: number; nights: number }>;
+  };
 
-  const { alert, showError, closeSnackbar } = useSnackbar();
-
+  const { alert, showError, closeSnackbar, showSuccess } = useSnackbar();
+  const nights = state?.nights || 1;
   const today = new Date();
   const tomorrow = new Date();
-  tomorrow.setDate(today.getDate() + 1);
+  tomorrow.setDate(today.getDate() + Number(nights));
 
   const initForm: FormBooking & { sort: "price-asc" | "price-desc" } = {
     from: state?.from ?? formatDateInput(today.toISOString()),
@@ -71,6 +73,32 @@ const useSearch = () => {
     enabled,
   });
 
+  const { data: avaibilityRoom, isLoading: loadingAvaibilityRoom } = useQuery({
+    queryKey: ["room-avaibility", state?.roomTypeId],
+    queryFn: async () =>
+      await RoomTypeService.getRoomAvailability(
+        state.roomTypeId,
+        formSearch.from,
+        formSearch.to,
+      ),
+    enabled: !!state?.roomTypeId,
+  });
+  useEffect(() => {
+    if (loadingAvaibilityRoom) return;
+    if (!state?.roomTypeId) return;
+    if (!avaibilityRoom) {
+      showError("Không còn loại phòng này trong khoảng thời gian này.");
+      return;
+    }
+
+    navigate(`/booking`, {
+      state: {
+        roomId: avaibilityRoom.roomId,
+        checkIn: filters.from,
+        checkOut: filters.to,
+      },
+    });
+  }, [avaibilityRoom, loadingAvaibilityRoom]);
   const rooms = data?.items ?? [];
   const meta = data?.meta;
 
@@ -85,7 +113,6 @@ const useSearch = () => {
       showError("Điền đủ thông tin ngày bắt đầu - ngày kết thúc");
       return;
     }
-    console.log(id);
     navigate(`/booking`, {
       state: { roomId: id, checkIn: filters.from, checkOut: filters.to },
     });

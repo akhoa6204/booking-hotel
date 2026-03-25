@@ -2,12 +2,14 @@ import { Box, Button, Stack, Typography } from "@mui/material";
 import { CalendarMonthRounded, LocationOnRounded } from "@mui/icons-material";
 import { Booking, BookingStatus } from "@constant/types";
 import { fmtVND, formatDate } from "@utils/format";
+import { useNavigate } from "react-router-dom";
 
 type BookingCardProps = {
   booking: Booking;
   onCancel?: () => void;
   onClick?: () => void;
   onReview?: () => void;
+  onReBook?: () => void;
 };
 
 const BookingCard = ({
@@ -15,11 +17,8 @@ const BookingCard = ({
   onCancel,
   onClick,
   onReview,
+  onReBook,
 }: BookingCardProps) => {
-  const handleCardClick = () => {
-    onClick?.();
-  };
-
   const renderActionButton = () => {
     switch (booking.status) {
       case "PENDING":
@@ -55,7 +54,7 @@ const BookingCard = ({
               sx={{ textTransform: "none", py: 0.5, px: 2, borderRadius: 1 }}
               onClick={(e) => {
                 e.stopPropagation();
-                console.log("Re-book");
+                onReBook();
               }}
             >
               Đặt lại
@@ -83,7 +82,7 @@ const BookingCard = ({
             sx={{ textTransform: "none", py: 0.5, px: 2, borderRadius: 1 }}
             onClick={(e) => {
               e.stopPropagation();
-              console.log("Re-book");
+              onReBook();
             }}
           >
             Đặt lại
@@ -108,7 +107,7 @@ const BookingCard = ({
         alignItems: "stretch",
         cursor: onClick ? "pointer" : "default",
       }}
-      onClick={handleCardClick}
+      onClick={() => onClick?.()}
     >
       <Box
         component="img"

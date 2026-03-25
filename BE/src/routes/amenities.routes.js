@@ -3,4 +3,4 @@ import { list } from "../controllers/admin/amenities.controller.js";
 import { auth } from "../middleware/auth.js";
 
 export const amenitiesRouter = Router();
-amenitiesRouter.get("/", auth(), list);
+amenitiesRouter.get("/", auth(true), list);

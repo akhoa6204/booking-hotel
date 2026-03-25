@@ -172,6 +172,7 @@ export interface Booking {
   room: Pick<Room, "id" | "name" | "roomType">;
   invoice: Invoice;
   inspected: boolean;
+  inspectionTaskId?: number;
   canReview?: boolean;
 }
 

@@ -15,7 +15,7 @@ reviewsRouter.get("/:id", auth(), reviewController.getById);
 
 reviewsRouter.patch(
   "/:id",
-  auth(),
+  auth(true),
   notRequireRole("CUSTOMER"),
   reviewController.updateStatus,
 );

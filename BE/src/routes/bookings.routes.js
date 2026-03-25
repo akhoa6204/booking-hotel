@@ -7,6 +7,7 @@ export const bookingsRouter = Router();
 bookingsRouter.get("/", auth(true), bookingController.list);
 bookingsRouter.post("/", auth(), bookingController.create);
 bookingsRouter.get("/:id", auth(), bookingController.getById);
+bookingsRouter.patch("/:id", auth(true), bookingController.remove);
 
 export const adminBookingsRouter = Router();
 

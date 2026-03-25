@@ -205,8 +205,8 @@ export async function create(req, res) {
 export async function update(req, res) {
   try {
     const { id } = req.params;
-    const { status } = req.body || {};
-
+    const { status, reason } = req.body || {};
+    const userId = req.user.id;
     if (!id) return bad(res, "Thiếu bookingId", 400);
 
     const booking = await prisma.booking.findUnique({
@@ -230,8 +230,16 @@ export async function update(req, res) {
         if (booking.status === "CHECKED_IN") {
           throw new Error("Không thể huỷ booking đã check-in");
         }
+        if (!reason) return bad(res, "Thiếu nguyên nhân hủy phòng.", 400);
 
-        return tx.booking.update({
+        await tx.cancelReason.create({
+          data: {
+            bookingId: Number(id),
+            content: reason,
+            staffId: Number(userId),
+          },
+        });
+        return await tx.booking.update({
           where: { id: Number(id) },
           data: {
             status: "CANCELLED",

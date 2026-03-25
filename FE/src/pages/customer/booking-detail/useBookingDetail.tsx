@@ -1,12 +1,15 @@
 import useSnackbar from "@hooks/useSnackbar";
 import BookingService from "@services/BookingService";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { sleep } from "@utils/sleep";
 import InvoiceService from "@services/InvoiceService";
+import { diffNights } from "@utils/format";
+import { Booking } from "@constant/types";
 
 const useBookingDetail = () => {
+  const queryClient = useQueryClient();
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -28,6 +31,56 @@ const useBookingDetail = () => {
       state: { bookingId: id },
     });
 
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+
+  const openCancelDialog = () => {
+    setCancelReason("");
+    setCancelOpen(true);
+  };
+
+  const closeCancelDialog = () => {
+    setCancelOpen(false);
+    setCancelReason("");
+  };
+
+  const cancelMutation = useMutation({
+    mutationFn: async (payload: { id: number; reason: string }) =>
+      BookingService.cancel(payload.id, payload.reason),
+    onSuccess: async () => {
+      showSuccess("Hủy đặt phòng thành công");
+      closeCancelDialog();
+      await queryClient.invalidateQueries({ queryKey: ["booking-detail", id] });
+    },
+    onError: (err: any) => {
+      const msg =
+        err?.response?.data?.message ||
+        "Hủy đặt phòng thất bại, vui lòng thử lại.";
+      showError(msg);
+    },
+  });
+
+  const confirmCancel = () => {
+    if (!cancelReason.trim()) {
+      showError("Vui lòng nhập lý do hủy phòng.");
+      return;
+    }
+
+    cancelMutation.mutate({
+      id: booking.id,
+      reason: cancelReason.trim(),
+    });
+  };
+
+  const onReBook = () => {
+    navigate("/search", {
+      state: {
+        roomTypeId: booking.room.roomType.id,
+        nights: diffNights(booking.checkIn, booking.checkOut),
+      },
+    });
+  };
+
   return {
     booking,
     loadingBooking: isLoading,
@@ -35,6 +88,15 @@ const useBookingDetail = () => {
     onReview,
     alert,
     closeSnackbar,
+
+    onReBook,
+    confirmCancel,
+
+    cancelOpen,
+    cancelReason,
+    setCancelReason,
+    openCancelDialog,
+    closeCancelDialog,
   };
 };
 

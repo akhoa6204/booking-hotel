@@ -7,6 +7,7 @@ import useBookingManagement from "./useBookingManagement";
 import GlobalSnackbar from "@components/GlobalSnackbar";
 import BookingTable from "./components/booking-table";
 import BookingViewDialog from "./components/booking-view-dialog";
+import CancelBookingDialog from "./components/CancelBookingDialog";
 
 export default function BookingManagement() {
   const {
@@ -74,6 +75,13 @@ export default function BookingManagement() {
     selectedTaskId,
     onChangePageHousekeeping,
     metaHousekeepingList,
+
+    cancelOpen,
+    openCancelDialog,
+    closeCancelDialog,
+    confirmCancel,
+    cancelReason,
+    setCancelReason,
   } = useBookingManagement();
 
   const totalPages = Math.max(1, pagination?.totalPages ?? 1);
@@ -158,7 +166,7 @@ export default function BookingManagement() {
           updateService={updateService}
           removeService={removeService}
           onCheckIn={handleCheckIn}
-          onCancel={handleCancelled}
+          onOpenCancelDialog={openCancelDialog}
           onCheckOut={handleCheckout}
           onCreateTask={handleCreateTask}
           housekeepingDetail={housekeepingDetail}
@@ -204,6 +212,16 @@ export default function BookingManagement() {
         q={filtersAvailableRooms.q}
         loading={loadingRooms}
       />
+
+      {cancelOpen && (
+        <CancelBookingDialog
+          open={cancelOpen}
+          onClose={closeCancelDialog}
+          onConfirm={confirmCancel}
+          reason={cancelReason}
+          onChangeReason={setCancelReason}
+        />
+      )}
     </Box>
   );
 }

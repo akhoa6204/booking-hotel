@@ -197,6 +197,7 @@ export async function getById(req, res) {
           select: {
             roomType: {
               select: {
+                id: true,
                 basePrice: true,
                 capacity: true,
                 name: true,
@@ -281,6 +282,7 @@ export async function list(req, res) {
             name: true,
             roomType: {
               select: {
+                id: true,
                 basePrice: true,
                 capacity: true,
                 name: true,
@@ -338,6 +340,44 @@ export async function list(req, res) {
       },
       "Danh sách đặt phòng của bạn",
     );
+  } catch (e) {
+    console.error(e);
+    return bad(res, "Có lỗi xảy ra", 500);
+  }
+}
+
+export async function remove(req, res) {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body || {};
+    const userId = req.user?.id;
+    if (!id || !reason)
+      return bad(res, "Thiếu thông tin ID hoặc lý do hủy phòng.", 400);
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!booking) return bad(res, "Thông tin đặt phòng không tồn tại.");
+
+    const result = await prisma.$transaction(async (tx) => {
+      await tx.booking.update({
+        where: { id: Number(id) },
+        data: {
+          status: "CANCELLED",
+        },
+      });
+
+      await tx.cancelReason.create({
+        data: {
+          bookingId: Number(id),
+          userId: Number(userId),
+          content: reason,
+        },
+      });
+    });
+
+    return success(res, null, "Hủy phòng thành công", 200);
   } catch (e) {
     console.error(e);
     return bad(res, "Có lỗi xảy ra", 500);

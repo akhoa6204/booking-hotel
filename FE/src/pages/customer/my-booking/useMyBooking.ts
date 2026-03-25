@@ -72,9 +72,6 @@ const useMyBooking = () => {
 
   const onSelectBooking = (id: number) => navigate(`/account/bookings/${id}`);
 
-  // =========================
-  // HỦY PHÒNG
-  // =========================
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
@@ -127,6 +124,15 @@ const useMyBooking = () => {
       },
     });
 
+  const onReBook = (roomTypeId: number, nights: number) => {
+    navigate("/search", {
+      state: {
+        roomTypeId,
+        nights,
+      },
+    });
+  };
+
   return {
     // list + tab
     tab,
@@ -141,6 +147,7 @@ const useMyBooking = () => {
     fetching: isFetching,
     onSelectBooking,
     onReview,
+    onReBook,
 
     // cancel dialog
     cancelOpen,
