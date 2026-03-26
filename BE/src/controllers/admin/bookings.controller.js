@@ -106,12 +106,13 @@ export async function create(req, res) {
     const existedBooking = await prisma.booking.findFirst({
       where: {
         roomId,
-        status: { not: "PENDING" },
+        status: { in: ["CONFIRMED", "CHECKED_IN"] },
         AND: [{ checkIn: { lt: endDate } }, { checkOut: { gt: startDate } }],
       },
     });
 
     if (existedBooking) {
+      console.log(existedBooking);
       return bad(res, "Phòng không còn trống", 400);
     }
 
@@ -266,23 +267,78 @@ export async function update(req, res) {
           data: {
             roomId: Number(roomId),
           },
-          include: { room: true },
-        });
-        await tx.room.update({
-          where: {
-            id: Number(oldRoomId),
+          select: {
+            status: true,
+            roomId: true,
+            room: {
+              select: {
+                id: true,
+                name: true,
+                roomType: {
+                  select: {
+                    id: true,
+                    name: true,
+                    basePrice: true,
+                    capacity: true,
+                  },
+                },
+              },
+            },
           },
-          data: {
-            status: "VACANT_DIRTY",
-          },
         });
-        await tx.housekeepingTask.create({
-          data: {
+
+        if (booking.status === "CHECKED_IN") {
+          await tx.room.update({
+            where: { id: Number(oldRoomId) },
+            data: { status: "VACANT_DIRTY" },
+          });
+
+          const currentShift = await tx.shift.findFirst({
+            where: {
+              startTime: { lte: now },
+              endTime: { gt: now },
+            },
+          });
+
+          let assignedStaffId = null;
+
+          if (currentShift) {
+            const staffOnShift = await tx.staffShiftAssignment.findMany({
+              where: {
+                workDate: today,
+                shiftId: currentShift.id,
+                position: "HOUSEKEEPING",
+              },
+            });
+
+            if (staffOnShift.length > 0) {
+              const taskCounts = await Promise.all(
+                staffOnShift.map(async (s) => {
+                  const count = await tx.housekeepingTask.count({
+                    where: {
+                      staffId: s.staffId,
+                      status: { in: ["PENDING", "IN_PROGRESS"] },
+                    },
+                  });
+                  return { staffId: s.staffId, count };
+                }),
+              );
+
+              taskCounts.sort((a, b) => a.count - b.count);
+              assignedStaffId = taskCounts[0].staffId;
+            }
+          }
+
+          const taskData = {
             roomId: Number(oldRoomId),
-            workDate: new Date(),
+            workDate: now,
             type: "CLEANING",
-          },
-        });
+          };
+
+          if (assignedStaffId) taskData.staffId = assignedStaffId;
+
+          await tx.housekeepingTask.create({ data: taskData });
+        }
 
         return updatedBooking;
       }

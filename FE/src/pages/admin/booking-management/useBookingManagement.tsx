@@ -611,6 +611,7 @@ export default function useBookingManagement() {
     },
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ["admin-bookings", filter] });
+      qc.invalidateQueries({ queryKey: ["available-rooms-create"] });
       showSuccess(
         `Thanh toán thành công cho đặt phòng ID BK${String(data.invoice.bookingId).padStart(4, "0")}`,
       );
