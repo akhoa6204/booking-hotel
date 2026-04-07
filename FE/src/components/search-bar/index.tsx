@@ -43,7 +43,7 @@ export default function SearchBar({ form, onSubmit, onChange }: Props) {
           display: "flex",
           alignItems: "center",
           mx: "auto",
-          border: "1px solid #24AB70",
+          border: "1px solid #2E90FA",
           boxShadow: 2,
           borderRadius: "999px",
           bgcolor: "#fff",

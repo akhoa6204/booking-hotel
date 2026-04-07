@@ -124,7 +124,7 @@ export default function BookingServiceTab({
                             px={1}
                             py={0.25}
                             borderRadius={1}
-                            bgcolor="#24AB70"
+                            bgcolor="#2E90FA"
                             color="#fff"
                           >
                             Đã thêm

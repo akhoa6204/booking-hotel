@@ -82,7 +82,7 @@ export default function RoomUpsertDialog({
             {selectedType && (
               <Grid
                 container
-                sx={{ mt: 1.5, bgcolor: "#F5F8F7", p: 1.5, borderRadius: 4 }}
+                sx={{ mt: 1.5, bgcolor: "#2E90FA0d", p: 1.5, borderRadius: 4 }}
               >
                 <Grid size={4}>
                   <Typography variant="caption" color="text.secondary">

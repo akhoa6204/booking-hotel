@@ -1,7 +1,7 @@
 import { Alert, Snackbar } from "@mui/material";
 
 const severityColor = {
-  success: "#24AB70",
+  success: "#2E90FA",
   error: "#D32F2F",
   warning: "#ED6C02",
 };

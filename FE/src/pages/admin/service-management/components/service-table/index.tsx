@@ -40,7 +40,7 @@ export default function ServiceTable({
       }}
     >
       <Table>
-        <TableHead sx={{ backgroundColor: "#F6FCF9" }}>
+        <TableHead sx={{ backgroundColor: "#2E90FA0d" }}>
           <TableRow>
             <TableCell>ID</TableCell>
             <TableCell>Tên</TableCell>

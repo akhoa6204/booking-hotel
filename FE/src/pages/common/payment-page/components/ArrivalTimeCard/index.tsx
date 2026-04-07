@@ -10,7 +10,7 @@ import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import dayjs from "dayjs";
 import { useMemo } from "react";
 import { formatDate } from "@utils/format";
-import { BookingForm } from "../../interface";
+import { BookingForm } from "@pages/common/booking-page/interface";
 
 type Option = { value: string; label: string };
 
@@ -85,7 +85,7 @@ const ArrivalTimeCard = ({ value, onChange, checkInDate }: Props) => {
 
       <Box display="flex" alignItems="center" mb={2}>
         <CheckCircleRoundedIcon
-          sx={{ color: "#24AB70", mr: 1.5, fontSize: 24 }}
+          sx={{ color: "#2E90FA", mr: 1.5, fontSize: 24 }}
         />
         <Typography variant="body2">
           Bạn có thể nhận chỗ nghỉ trong khoảng từ 14:00 - 22:00 ngày

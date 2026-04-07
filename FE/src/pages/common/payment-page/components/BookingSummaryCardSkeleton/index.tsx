@@ -21,7 +21,7 @@ const BookingSummaryCardSkeleton = () => {
       variant="outlined"
     >
       {/* Header */}
-      <Box sx={{ py: 2, px: 2.5, bgcolor: "#F5F8F7" }}>
+      <Box sx={{ py: 2, px: 2.5, bgcolor: "#2E90FA0d" }}>
         <Skeleton variant="text" width={160} height={28} />
       </Box>
 
@@ -35,7 +35,7 @@ const BookingSummaryCardSkeleton = () => {
         <Box
           sx={{
             borderRadius: 2,
-            bgcolor: "#F5F8F7",
+            bgcolor: "#2E90FA0d",
             p: 2,
             mb: 1.5,
           }}

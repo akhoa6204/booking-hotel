@@ -37,7 +37,7 @@ const ReviewDetailSection = ({
         Đánh giá các tiêu chí cụ thể về dịch vụ
       </Typography>
 
-      <Box sx={{ bgcolor: "#F5F8F7", borderRadius: 2, p: 2 }}>
+      <Box sx={{ bgcolor: "#2E90FA0d", borderRadius: 2, p: 2 }}>
         <Grid container rowSpacing={2} columnSpacing={16}>
           {DETAIL_FIELDS.map((f) => (
             <Grid size={{ xs: 12, sm: 6 }} key={f.key}>

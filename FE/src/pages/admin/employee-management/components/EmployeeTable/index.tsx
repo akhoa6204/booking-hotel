@@ -83,7 +83,7 @@ const EmployeeTable = ({ rows, isLoading, onEdit, onToggle }: Props) => {
       }}
     >
       <Table>
-        <TableHead sx={{ backgroundColor: "#F6FCF9" }}>
+        <TableHead sx={{ backgroundColor: "#2E90FA0d" }}>
           <TableRow>
             <TableCell sx={{ fontWeight: 600 }}>Họ tên</TableCell>
             <TableCell sx={{ fontWeight: 600 }}>Số điện thoại</TableCell>

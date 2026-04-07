@@ -111,7 +111,7 @@ const ShiftManagement = () => {
               gap: 2,
               px: 3,
               borderRadius: "999px",
-              border: "2px solid #24AB70",
+              border: "2px solid #2E90FA",
             }}
           >
             <IconButton size="small" onClick={prevWeek} color="primary">

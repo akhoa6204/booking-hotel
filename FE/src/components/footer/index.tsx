@@ -43,7 +43,7 @@ const cols = [
 
 const Footer = () => {
   return (
-    <Box component="footer" sx={{ bgcolor: "#24ab700d", pt: 6 }}>
+    <Box component="footer" sx={{ bgcolor: "#2E90FA0d", pt: 6 }}>
       <Container maxWidth="lg">
         <Grid container spacing={6}>
           {/* Left intro */}

@@ -39,7 +39,7 @@ const BookingDetailCard: React.FC<BookingDetailCardProps> = ({
       <Box
         sx={{
           borderRadius: 2,
-          bgcolor: "#F5F8F7",
+          bgcolor: "#2E90FA0d",
           p: 2,
           mb: 2,
         }}

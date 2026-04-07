@@ -72,10 +72,10 @@ function UserMenu({
         onClick={(e) => setAnchorEl(e.currentTarget)}
         className="flex items-center gap-2 cursor-pointer bg-transparent border-0 outline-none"
       >
-        <Avatar sx={{ width: 32, height: 32 }}>
+        <Avatar sx={{ width: 32, height: 32, bgcolor: "#2E90FA" }}>
           {userName?.[0]?.toUpperCase() ?? "U"}
         </Avatar>
-        <span className="font-semibold hover:text-emerald-600 transition-colors">
+        <span className="font-semibold hover:text-[#2E90FA] transition-colors">
           {userName}
         </span>
       </button>
@@ -181,9 +181,9 @@ const Header = () => {
                 className={[
                   "relative px-2 py-1 text-sm font-medium transition-colors",
                   isActive
-                    ? "text-emerald-600"
-                    : "text-slate-900 hover:text-emerald-600",
-                  "after:absolute after:left-0 after:right-0 after:-bottom-0.5 after:h-0.5 after:bg-emerald-600 after:transition-transform after:origin-left",
+                    ? "text-[#2E90FA]"
+                    : "text-slate-900 hover:text-[#2E90FA]",
+                  "after:absolute after:left-0 after:right-0 after:-bottom-0.5 after:h-0.5 after:bg-[#2E90FA] after:transition-transform after:origin-left",
                   isActive ? "after:scale-x-100" : "after:scale-x-0",
                 ].join(" ")}
               >
@@ -211,7 +211,7 @@ const Header = () => {
         elevation={0}
         color="inherit"
         sx={{
-          bgcolor: "#24ab700d",
+          bgcolor: "#2E90FA0d",
           borderBottom: "1px solid rgba(0,0,0,.06)",
           backdropFilter: "blur(10px)",
         }}
@@ -354,7 +354,7 @@ const Header = () => {
                   <Button
                     fullWidth
                     color="error"
-                    variant="contained"
+                    variant="outlined"
                     onClick={() => {
                       setOpen(false);
                       handleLogOut();

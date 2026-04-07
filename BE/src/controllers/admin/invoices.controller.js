@@ -91,6 +91,7 @@ export async function update(req, res) {
         where: { id: invoice.id },
         data: {
           subtotal: newSubtotal,
+          status: "ACTIVE",
         },
       });
 

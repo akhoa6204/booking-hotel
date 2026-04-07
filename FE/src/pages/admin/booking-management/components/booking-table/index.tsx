@@ -30,13 +30,13 @@ const StatusChip = (status: BookingStatus) => {
     string,
     {
       label: string;
-      color: "default" | "primary" | "warning" | "error" | "info";
+      color: "default" | "primary" | "warning" | "error" | "info" | "success";
     }
   > = {
     PENDING: { label: "Chờ xác nhận", color: "warning" },
-    CONFIRMED: { label: "Đã xác nhận", color: "primary" },
+    CONFIRMED: { label: "Đã xác nhận", color: "success" },
     CANCELLED: { label: "Đã hủy", color: "error" },
-    CHECKED_IN: { label: "Đang ở", color: "info" },
+    CHECKED_IN: { label: "Đang ở", color: "primary" },
     CHECKED_OUT: { label: "Đã trả phòng", color: "default" },
   };
   const s = map[status] || map.PENDING;
@@ -67,7 +67,7 @@ export default function BookingTable({ items, isLoading, onView }: Props) {
       elevation={1}
     >
       <Table sx={{ minWidth: 1100 }}>
-        <TableHead sx={{ backgroundColor: "#F6FCF9" }}>
+        <TableHead sx={{ backgroundColor: "#2E90FA0d" }}>
           <TableRow>
             <TableCell
               sx={{
@@ -76,7 +76,7 @@ export default function BookingTable({ items, isLoading, onView }: Props) {
                 background: "#fff",
                 zIndex: 2,
                 fontWeight: 600,
-                backgroundColor: "#F6FCF9",
+                backgroundColor: "#2E90FA0d",
               }}
             >
               Mã

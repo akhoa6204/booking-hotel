@@ -117,7 +117,6 @@ const AdminSideBar = () => {
 
   return (
     <Box className="h-screen bg-white border-r border-gray-200 flex flex-col">
-      {/* Logo */}
       <Box className="p-6">
         <Typography
           variant="h5"
@@ -129,7 +128,6 @@ const AdminSideBar = () => {
         </Typography>
       </Box>
 
-      {/* Menu */}
       <List className="flex-1 space-y-1">
         {filteredMenuItems.map((item) => {
           const active = location.pathname.startsWith(item.path);
@@ -142,7 +140,6 @@ const AdminSideBar = () => {
                   borderRadius: "8px",
                   mx: 1,
                   "&.Mui-selected": {
-                    backgroundColor: "rgba(46, 125, 50, 0.1)",
                     "& .MuiListItemIcon-root, & .MuiListItemText-primary": {
                       color: "primary.main",
                       fontWeight: 600,

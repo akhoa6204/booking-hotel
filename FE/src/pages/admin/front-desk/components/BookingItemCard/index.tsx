@@ -14,8 +14,8 @@ const STATUS_UI: Record<
   },
   CONFIRMED: {
     label: "Check-in",
-    color: "#24AB70",
-    border: "#24AB70",
+    color: "#2E90FA",
+    border: "#2E90FA",
     bg: "rgba(36, 171, 112, 0.1)",
   },
   CHECKED_IN: {
@@ -26,8 +26,8 @@ const STATUS_UI: Record<
   },
   CHECKED_OUT: {
     label: "Đã trả phòng",
-    color: "#2E7D32",
-    border: "#2E7D32",
+    color: "#2E90FA",
+    border: "#2E90FA",
     bg: "rgba(46, 125, 50, 0.1)",
   },
   CANCELLED: {
@@ -50,7 +50,7 @@ export default function BookingItemCard({
   return (
     <Box
       sx={{
-        border: "1px solid #24AB70",
+        border: "1px solid #2E90FA",
         borderRadius: 2.5,
         p: 2,
       }}

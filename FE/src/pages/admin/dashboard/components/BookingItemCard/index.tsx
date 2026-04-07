@@ -1,4 +1,3 @@
-// BookingItemCard.tsx
 import { Box, Stack, Typography, Chip } from "@mui/material";
 import { Booking, BookingStatus } from "@constant/types";
 
@@ -14,9 +13,9 @@ const STATUS_UI: Record<
   },
   CONFIRMED: {
     label: "Check-in",
-    color: "#24AB70",
-    border: "#24AB70",
-    bg: "rgba(36, 171, 112, 0.1)",
+    color: "#2E90FA",
+    border: "#2E90FA",
+    bg: "#2E90FA0d",
   },
   CHECKED_IN: {
     label: "Đã nhận phòng",
@@ -50,7 +49,7 @@ export default function BookingItemCard({
   return (
     <Box
       sx={{
-        border: "1px solid #24AB70",
+        border: "1px solid #2E90FA",
         borderRadius: 2.5,
         p: 2,
       }}

@@ -40,7 +40,7 @@ function OnlyActualTooltip({ active, payload, label }: any) {
       }}
     >
       <div style={{ fontWeight: 600, marginBottom: 6 }}>Tháng {label}</div>
-      <div style={{ color: "#24AB70", fontWeight: 600 }}>
+      <div style={{ color: "#2E90FA", fontWeight: 600 }}>
         Doanh thu: {formatMoneyShort(actualItem.value)}
       </div>
     </div>
@@ -79,20 +79,17 @@ export default function MonthlyRevenueChart({
             axisLine={false}
             tickMargin={22}
           />
-          {/* KHÔNG hiển thị trục y, set trần để có headroom 16px */}
           <YAxis hide domain={[0, TARGET]} />
 
-          {/* 1) Phần xanh ở DƯỚI, không bo góc */}
           <Bar
             dataKey="actual"
             stackId="a"
-            fill="#24AB70"
+            fill="#2E90FA"
             radius={[0, 0, 0, 0]}
           >
             <LabelList dataKey="valueText" content={<ValueBelow />} />
           </Bar>
 
-          {/* 2) Phần xám ở TRÊN, bo góc trên */}
           <Bar
             dataKey="gap"
             stackId="a"

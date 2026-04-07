@@ -14,7 +14,7 @@ const PaymentSummaryCard = ({ total }: { total: number }) => {
       <Typography
         variant="h6"
         fontWeight={700}
-        sx={{ py: 2, px: 2.5, bgcolor: "#F5F8F7" }}
+        sx={{ py: 2, px: 2.5, bgcolor: "#2E90FA0d" }}
       >
         Thanh toán
       </Typography>

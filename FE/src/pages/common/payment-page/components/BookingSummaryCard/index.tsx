@@ -40,7 +40,7 @@ const BookingSummaryCard: React.FC<Props> = ({
       <Typography
         variant="h6"
         fontWeight={700}
-        sx={{ py: 2, px: 2.5, bgcolor: "#F5F8F7" }}
+        sx={{ py: 2, px: 2.5, bgcolor: "#2E90FA0d" }}
       >
         Chi tiết đặt phòng
       </Typography>
@@ -56,7 +56,7 @@ const BookingSummaryCard: React.FC<Props> = ({
         <Box
           sx={{
             borderRadius: 2,
-            bgcolor: "#F5F8F7",
+            bgcolor: "#2E90FA0d",
             p: 2,
             mb: 1.5,
           }}

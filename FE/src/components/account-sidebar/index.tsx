@@ -79,7 +79,7 @@ const AccountSidebar = () => {
     >
       {/* Header user */}
       <Box px={2.5} py={2} display="flex" alignItems="center" gap={1.5}>
-        <Avatar sx={{ bgcolor: "warning.main", width: 36, height: 36 }}>
+        <Avatar sx={{ bgcolor: "#2E90FA", width: 36, height: 36 }}>
           {fullName[0]?.toUpperCase() ?? "U"}
         </Avatar>
         <Typography fontWeight={600}>{fullName}</Typography>
@@ -97,14 +97,14 @@ const AccountSidebar = () => {
               py: 1.1,
               px: 2.5,
               borderRadius: 0,
-              bgcolor: active ? "#24AB70" : "transparent",
+              bgcolor: active ? "#2E90FA" : "transparent",
               color: active ? "common.white" : "text.primary",
               "& .MuiListItemIcon-root": {
                 color: active ? "common.white" : "text.secondary",
                 minWidth: 32,
               },
               "&:hover": {
-                bgcolor: active ? "#1f8f5f" : "grey.50",
+                bgcolor: active ? "#2E90FA6d" : "grey.50",
               },
             },
           };

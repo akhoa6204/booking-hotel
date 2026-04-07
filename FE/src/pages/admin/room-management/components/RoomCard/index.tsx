@@ -59,14 +59,16 @@ const RoomCard: React.FC<Props> = ({
       currency: "VND",
     });
 
-  const status = STATUS_VIEW[(room.status || "VACANT_CLEAN") as NonNullable<RoomStatus>];
+  const status =
+    STATUS_VIEW[(room.status || "VACANT_CLEAN") as NonNullable<RoomStatus>];
 
-  const currentStatus = (room.status || "VACANT_CLEAN") as NonNullable<RoomStatus>;
+  const currentStatus = (room.status ||
+    "VACANT_CLEAN") as NonNullable<RoomStatus>;
 
   const statusOptions: NonNullable<RoomStatus>[] =
     currentStatus === "OUT_OF_SERVICE"
-      ? ["VACANT_CLEAN"] // nếu đang bảo trì thì chỉ cho chuyển về Trống - Sạch
-      : [currentStatus, "OUT_OF_SERVICE"]; // trạng thái bình thường -> cho chuyển sang Bảo trì
+      ? ["VACANT_CLEAN"]
+      : [currentStatus, "OUT_OF_SERVICE"];
 
   return (
     <Card
@@ -164,12 +166,7 @@ const RoomCard: React.FC<Props> = ({
         </Stack>
 
         {/* Giá */}
-        <Typography
-          mt={1.5}
-          fontWeight={600}
-          color="success.main"
-          variant="body1"
-        >
+        <Typography mt={1.5} fontWeight={600} color="primary" variant="body1">
           {formatPrice(room.roomType?.basePrice || 0)}/đêm
         </Typography>
 

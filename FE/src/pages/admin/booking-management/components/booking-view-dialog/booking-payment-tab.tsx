@@ -121,8 +121,8 @@ export default function BookingPaymentTab({
                           fontSize: 12,
                           fontWeight: 600,
                           display: "inline-block",
-                          bgcolor: p.status === "PAID" ? "#E8F8F1" : "#FFF4E5",
-                          color: p.status === "PAID" ? "#24AB70" : "#ED6C02",
+                          bgcolor: p.status === "PAID" ? "#2E90FA0d" : "#FFF4E5",
+                          color: p.status === "PAID" ? "#2E90FA" : "#ED6C02",
                         }}
                       >
                         {getLabelStatus[p.status]}
@@ -209,7 +209,7 @@ export default function BookingPaymentTab({
               disabled={disablePay}
               sx={{
                 mt: 1,
-                bgcolor: "#24AB70",
+                bgcolor: "#2E90FA",
                 "&:hover": { bgcolor: "#1e8f5c" },
               }}
               type="submit"

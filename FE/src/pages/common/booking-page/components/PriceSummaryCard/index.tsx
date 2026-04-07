@@ -58,7 +58,7 @@ const PriceSummaryCard: React.FC<PriceSummaryProps> = ({
         direction="row"
         justifyContent="space-between"
         alignItems="center"
-        sx={{ py: 1.5, px: 2.5, bgcolor: "#F5F8F7" }}
+        sx={{ py: 1.5, px: 2.5, bgcolor: "#2E90FA0d" }}
       >
         <Typography fontWeight={700} color="error" sx={{ fontSize: 18 }}>
           Tổng cộng

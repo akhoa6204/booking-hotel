@@ -75,7 +75,7 @@ export default function WeeklyScheduleCalendar({
         <Box sx={{ width: "100%", overflowX: "auto" }}>
           <Grid container direction="column">
             {/* HEADER */}
-            <Grid container wrap="nowrap" sx={{ backgroundColor: "#F6FCF9" }}>
+            <Grid container wrap="nowrap" sx={{ backgroundColor: "#2E90FA0d" }}>
               <Grid
                 sx={{
                   flex: "0 0 200px",
@@ -89,7 +89,7 @@ export default function WeeklyScheduleCalendar({
                   position: "sticky",
                   left: 0,
                   zIndex: 3,
-                  backgroundColor: "#F6FCF9",
+                  backgroundColor: "#2E90FA0d",
                 }}
               >
                 Nhân viên
@@ -200,15 +200,13 @@ export default function WeeklyScheduleCalendar({
                       {canEdit &&
                         (assignmentsOfDay.length === 0 ? (
                           <Box
-                            onClick={() =>
-                              onAdd?.(item.user)
-                            }
+                            onClick={() => onAdd?.(item.user)}
                             className="opacity-0 group-hover:opacity-100 cursor-pointer"
                             sx={{
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              bgcolor: "#24AB70",
+                              bgcolor: "#2E90FA",
                               color: "white",
                               borderRadius: 3,
                               flex: 1,
@@ -219,15 +217,13 @@ export default function WeeklyScheduleCalendar({
                           </Box>
                         ) : (
                           <Box
-                            onClick={() =>
-                              onAdd?.(item.user)
-                            }
+                            onClick={() => onAdd?.(item.user)}
                             className="opacity-0 group-hover:opacity-100 transition cursor-pointer"
                             sx={{
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              bgcolor: "#24AB70",
+                              bgcolor: "#2E90FA",
                               color: "white",
                               borderRadius: 3,
                               width: "full",

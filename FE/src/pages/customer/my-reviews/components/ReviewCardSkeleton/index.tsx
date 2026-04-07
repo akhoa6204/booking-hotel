@@ -10,7 +10,7 @@ const ReviewCardSkeleton = () => {
         p: 2,
         borderRadius: 2,
         border: "1px solid #e5e5e5",
-        bgcolor: "#F5F8F7",
+        bgcolor: "#2E90FA0d",
       }}
     >
       {/* Image */}

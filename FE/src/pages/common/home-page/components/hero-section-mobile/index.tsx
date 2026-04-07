@@ -10,7 +10,7 @@ const HeroSectionMobile: React.FC<Props> = (props) => {
   return (
     <>
       <Box
-        sx={{ bgcolor: "rgba(36,171,112,0.05)", height: 236 }}
+        sx={{ bgcolor: "#2E90FA0d", height: 236 }}
         position={"relative"}
       >
         <Container>

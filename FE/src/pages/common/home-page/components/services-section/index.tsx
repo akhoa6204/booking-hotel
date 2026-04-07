@@ -75,7 +75,7 @@ const ServicesSection = () => {
                     py: 4.5,
                     borderRadius: 3,
                     border: "1px solid",
-                    borderColor: "#BBE5D2",
+                    borderColor: "#2E90FA66",
                   }}
                 >
                   <Stack

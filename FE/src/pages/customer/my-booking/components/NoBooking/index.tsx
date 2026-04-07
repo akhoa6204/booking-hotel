@@ -11,7 +11,7 @@ const NoBooking = ({ step }: { step: string }) => {
   const title = messages[step] || "Bạn chưa có dữ liệu";
 
   return (
-    <Box sx={{ backgroundColor: "#F5F8F7", py: 7 }}>
+    <Box sx={{ backgroundColor: "#2E90FA0d", py: 7 }}>
       <Stack alignItems="center">
         <Box
           component="img"

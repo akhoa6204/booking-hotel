@@ -49,7 +49,10 @@ export default function ReviewSection({ stats, reviews }: Props) {
             <Grid size={{ xs: 12, md: 4 }} key={r.id}>
               <Stack spacing={1.5}>
                 <Stack direction="row" spacing={2} alignItems="center">
-                  <Avatar sx={{ width: 40, height: 40 }} src={Customer} />
+                  <Avatar
+                    sx={{ width: 40, height: 40, bgcolor: "#2E90FA" }}
+                    src={Customer}
+                  />
                   <Box>
                     <Typography fontWeight={600}>
                       {r.booking.fullName}

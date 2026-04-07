@@ -49,7 +49,7 @@ export default function HousekeepingTaskTable({
     <TableContainer component={Paper} className="rounded-xl shadow">
       <Table>
         {/* HEADER */}
-        <TableHead sx={{ bgcolor: "#F6FCF9" }}>
+        <TableHead sx={{ bgcolor: "#2E90FA0d" }}>
           <TableRow>
             <TableCell className="font-semibold">Số Phòng</TableCell>
             <TableCell className="font-semibold">Người thực hiện</TableCell>

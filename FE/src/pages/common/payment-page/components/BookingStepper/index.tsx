@@ -36,14 +36,14 @@ const BookingStepper = ({ activeStep = 1 }: BookingStepperProps) => {
                     "& .MuiChip-label": { p: 0, lineHeight: "28px" },
                     ...(isActive || isCompleted
                       ? {
-                          bgcolor: "#24AB70",
+                          bgcolor: "#2E90FA",
                           color: "white",
                           border: "none",
                         }
                       : {
                           bgcolor: "transparent",
-                          color: "#24AB70",
-                          border: "1px solid #24AB70",
+                          color: "#2E90FA",
+                          border: "1px solid #2E90FA",
                         }),
                   }}
                 />
@@ -69,7 +69,7 @@ const BookingStepper = ({ activeStep = 1 }: BookingStepperProps) => {
                     ml: 2,
                     height: 2,
                     borderRadius: 999,
-                    bgcolor: isCompleted ? "#24AB70" : "grey.300",
+                    bgcolor: isCompleted ? "#2E90FA" : "grey.300",
                   }}
                 />
               )}

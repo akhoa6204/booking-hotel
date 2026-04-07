@@ -42,7 +42,7 @@ const SearchPage = () => {
       {!isMobile ? (
         <Stack
           sx={{
-            bgcolor: "rgba(36,171,112,0.05)",
+            bgcolor: "#2E90FA0d",
             py: "44px",
             justifyContent: "center",
           }}

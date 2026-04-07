@@ -57,7 +57,7 @@ export default function RoomTypeTable({
       sx={{ borderRadius: 2, border: "1px solid #E0E0E0", overflow: "hidden" }}
     >
       <Table>
-        <TableHead sx={{ backgroundColor: "#F6FCF9" }}>
+        <TableHead sx={{ backgroundColor: "#2E90FA0d" }}>
           <TableRow>
             <TableCell sx={{ fontWeight: 600 }}>Mã loại phòng</TableCell>
             <TableCell sx={{ fontWeight: 600 }}>Tên loại phòng</TableCell>

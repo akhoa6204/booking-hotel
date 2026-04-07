@@ -37,7 +37,7 @@ const SearchBarMobile: React.FC<Props> = ({ form, onChange, onSubmit }) => {
     <Card
       component="form"
       onSubmit={onSubmit}
-      sx={{ px: 2, py: 1, borderRadius: 3, border: "1px solid #24AB7066" }}
+      sx={{ px: 2, py: 1, borderRadius: 3, border: "1px solid #2E90FA66" }}
       elevation={1}
     >
       <Grid container spacing={2}>

@@ -40,7 +40,7 @@ function OnlyActualTooltip({ active, payload, label }: any) {
       }}
     >
       <div style={{ fontWeight: 600, marginBottom: 6 }}>Tháng {label}</div>
-      <div style={{ color: "#24AB70", fontWeight: 600 }}>
+      <div style={{ color: "#2E90FA", fontWeight: 600 }}>
         Doanh thu: {formatMoneyShort(actualItem.value)}
       </div>
     </div>
@@ -86,7 +86,7 @@ export default function MonthlyRevenueChart({
           <Bar
             dataKey="actual"
             stackId="a"
-            fill="#24AB70"
+            fill="#2E90FA"
             radius={[0, 0, 0, 0]}
           >
             <LabelList dataKey="valueText" content={<ValueBelow />} />

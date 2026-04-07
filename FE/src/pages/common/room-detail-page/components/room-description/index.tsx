@@ -56,7 +56,7 @@ type Props = {
   handleBookingRoom: () => void;
 };
 
-const iconColor = "#24AB70";
+const iconColor = "#2E90FA";
 
 const amenityIconMap: Record<string, React.JSX.Element> = {
   WIFI: <WifiIcon sx={{ color: iconColor }} />,
@@ -133,10 +133,10 @@ const RoomDescription = ({
                 label={`${capacity} người`}
                 sx={{
                   p: 1,
-                  bgcolor: "#E2F5EF",
-                  color: "#219A65",
+                  bgcolor: "#2E90FA0d",
+                  color: "#2E90FA",
                   "& .MuiChip-icon": {
-                    color: "#219A65",
+                    color: "#2E90FA",
                   },
                 }}
                 size="small"
@@ -238,7 +238,7 @@ const RoomDescription = ({
             <Button
               variant="contained"
               // color="primary"
-              sx={{ borderRadius: 999, bgcolor: "#F5F8F7", color: "#24AB70" }}
+              sx={{ borderRadius: 999, bgcolor: "#2E90FA0d", color: "#2E90FA" }}
               fullWidth
             >
               <CallRounded sx={{ color: iconColor, mr: 1 }} fontSize="small" />

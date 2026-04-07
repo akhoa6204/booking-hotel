@@ -57,13 +57,13 @@ const ReviewCard: React.FC<Props> = ({ review, onToggleStatus }) => {
           sx={{
             mt: 1,
             textTransform: "none",
-            borderColor: isPublished ? "#d32f2f" : "#24AB70",
-            color: isPublished ? "#d32f2f" : "#24AB70",
+            borderColor: isPublished ? "#d32f2f" : "#2E90FA",
+            color: isPublished ? "#d32f2f" : "#2E90FA",
             borderRadius: 2,
             py: 0.5,
             "&:hover": {
               backgroundColor: isPublished ? "rgba(211,47,47,0.08)" : "#b9e4c7",
-              borderColor: isPublished ? "#d32f2f" : "#24AB70",
+              borderColor: isPublished ? "#d32f2f" : "#2E90FA",
             },
           }}
           onClick={() =>

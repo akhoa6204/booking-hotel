@@ -50,7 +50,7 @@ export default function PromotionsTable({
       }}
     >
       <Table>
-        <TableHead sx={{ backgroundColor: "#F6FCF9" }}>
+        <TableHead sx={{ backgroundColor: "#2E90FA0d" }}>
           <TableRow>
             <TableCell sx={{ fontWeight: 600 }}>Tên/Mã khuyến mãi</TableCell>
             <TableCell sx={{ fontWeight: 600 }}>Loại khuyến mãi</TableCell>

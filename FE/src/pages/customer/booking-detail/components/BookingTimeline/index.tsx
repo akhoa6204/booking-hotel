@@ -101,7 +101,7 @@ const BookingTimeline = ({ booking, onRebook, onReview }: Props) => {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    bgcolor: step.active ? "#24AB70" : "grey.200",
+                    bgcolor: step.active ? "#2E90FA" : "grey.200",
                     color: step.active ? "#fff" : "grey.600",
                   }}
                 >

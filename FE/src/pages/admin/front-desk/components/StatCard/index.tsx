@@ -26,7 +26,7 @@ export default function StatCard({
   const num = typeof delta === "string" ? Number(delta) : Number(delta ?? 0);
   const isUp = num > 0;
   const isDown = num < 0;
-  const color = isUp ? "#24AB70" : isDown ? "error.main" : "text.secondary";
+  const color = isUp ? "#2E90FA" : isDown ? "error.main" : "text.secondary";
 
   if (loading) return null;
 
@@ -38,7 +38,7 @@ export default function StatCard({
       sx={{
         p: 2,
         borderRadius: 2.5,
-        borderColor: "#24AB70",
+        borderColor: "#2E90FA",
       }}
       variant="outlined"
     >

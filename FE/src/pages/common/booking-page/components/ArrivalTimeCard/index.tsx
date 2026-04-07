@@ -85,7 +85,7 @@ const ArrivalTimeCard = ({ value, onChange, checkInDate }: Props) => {
 
       <Box display="flex" alignItems="center" mb={2}>
         <CheckCircleRoundedIcon
-          sx={{ color: "#24AB70", mr: 1.5, fontSize: 24 }}
+          sx={{ color: "#2E90FA", mr: 1.5, fontSize: 24 }}
         />
         <Typography variant="body2">
           Bạn có thể nhận chỗ nghỉ trong khoảng từ 14:00 - 22:00 ngày

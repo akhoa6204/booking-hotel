@@ -35,7 +35,7 @@ export default function TopCustomersList({
                 justifyContent: "space-between",
                 p: 1.5,
                 border: "1px solid",
-                borderColor: "#24AB70",
+                borderColor: "#2E90FA",
                 borderRadius: 2,
               }}
             >
@@ -44,7 +44,7 @@ export default function TopCustomersList({
                   sx={{
                     width: 36,
                     height: 36,
-                    bgcolor: "#24AB70",
+                    bgcolor: "#2E90FA",
                     color: "white",
                     fontWeight: 700,
                   }}

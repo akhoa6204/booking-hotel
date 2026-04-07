@@ -50,7 +50,7 @@ const BookingGuestAndStay = ({ title, booking }: Props) => {
           sx={{
             flex: 1,
             borderRadius: 2,
-            bgcolor: "#F5F8F7",
+            bgcolor: "#2E90FA0d",
             p: 2.5,
             width: "100%",
           }}

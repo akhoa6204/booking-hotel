@@ -17,7 +17,7 @@ const HeroSection: React.FC<Props> = (props) => {
         sx={{
           borderRadius: 8,
           overflow: "hidden",
-          bgcolor: "rgba(36,171,112,0.05)",
+          bgcolor: "#2E90FA0d",
         }}
       >
         <Grid

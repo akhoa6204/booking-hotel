@@ -19,7 +19,7 @@ const StatCard: React.FC<Props> = ({
       sx={{
         p: 2,
         borderRadius: 2.5,
-        borderColor: "#24AB70",
+        borderColor: "#2E90FA",
         flex: 1,
         minWidth: 260,
       }}

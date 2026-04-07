@@ -165,7 +165,7 @@ const ResetPasswordPage = () => {
                 color="text.secondary"
                 sx={{
                   "&:hover": {
-                    color: "#24AB70",
+                    color: "#2E90FA",
                   },
                 }}
               >

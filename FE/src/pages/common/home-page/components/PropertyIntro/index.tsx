@@ -3,7 +3,7 @@ import { Box, Grid, Typography } from "@mui/material";
 
 const PropertyIntro = () => {
   return (
-    <Box sx={{ my: 12.5, borderRadius: 2, bgcolor: "#F4FBF8" }}>
+    <Box sx={{ my: 12.5, borderRadius: 2, bgcolor: "#2E90FA0d" }}>
       <Grid container>
         <Grid size={{ xs: 12, sm: 6 }}>
           <Box component={"img"} src={ImageHotel} />
