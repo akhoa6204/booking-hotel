@@ -54,7 +54,7 @@ const Footer = () => {
               fontWeight={700}
               sx={{ cursor: "pointer", mb: 2 }}
             >
-              Skyline
+              Diamond Sea
             </Typography>
             <Stack direction="row" spacing={2}>
               <IconButton
@@ -125,7 +125,8 @@ const Footer = () => {
           sx={{ pb: 4 }}
         >
           <Typography variant="body2" color="text.secondary">
-            © {new Date().getFullYear()} Skyline. All rights reserved.
+            © {new Date().getFullYear()} Diamond Sea. All rights
+            reserved.
           </Typography>
           <Stack direction="row" spacing={3}>
             <MuiLink

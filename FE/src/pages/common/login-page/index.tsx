@@ -31,7 +31,7 @@ const LoginPage = () => {
               Đăng nhập
             </Typography>
             <Typography color="text.secondary">
-              Chào mừng bạn quay trở lại Skyline
+              Chào mừng bạn quay trở lại Diamond Sea
             </Typography>
 
             <Box

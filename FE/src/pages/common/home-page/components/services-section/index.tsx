@@ -54,7 +54,7 @@ const ServicesSection = () => {
             sx={{ fontWeight: 600, mb: "20px", fontSize: 40 }}
             color="text.primary"
           >
-            Skyline cung cấp dịch vụ bạn cần
+            Diamond Sea cung cấp dịch vụ bạn cần
           </Typography>
           <Typography color="text.secondary" sx={{ mb: { xs: 2, lg: "76px" } }}>
             Chúng tôi tin rằng kỳ nghỉ đẹp bắt đầu từ những điều nhỏ bé.

@@ -231,7 +231,7 @@ const Header = () => {
               sx={{ cursor: "pointer" }}
               onClick={() => navigate("/")}
             >
-              Skyline
+              Diamond Sea
             </Typography>
 
             {/* Desktop nav */}
@@ -317,7 +317,7 @@ const Header = () => {
                   setOpen(false);
                 }}
               >
-                Skyline
+                Diamond Sea
               </Typography>
               <IconButton onClick={() => setOpen(false)} aria-label="close">
                 <CloseIcon />

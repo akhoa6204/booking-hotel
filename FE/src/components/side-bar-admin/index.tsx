@@ -124,7 +124,7 @@ const AdminSideBar = () => {
           color="primary"
           className="select-none"
         >
-          Skyline
+          Diamond Sea
         </Typography>
       </Box>
 

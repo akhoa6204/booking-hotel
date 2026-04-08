@@ -50,7 +50,7 @@ const RoomList: React.FC<Props> = ({
       ) : (
         <>
           <Typography variant="h4" fontWeight={600} mb={2}>
-            Khám phá Skyline Đà Nẵng
+            Khám phá Diamond Sea Đà Nẵng
           </Typography>
 
           <Stack

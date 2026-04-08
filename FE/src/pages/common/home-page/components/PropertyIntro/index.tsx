@@ -10,12 +10,12 @@ const PropertyIntro = () => {
         </Grid>
         <Grid size={{ xs: 12, sm: 6 }} sx={{ p: { xs: 4.5, sm: 9 } }}>
           <Typography variant="body2" fontSize={40} fontWeight={600}>
-            Về Skyline
+            Về Diamond Sea
           </Typography>
           <Typography variant="body2" sx={{ my: 2.5 }}>
-            Tọa lạc ngay giữa trung tâm Đà Nẵng, Skyline là điểm dừng chân lý
-            tưởng cho những ai đang tìm kiếm sự kết hợp hoàn hảo giữa tiện nghi
-            hiện đại và không gian nghỉ dưỡng đẳng cấp.
+            Tọa lạc ngay giữa trung tâm Đà Nẵng, Diamond Sea là điểm dừng
+            chân lý tưởng cho những ai đang tìm kiếm sự kết hợp hoàn hảo giữa
+            tiện nghi hiện đại và không gian nghỉ dưỡng đẳng cấp.
           </Typography>
           <Typography variant="body2">
             Khách sạn sở hữu hệ thống phòng nghỉ sang trọng với thiết kế tinh

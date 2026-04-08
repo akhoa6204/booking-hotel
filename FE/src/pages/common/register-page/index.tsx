@@ -96,7 +96,7 @@ const RegisterPage = () => {
     // onSubmit
     async (values) => {
       await mRegister.mutateAsync(values);
-    }
+    },
   );
 
   return (
@@ -109,7 +109,7 @@ const RegisterPage = () => {
             </Typography>
 
             <Typography color="text.secondary">
-              Tạo tài khoản mới tại Skyline
+              Tạo tài khoản mới tại Diamond Sea
             </Typography>
 
             <Box

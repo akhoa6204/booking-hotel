@@ -9,10 +9,7 @@ interface Props {
 const HeroSectionMobile: React.FC<Props> = (props) => {
   return (
     <>
-      <Box
-        sx={{ bgcolor: "#2E90FA0d", height: 236 }}
-        position={"relative"}
-      >
+      <Box sx={{ bgcolor: "#2E90FA0d", height: 236 }} position={"relative"}>
         <Container>
           <Box sx={{ py: 5 }}>
             <Typography
@@ -30,7 +27,7 @@ const HeroSectionMobile: React.FC<Props> = (props) => {
                 fontSize: 28,
               }}
             >
-              Skyline Đà Nẵng
+              Diamond Sea Đà Nẵng
             </Typography>
           </Box>
         </Container>

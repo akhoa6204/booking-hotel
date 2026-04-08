@@ -44,7 +44,7 @@ const HeroSection: React.FC<Props> = (props) => {
                 fontSize: 48,
               }}
             >
-              Skyline Đà Nẵng
+              Diamond Sea Đà Nẵng
             </Typography>
           </Box>
           <Typography
