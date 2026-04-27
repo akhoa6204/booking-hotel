@@ -159,7 +159,6 @@ model Staff {
   createdAt         DateTime               @default(now()) @map("created_at")
   updatedAt         DateTime               @updatedAt @map("updated_at")
   bookings          Booking[]
-  CancelReason      CancelReason[]
   Review            Review[]
   user              User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   shiftAssignments  StaffShiftAssignment[]
@@ -247,15 +246,12 @@ model CancelReason {
   id        Int      @id @default(autoincrement())
   bookingId Int      @unique @map("booking_id")
   userId    Int?     @map("user_id")
-  staffId   Int?     @map("staff_id")
   content   String   @db.Text
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  staff     Staff?   @relation(fields: [staffId], references: [id])
 
   @@index([userId])
-  @@index([staffId])
 }
 
 model Payment {

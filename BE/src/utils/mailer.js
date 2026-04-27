@@ -35,8 +35,8 @@ export async function sendResetPasswordEmail({ to, token, fullName }) {
     ">
       <!-- Header -->
       <div style="padding:24px 32px 8px 32px; text-align:center;">
-        <div style="font-size:24px;font-weight:700;color:#24AB70; margin-bottom:4px;">
-          Skyline
+        <div style="font-size:24px;font-weight:700;color:#2E90FA; margin-bottom:4px;">
+          Diamond Sea
         </div>
         <div style="font-size:18px;font-weight:600;color:#333;">
           Đặt lại mật khẩu
@@ -58,7 +58,7 @@ export async function sendResetPasswordEmail({ to, token, fullName }) {
            style="
              display:block;
              text-align:center;
-             background-color:#24AB70;
+             background-color:#2E90FA;
              color:#ffffff !important;
              text-decoration:none;
              padding:12px 16px;
@@ -82,7 +82,7 @@ export async function sendResetPasswordEmail({ to, token, fullName }) {
 
         <p style="margin:0; font-size:12px; color:#777;">
           Trân trọng,<br/>
-          <strong>Đội ngũ hỗ trợ Skyline</strong>
+          <strong>Đội ngũ hỗ trợ Diamond Sea</strong>
         </p>
       </div>
     </div>

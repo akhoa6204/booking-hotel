@@ -353,7 +353,7 @@ export async function update(req, res) {
           data: {
             bookingId: Number(id),
             content: reason,
-            staffId: Number(userId),
+            userId: Number(userId),
           },
         });
         return await tx.booking.update({
