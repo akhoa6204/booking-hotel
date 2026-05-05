@@ -84,33 +84,33 @@ async function seedUsers() {
   const users = [
     {
       fullName: "System Admin",
-      email: "admin@skyline.hotel.com",
+      email: "admin@diamondsea.hotel.com",
       position: "MANAGER",
       isAdmin: true,
     },
     {
       fullName: "Hotel Manager",
-      email: "manager@skyline.hotel.com",
+      email: "manager@diamondsea.hotel.com",
       position: "MANAGER",
     },
     {
       fullName: "Reception 1",
-      email: "reception1@skyline.hotel.com",
+      email: "reception1@diamondsea.hotel.com",
       position: "RECEPTION",
     },
     {
       fullName: "Reception 2",
-      email: "reception2@skyline.hotel.com",
+      email: "reception2@diamondsea.hotel.com",
       position: "RECEPTION",
     },
     {
       fullName: "Housekeeping 1",
-      email: "housekeeping1@skyline.hotel.com",
+      email: "housekeeping1@diamondsea.hotel.com",
       position: "HOUSEKEEPING",
     },
     {
       fullName: "Housekeeping 2",
-      email: "housekeeping2@skyline.hotel.com",
+      email: "housekeeping2@diamondsea.hotel.com",
       position: "HOUSEKEEPING",
     },
   ];
@@ -139,17 +139,6 @@ async function seedUsers() {
   }
 }
 
-async function seedHotel() {
-  return prisma.hotel.upsert({
-    where: { id: 1 },
-    update: {},
-    create: {
-      name: "Skyline",
-      address: "71 Ngũ Hành Sơn, Đà Nẵng",
-      description: "Skyline Hotel",
-    },
-  });
-}
 
 async function seedRoomTypes() {
   const roomTypes = [
@@ -169,7 +158,7 @@ async function seedRoomTypes() {
         name: r.name,
         basePrice: r.price,
         capacity: r.capacity,
-        description: `${r.name} tại Skyline Hotel mang đến không gian nghỉ dưỡng hiện đại và thoải mái.
+        description: `${r.name} tại diamondsea Hotel mang đến không gian nghỉ dưỡng hiện đại và thoải mái.
 Phòng được thiết kế tinh tế với nội thất cao cấp, đảm bảo sự tiện nghi cho mọi nhu cầu lưu trú.
 Không gian rộng rãi, ánh sáng tự nhiên hài hòa cùng tầm nhìn đẹp tạo cảm giác thư giãn tuyệt đối.
 Phù hợp cho khách du lịch, công tác hoặc gia đình mong muốn trải nghiệm dịch vụ chất lượng cao tại Đà Nẵng.`,
@@ -471,7 +460,6 @@ async function main() {
   await seedShifts();
   await seedUsers();
 
-  const hotel = await seedHotel();
   const roomTypes = await seedRoomTypes();
   await seedRooms(roomTypes);
   await seedRoomTypeAmenities(roomTypes);
@@ -759,7 +747,7 @@ async function main() {
           overall: 5,
           cleanliness: 5,
           comfort: 5,
-          comment: "Great stay at Skyline Hotel!",
+          comment: "Great stay at diamondsea Hotel!",
           status: "PUBLISHED",
         },
       });
@@ -811,7 +799,7 @@ async function main() {
   await seedReviews(bookings);
   await seedHousekeeping(bookings);
 
-  console.log("Seed completed for Skyline Hotel");
+  console.log("Seed completed for diamondsea Hotel");
 }
 
 main()

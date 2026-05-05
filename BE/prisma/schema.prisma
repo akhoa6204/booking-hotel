@@ -7,29 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Hotel {
-  id          Int          @id @default(autoincrement())
-  name        String
-  address     String?
-  description String?
-  policies    String?
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
-  images      HotelImage[]
-}
-
-model HotelImage {
-  id        Int      @id @default(autoincrement())
-  hotelId   Int      @map("hotel_id")
-  url       String
-  alt       String?
-  isPrimary Boolean  @default(false) @map("is_primary")
-  createdAt DateTime @default(now()) @map("created_at")
-  hotel     Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-
-  @@index([hotelId])
-}
-
 model RoomType {
   id                Int                 @id @default(autoincrement())
   name              String
@@ -159,7 +136,6 @@ model Staff {
   createdAt         DateTime               @default(now()) @map("created_at")
   updatedAt         DateTime               @updatedAt @map("updated_at")
   bookings          Booking[]
-  Review            Review[]
   user              User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   shiftAssignments  StaffShiftAssignment[]
   housekeepingTasks HousekeepingTask[]
@@ -230,16 +206,11 @@ model Review {
   comment       String?      @db.Text
   isActive      Boolean      @default(true) @map("is_active")
   status        ReviewStatus @default(PUBLISHED)
-  staffId       Int?         @map("staff_id")
-  staffReply    String?      @map("staff_reply") @db.Text
-  staffReplyAt  DateTime?    @map("staff_reply_at")
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
   booking       Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  staff         Staff?       @relation(fields: [staffId], references: [id])
 
   @@index([status])
-  @@index([staffId])
 }
 
 model CancelReason {
@@ -284,8 +255,6 @@ model Invoice {
   discount   Decimal @default(0.00) @db.Decimal(10, 2)
   tax        Decimal @default(0.00) @db.Decimal(10, 2)
   paidAmount Decimal @default(0.00) @map("paid_amount") @db.Decimal(10, 2)
-
-  note String? @db.Text
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
