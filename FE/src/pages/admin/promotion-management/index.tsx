@@ -83,7 +83,7 @@ export default function PromotionManagement() {
 
       <PromotionUpsertDialog
         open={dialogState.open}
-        mode={dialogState.mode}
+        mode={dialogState.mode ?? "view"}
         values={form}
         roomTypes={roomTypes}
         onChange={onChangeField}

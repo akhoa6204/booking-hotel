@@ -58,6 +58,7 @@ const ShiftManagement = () => {
         title="Quản lý lịch phân ca nhân viên"
         subTitle="Theo dõi và sắp xếp ca làm việc theo tuần"
         onAdd={() => openDialog(null)}
+        showAddButton={canEdit}
       />
       <Stack
         direction="row"
@@ -136,7 +137,7 @@ const ShiftManagement = () => {
         </Box>
       </Stack>
       <WeeklyScheduleCalendar
-        shifts={shifts}
+        shifts={shifts || []}
         start={start}
         onRemove={onRemove}
         onAdd={openDialog}
@@ -147,12 +148,12 @@ const ShiftManagement = () => {
         open={open}
         onClose={closeDialog}
         workDate={form.workDate}
-        shiftId={form.shiftId}
+        shiftId={Number(form.shiftId)}
         onChangeShift={onChangeForm}
-        staff={form.staff}
+        staff={form.staff || null}
         onSubmit={onSubmit}
         options={options}
-        isMoreOptions={meta?.totalPages > 1}
+        isMoreOptions={(meta?.totalPages ?? 0) > 1}
         seeMore={openPicker}
       />
 
@@ -161,7 +162,7 @@ const ShiftManagement = () => {
       <EntityPickerDialog
         open={openEntityPickerDialog}
         data={options}
-        selectedId={selectedId}
+        selectedId={selectedId || undefined}
         onClose={closePicker}
         title="Danh sách nhân viên"
         columns={[

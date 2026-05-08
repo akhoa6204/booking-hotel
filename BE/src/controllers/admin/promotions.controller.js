@@ -24,7 +24,13 @@ export async function list(req, res) {
     const [items, total] = await Promise.all([
       prisma.promotion.findMany({
         where,
-        orderBy: [{ priority: "asc" }, { id: "desc" }],
+        orderBy: [
+          {
+            endAt: "desc",
+          },
+          { priority: "asc" },
+          { id: "desc" },
+        ],
         include: {
           PromotionRoomType: {
             select: {

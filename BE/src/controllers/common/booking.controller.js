@@ -139,9 +139,6 @@ export async function create(req, res) {
           discount: discountAmount,
           tax: 0,
           paidAmount: 0,
-          note: promoApplied
-            ? `Áp dụng khuyến mãi: ${promoApplied.code || promoApplied.name}`
-            : null,
         },
         select: { id: true },
       });
@@ -157,6 +154,19 @@ export async function create(req, res) {
           ...(promoApplied ? { promotionId: promoApplied.id } : {}),
         },
       });
+
+      if (promoApplied?.id) {
+        await tx.promotion.update({
+          where: {
+            id: promoApplied.id,
+          },
+          data: {
+            quotaUsed: {
+              increment: 1,
+            },
+          },
+        });
+      }
 
       return {
         bookingId: booking.id,

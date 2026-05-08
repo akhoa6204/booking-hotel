@@ -91,7 +91,7 @@ export default function PromotionsTable({
               return (
                 <TableRow key={promotion.id} hover>
                   <TableCell>
-                    <strong>{promotion.code ?? promotion.name}</strong>
+                    <strong>{promotion.code || promotion.name}</strong>
                   </TableCell>
                   <TableCell>
                     <Chip

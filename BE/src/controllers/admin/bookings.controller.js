@@ -64,11 +64,26 @@ export async function list(req, res) {
 
 export async function create(req, res) {
   try {
+    console.log("=========== STAFF CREATE BOOKING START ===========");
+
     const userId = req.user.id;
+
+    console.log("User ID:", userId);
+
     const { fullName, phone, checkIn, checkOut, roomId, promoCode } =
       req.body || {};
 
+    console.log("Request body:", {
+      fullName,
+      phone,
+      checkIn,
+      checkOut,
+      roomId,
+      promoCode,
+    });
+
     if (!fullName || !phone || !checkIn || !checkOut || !roomId) {
+      console.log("Missing required fields");
       return bad(res, "fullName, phone, checkIn, checkOut là bắt buộc", 400);
     }
 
@@ -79,14 +94,23 @@ export async function create(req, res) {
       },
     });
 
+    console.log("Staff found:", staff);
+
     if (!staff) {
+      console.log("Staff not found");
       return bad(res, "Không tồn tại nhân viên", 400);
     }
 
     const startDate = DateUtils.toDate(checkIn);
     const endDate = DateUtils.toDate(checkOut);
 
+    console.log("Parsed dates:", {
+      startDate,
+      endDate,
+    });
+
     if (startDate >= endDate) {
+      console.log("Invalid date range");
       return bad(res, "Ngày check-out phải sau ngày check-in", 400);
     }
 
@@ -100,9 +124,13 @@ export async function create(req, res) {
       },
     });
 
+    console.log("Room found:", room);
+
     if (!room) {
+      console.log("Room not found");
       return bad(res, "Phòng không tồn tại", 400);
     }
+
     const existedBooking = await prisma.booking.findFirst({
       where: {
         roomId,
@@ -111,18 +139,31 @@ export async function create(req, res) {
       },
     });
 
+    console.log("Conflict booking:", existedBooking);
+
     if (existedBooking) {
-      console.log(existedBooking);
+      console.log("Room already booked");
       return bad(res, "Phòng không còn trống", 400);
     }
 
     const nights = DateUtils.computeNight(startDate, endDate);
+
+    console.log("Nights:", nights);
+
     const basePrice = Number(room.roomType.basePrice);
+
+    console.log("Base price:", basePrice);
+
     const totalBefore = basePrice * nights;
+
+    console.log("Total before discount:", totalBefore);
+
+    console.log("Checking promotion...");
 
     const {
       promoApplied,
       discountAmount: rawDiscountAmount,
+      appliedPromoIds,
       reason,
     } = await resolvePromotionForBooking({
       roomTypeId: Number(room.roomTypeId),
@@ -131,16 +172,36 @@ export async function create(req, res) {
       now: new Date(),
     });
 
-    if (reason) return bad(res, reason, 400);
+    console.log("Promotion result:", {
+      promoApplied,
+      rawDiscountAmount,
+      appliedPromoIds,
+      reason,
+    });
+
+    if (reason) {
+      console.log("Promotion rejected:", reason);
+      return bad(res, reason, 400);
+    }
 
     const promoId = promoApplied?.id ?? null;
+
+    console.log("Applied promo ID:", promoId);
 
     const discountAmount = Math.min(
       Number(rawDiscountAmount || 0),
       Number(totalBefore || 0),
     );
 
+    console.log("Discount amount:", discountAmount);
+
+    const finalTotal = totalBefore - discountAmount;
+
+    console.log("Final total:", finalTotal);
+
     const result = await prisma.$transaction(async (tx) => {
+      console.log("=== TRANSACTION START ===");
+
       const booking = await tx.booking.create({
         data: {
           staffId: staff.id,
@@ -152,6 +213,8 @@ export async function create(req, res) {
           status: "CONFIRMED",
         },
       });
+
+      console.log("Booking created:", booking);
 
       const invoice = await tx.invoice.create({
         data: {
@@ -171,7 +234,9 @@ export async function create(req, res) {
         },
       });
 
-      await tx.invoiceItem.create({
+      console.log("Invoice created:", invoice);
+
+      const invoiceItem = await tx.invoiceItem.create({
         data: {
           invoiceId: invoice.id,
           type: "ROOM",
@@ -181,6 +246,31 @@ export async function create(req, res) {
           promotionId: promoId,
         },
       });
+
+      console.log("Invoice item created:", invoiceItem);
+
+      if (appliedPromoIds?.length) {
+        console.log("Updating promotion quota...");
+
+        for (const promoId of appliedPromoIds) {
+          const updatedPromo = await tx.promotion.update({
+            where: {
+              id: promoId,
+            },
+            data: {
+              quotaUsed: {
+                increment: 1,
+              },
+            },
+          });
+
+          console.log("Promotion updated:", {
+            id: updatedPromo.id,
+            quotaUsed: updatedPromo.quotaUsed,
+          });
+        }
+      }
+
       const subtotal = Number(invoice.subtotal || 0);
       const discount = Number(invoice.discount || 0);
       const tax = Number(invoice.tax || 0);
@@ -189,6 +279,17 @@ export async function create(req, res) {
 
       const remainingAmount = total - paidAmount;
 
+      console.log("Invoice summary:", {
+        subtotal,
+        discount,
+        tax,
+        total,
+        paidAmount,
+        remainingAmount,
+      });
+
+      console.log("=== TRANSACTION SUCCESS ===");
+
       return {
         bookingId: booking.id,
         invoiceId: invoice.id,
@@ -196,9 +297,14 @@ export async function create(req, res) {
       };
     });
 
+    console.log("Final result:", result);
+    console.log("=========== STAFF CREATE BOOKING SUCCESS ===========");
+
     return success(res, result, 200);
   } catch (e) {
+    console.error("=========== STAFF CREATE BOOKING ERROR ===========");
     console.error(e);
+
     return bad(res, "Có lỗi xảy ra", 500);
   }
 }
@@ -438,7 +544,7 @@ export async function update(req, res) {
 
         const taskData = {
           roomId: updatedBooking.roomId,
-          workDate: now,
+          workDate: today,
           type: "CLEANING",
         };
 

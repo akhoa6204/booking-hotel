@@ -139,7 +139,6 @@ async function seedUsers() {
   }
 }
 
-
 async function seedRoomTypes() {
   const roomTypes = [
     { name: "Standard Room", price: 500000, capacity: 2 },
@@ -270,47 +269,138 @@ async function seedRoomTypeImages(roomTypes) {
 
 async function seedPromotions() {
   const promos = [
+    // ACTIVE
     {
       name: "Summer Sale",
+      code: "SUMMER2026",
       type: "PERCENT",
       value: 10,
       autoApply: true,
+      isActive: true,
+      startAt: new Date("2025-01-01"),
+      endAt: new Date("2026-12-31"),
     },
+
     {
       name: "Weekend Deal",
+      code: "WEEKEND2026",
       type: "PERCENT",
       value: 15,
+      isActive: true,
+      startAt: new Date("2025-01-01"),
+      endAt: new Date("2026-12-31"),
     },
+
     {
       name: "Early Bird",
+      code: "EARLY2026",
       type: "PERCENT",
       value: 12,
+      isActive: true,
+      startAt: new Date("2025-01-01"),
+      endAt: new Date("2026-12-31"),
     },
+
     {
       name: "Long Stay",
+      code: "LONGSTAY2026",
       type: "PERCENT",
       value: 20,
+      isActive: true,
+      startAt: new Date("2025-01-01"),
+      endAt: new Date("2026-12-31"),
     },
+
     {
       name: "VIP Member",
+      code: "VIP2026",
+      type: "PERCENT",
+      value: 25,
+      isActive: true,
+      startAt: new Date("2025-01-01"),
+      endAt: new Date("2026-12-31"),
+    },
+
+    // EXPIRED
+    {
+      name: "Tet Holiday",
+      code: "TET2025",
+      type: "PERCENT",
+      value: 20,
+      isActive: true,
+      startAt: new Date("2025-01-01"),
+      endAt: new Date("2026-04-10"),
+    },
+
+    {
+      name: "Black Friday",
+      code: "BLACK2025",
+      type: "PERCENT",
+      value: 30,
+      isActive: true,
+      startAt: new Date("2025-01-01"),
+      endAt: new Date("2026-04-25"),
+    },
+
+    {
+      name: "Flash Sale",
+      code: "FLASH2025",
       type: "PERCENT",
       value: 18,
+      isActive: true,
+      startAt: new Date("2025-01-01"),
+      endAt: new Date("2026-04-02"),
+    },
+
+    {
+      name: "Lunar New Year",
+      code: "LUNAR2025",
+      type: "PERCENT",
+      value: 22,
+      isActive: true,
+      startAt: new Date("2025-01-01"),
+      endAt: new Date("2026-04-15"),
+    },
+
+    {
+      name: "Old Customer",
+      code: "OLD2025",
+      type: "PERCENT",
+      value: 8,
+      isActive: true,
+      startAt: new Date("2025-01-01"),
+      endAt: new Date("2026-04-01"),
     },
   ];
 
+  const createdPromos = [];
+
   for (const p of promos) {
-    await prisma.promotion.create({
+    const promo = await prisma.promotion.create({
       data: {
         name: p.name,
+        code: p.code,
         type: p.type,
         value: p.value,
         autoApply: p.autoApply || false,
-        startAt: new Date(),
-        endAt: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+
         scope: "GLOBAL",
+
+        isActive: p.isActive,
+
+        startAt: p.startAt,
+        endAt: p.endAt,
+
+        quotaTotal: 100,
+
+        quotaUsed: Math.floor(Math.random() * 100) + 1,
       },
     });
+
+    createdPromos.push(promo);
   }
+
+  return createdPromos;
 }
 
 async function seedServices() {
@@ -452,7 +542,352 @@ async function seedServices() {
     }
   }
 }
+async function seedReviews(bookings) {
+  for (const b of bookings) {
+    if (!b.customerId) continue;
 
+    await prisma.review.create({
+      data: {
+        bookingId: b.id,
+        overall: 5,
+        cleanliness: 5,
+        comfort: 5,
+        comment: "Great stay at diamondsea Hotel!",
+        status: "PUBLISHED",
+      },
+    });
+  }
+}
+async function seedCustomers() {
+  const passwordHash = await bcrypt.hash("123", 10);
+
+  const vietnameseNames = [
+    "Nguyễn Văn An",
+    "Trần Thị Bình",
+    "Lê Văn Cường",
+    "Phạm Thị Dung",
+    "Hoàng Văn Em",
+    "Võ Thị Giang",
+    "Đặng Văn Hải",
+    "Bùi Thị Lan",
+    "Phan Văn Minh",
+    "Đỗ Thị Ngọc",
+  ];
+
+  const createdCustomers = [];
+
+  for (let i = 0; i < 10; i++) {
+    const email = `customer${i + 1}@gmail.com`;
+
+    const user = await prisma.user.upsert({
+      where: { email },
+      update: {},
+      create: {
+        fullName: vietnameseNames[i],
+        email,
+        passwordHash,
+        type: "CUSTOMER",
+      },
+    });
+
+    const customer = await prisma.customer.upsert({
+      where: { userId: user.id },
+      update: {},
+      create: {
+        userId: user.id,
+      },
+    });
+
+    createdCustomers.push({
+      ...customer,
+      user,
+    });
+  }
+
+  return createdCustomers;
+}
+async function seedShiftAssignments() {
+  const staffs = await prisma.staff.findMany();
+  const shifts = await prisma.shift.findMany();
+
+  const now = new Date();
+
+  for (let monthOffset = 0; monthOffset < 6; monthOffset++) {
+    const baseDate = new Date();
+    baseDate.setMonth(now.getMonth() - monthOffset);
+
+    for (let week = 0; week < 4; week++) {
+      for (const staff of staffs) {
+        for (let day = 0; day < 7; day++) {
+          const workDate = new Date(
+            baseDate.getFullYear(),
+            baseDate.getMonth(),
+            week * 7 + day + 1,
+          );
+
+          const shift = shifts[(day + staff.id) % shifts.length];
+
+          await prisma.staffShiftAssignment.create({
+            data: {
+              staffId: staff.id,
+              shiftId: shift.id,
+              workDate,
+              position: staff.position,
+            },
+          });
+        }
+      }
+    }
+  }
+}
+async function seedBookings(customers) {
+  const rooms = await prisma.room.findMany({
+    include: {
+      roomType: true,
+    },
+  });
+
+  const services = await prisma.service.findMany();
+
+  const promotions = await prisma.promotion.findMany();
+
+  const bookings = [];
+
+  const today = new Date();
+
+  for (let monthOffset = 0; monthOffset < 6; monthOffset++) {
+    const baseDate = new Date();
+
+    baseDate.setMonth(today.getMonth() - monthOffset);
+
+    for (let i = 0; i < 25; i++) {
+      const isOnline = i < 15;
+
+      const customer = customers[i % customers.length];
+
+      const room = rooms[(monthOffset * 25 + i) % rooms.length];
+
+      const promotion =
+        promotions[Math.floor(Math.random() * promotions.length)];
+
+      const randomPercent = Math.random();
+
+      let checkIn;
+      let checkOut;
+      let status;
+
+      const randomDay = Math.floor(Math.random() * 28) + 1;
+
+      checkIn = new Date(
+        baseDate.getFullYear(),
+        baseDate.getMonth(),
+        randomDay,
+      );
+
+      const stayDays = Math.floor(Math.random() * 3) + 1;
+
+      checkOut = new Date(checkIn.getTime() + stayDays * 86400000);
+      
+      // AUTO STATUS BASED ON DATE
+      if (checkOut < today) {
+        status = "CHECKED_OUT";
+      } else if (checkIn <= today && checkOut >= today) {
+        status = "CHECKED_IN";
+      } else {
+        status = "CONFIRMED";
+      }
+
+      const nights = Math.ceil(
+        (checkOut.getTime() - checkIn.getTime()) / 86400000,
+      );
+
+      const subtotal = Number(room.roomType.basePrice) * nights;
+
+      let discount = 0;
+
+      if (promotion.type === "PERCENT") {
+        discount = Math.floor((subtotal * Number(promotion.value)) / 100);
+      }
+
+      const booking = await prisma.booking.create({
+        data: {
+          customerId: isOnline ? customer.id : null,
+          roomId: room.id,
+
+          fullName: isOnline
+            ? customer.user.fullName
+            : `Walkin Guest ${monthOffset}-${i}`,
+
+          phone: "0900000000",
+
+          email: isOnline
+            ? customer.user.email
+            : `walkin${monthOffset}-${i}@gmail.com`,
+
+          guestType: isOnline ? "SELF" : "OTHER",
+
+          checkIn,
+          checkOut,
+
+          status,
+        },
+      });
+
+      const invoice = await prisma.invoice.create({
+        data: {
+          bookingId: booking.id,
+
+          subtotal,
+          discount,
+
+          tax: 0,
+
+          paidAmount: status === "CONFIRMED" ? 0 : subtotal - discount,
+
+          status: status === "CONFIRMED" ? "ACTIVE" : "PAID",
+        },
+      });
+
+      // ROOM ITEM
+      await prisma.invoiceItem.create({
+        data: {
+          invoiceId: invoice.id,
+
+          type: "ROOM",
+
+          description: `${room.roomType.name} - ${nights} nights`,
+
+          quantity: nights,
+
+          unitPrice: Number(room.roomType.basePrice),
+
+          totalPrice: subtotal,
+
+          promotionId: promotion.id,
+        },
+      });
+
+      // RANDOM SERVICES
+      const randomServices = services
+        .sort(() => 0.5 - Math.random())
+        .slice(0, Math.floor(Math.random() * 3) + 1);
+
+      for (const service of randomServices) {
+        await prisma.invoiceItem.create({
+          data: {
+            invoiceId: invoice.id,
+
+            type: service.type,
+
+            description: service.name,
+
+            quantity: 1,
+
+            unitPrice: Number(service.price),
+
+            totalPrice: Number(service.price),
+
+            serviceId: service.id,
+          },
+        });
+      }
+
+      // PAYMENTS
+      if (status !== "CONFIRMED") {
+        await prisma.payment.create({
+          data: {
+            invoiceId: invoice.id,
+
+            type: "ROOM",
+
+            amount: subtotal - discount,
+
+            method: Math.random() > 0.5 ? "CASH" : "TRANSFER",
+
+            status: "PAID",
+
+            paidAt: checkOut,
+          },
+        });
+      }
+
+      bookings.push({
+        booking,
+        services: randomServices,
+      });
+    }
+  }
+
+  return bookings;
+}
+async function seedHousekeeping(bookings) {
+  const staffs = await prisma.staff.findMany();
+
+  const housekeepingStaff = staffs.find((s) => s.position === "HOUSEKEEPING");
+
+  let cleanTaskCount = 0;
+
+  for (const item of bookings) {
+    const booking = item.booking;
+
+    const services = item.services;
+
+    // inspection task sau checkout
+    if (booking.status === "CHECKED_OUT") {
+      await prisma.housekeepingTask.create({
+        data: {
+          roomId: booking.roomId,
+
+          bookingId: booking.id,
+
+          staffId: housekeepingStaff?.id,
+
+          workDate: new Date(
+            booking.checkOut.getTime() + Math.floor(Math.random() * 86400000),
+          ),
+
+          type: "INSPECTION",
+
+          status: "DONE",
+
+          note: "Kiểm tra phòng sau check-out",
+        },
+      });
+    }
+
+    const hasCleaningService =
+      services.some(
+        (s) =>
+          s.name.includes("Giặt") ||
+          s.name.includes("dọn") ||
+          s.name.includes("vệ sinh"),
+      ) || cleanTaskCount < 10;
+
+    if (hasCleaningService) {
+      cleanTaskCount++;
+
+      await prisma.housekeepingTask.create({
+        data: {
+          roomId: booking.roomId,
+
+          bookingId: booking.id,
+
+          staffId: housekeepingStaff?.id,
+
+          workDate: new Date(
+            booking.checkIn.getTime() + Math.floor(Math.random() * 86400000),
+          ),
+
+          type: "CLEANING",
+
+          status: Math.random() > 0.2 ? "DONE" : "PENDING",
+
+          note: "Dọn phòng theo yêu cầu khách",
+        },
+      });
+    }
+  }
+}
 async function main() {
   console.log("Seeding database...");
 
@@ -468,332 +903,9 @@ async function main() {
   await seedPromotions();
   await seedServices();
 
-  // --- Additional seed functions ---
-  async function seedCustomers() {
-    const passwordHash = await bcrypt.hash("123", 10);
-
-    const vietnameseNames = [
-      "Nguyễn Văn An",
-      "Trần Thị Bình",
-      "Lê Văn Cường",
-      "Phạm Thị Dung",
-      "Hoàng Văn Em",
-      "Võ Thị Giang",
-      "Đặng Văn Hải",
-      "Bùi Thị Lan",
-      "Phan Văn Minh",
-      "Đỗ Thị Ngọc",
-    ];
-
-    const createdCustomers = [];
-
-    for (let i = 0; i < 10; i++) {
-      const email = `customer${i + 1}@gmail.com`;
-
-      const user = await prisma.user.upsert({
-        where: { email },
-        update: {},
-        create: {
-          fullName: vietnameseNames[i],
-          email,
-          passwordHash,
-          type: "CUSTOMER",
-        },
-      });
-
-      const customer = await prisma.customer.upsert({
-        where: { userId: user.id },
-        update: {},
-        create: {
-          userId: user.id,
-        },
-      });
-
-      createdCustomers.push(customer);
-    }
-
-    return createdCustomers;
-  }
-
-  async function seedBookings(customers) {
-    const rooms = await prisma.room.findMany();
-    const services = await prisma.service.findMany();
-    const bookings = [];
-
-    const today = new Date();
-
-    for (let monthOffset = 0; monthOffset < 6; monthOffset++) {
-      const baseDate = new Date();
-      baseDate.setMonth(today.getMonth() - monthOffset);
-
-      for (let i = 0; i < 20; i++) {
-        const isOnline = i < 10;
-        const customer = customers[i % 10];
-        const room = rooms[(monthOffset * 20 + i) % rooms.length];
-
-        const randomPercent = Math.random();
-
-        let checkIn;
-        let checkOut;
-        let status;
-
-        if (randomPercent < 0.7) {
-          // 70% past bookings
-          const randomDay = Math.floor(Math.random() * 20) + 1;
-          checkIn = new Date(
-            baseDate.getFullYear(),
-            baseDate.getMonth(),
-            randomDay,
-          );
-          checkOut = new Date(checkIn.getTime() + 2 * 86400000);
-          status = "CHECKED_OUT";
-        } else if (randomPercent < 0.9) {
-          // 20% currently staying
-          checkIn = new Date(today.getTime() - 86400000);
-          checkOut = new Date(today.getTime() + 86400000);
-          status = "CHECKED_IN";
-        } else {
-          // 10% future bookings
-          checkIn = new Date(today.getTime() + 5 * 86400000);
-          checkOut = new Date(today.getTime() + 7 * 86400000);
-          status = "CONFIRMED";
-        }
-
-        const booking = await prisma.booking.create({
-          data: {
-            customerId: isOnline ? customer.id : null,
-            roomId: room.id,
-            checkIn,
-            checkOut,
-            fullName: isOnline
-              ? `Khách online ${customer.id}`
-              : `Khách vãng lai ${monthOffset}-${i}`,
-            phone: "0900000000",
-            email: isOnline
-              ? `customer${customer.id}@gmail.com`
-              : `walkin${monthOffset}-${i}@gmail.com`,
-            guestType: isOnline ? "SELF" : "OTHER",
-            status,
-          },
-        });
-
-        const baseAmount = 1000000;
-        const depositAmount = 150000;
-
-        let invoiceStatus = "ACTIVE";
-        let paidAmount = 0;
-
-        if (isOnline) {
-          // Online booking must have deposit
-          paidAmount = depositAmount;
-          invoiceStatus = status === "CONFIRMED" ? "ACTIVE" : "PAID";
-        } else {
-          // Walk-in usually pay full
-          paidAmount = status === "CONFIRMED" ? 0 : baseAmount;
-          invoiceStatus = status === "CONFIRMED" ? "ACTIVE" : "PAID";
-        }
-
-        const invoice = await prisma.invoice.create({
-          data: {
-            bookingId: booking.id,
-            status: invoiceStatus,
-            subtotal: baseAmount,
-            paidAmount,
-          },
-        });
-
-        await prisma.invoiceItem.create({
-          data: {
-            invoiceId: invoice.id,
-            type: "ROOM",
-            description: "Room charge",
-            quantity: 1,
-            unitPrice: 1000000,
-            totalPrice: 1000000,
-          },
-        });
-
-        if (isOnline) {
-          // Deposit at booking time
-          await prisma.payment.create({
-            data: {
-              invoiceId: invoice.id,
-              type: "DEPOSIT",
-              amount: depositAmount,
-              method: "TRANSFER",
-              status: "PAID",
-              paidAt: new Date(checkIn.getTime() - 86400000),
-            },
-          });
-
-          // Remaining payment at check-in (if not future)
-          if (status !== "CONFIRMED") {
-            await prisma.payment.create({
-              data: {
-                invoiceId: invoice.id,
-                type: "ROOM",
-                amount: baseAmount - depositAmount,
-                method: "CASH",
-                status: "PAID",
-                paidAt: checkIn,
-              },
-            });
-          }
-        } else {
-          // Walk-in pay full at check-in
-          if (status !== "CONFIRMED") {
-            await prisma.payment.create({
-              data: {
-                invoiceId: invoice.id,
-                type: "ROOM",
-                amount: baseAmount,
-                method: "CASH",
-                status: "PAID",
-                paidAt: checkIn,
-              },
-            });
-          }
-        }
-
-        if (services.length > 0 && status !== "CONFIRMED") {
-          const service = services[Math.floor(Math.random() * services.length)];
-
-          await prisma.invoiceItem.create({
-            data: {
-              invoiceId: invoice.id,
-              type: service.type,
-              description: service.name,
-              quantity: 1,
-              unitPrice: service.price,
-              totalPrice: service.price,
-              serviceId: service.id,
-            },
-          });
-        }
-
-        bookings.push(booking);
-      }
-    }
-
-    return bookings;
-  }
-
-  async function seedHousekeeping(bookings) {
-    const shifts = await prisma.shift.findMany();
-    const staffs = await prisma.staff.findMany({
-      include: { shiftAssignments: true },
-    });
-
-    for (const booking of bookings) {
-      const workDate = new Date();
-
-      // find housekeeping in shift on that date
-      const housekeepingStaff = staffs.find(
-        (s) =>
-          s.position === "HOUSEKEEPING" &&
-          s.shiftAssignments.some(
-            (a) =>
-              new Date(a.workDate).toDateString() === workDate.toDateString(),
-          ),
-      );
-
-      // if no housekeeping in shift -> fallback to reception in shift
-      const fallbackReception = staffs.find(
-        (s) =>
-          s.position === "RECEPTION" &&
-          s.shiftAssignments.some(
-            (a) =>
-              new Date(a.workDate).toDateString() === workDate.toDateString(),
-          ),
-      );
-
-      const assignedStaff = housekeepingStaff || fallbackReception || null;
-
-      await prisma.housekeepingTask.create({
-        data: {
-          roomId: booking.roomId,
-          bookingId: booking.id,
-          staffId: assignedStaff?.id,
-          workDate,
-          type: "CLEANING",
-          status: "DONE",
-          note: "Dọn phòng tự động theo ca làm",
-        },
-      });
-
-      if (booking.status === "CHECKED_OUT") {
-        await prisma.housekeepingTask.create({
-          data: {
-            roomId: booking.roomId,
-            bookingId: booking.id,
-            staffId: assignedStaff?.id,
-            workDate: new Date(Date.now() + 86400000),
-            type: "INSPECTION",
-            status: "DONE",
-            note: "Kiểm tra phòng sau check-out",
-          },
-        });
-      }
-    }
-  }
-
-  async function seedReviews(bookings) {
-    for (const b of bookings) {
-      if (!b.customerId) continue; // only registered users can review
-
-      await prisma.review.create({
-        data: {
-          bookingId: b.id,
-          overall: 5,
-          cleanliness: 5,
-          comfort: 5,
-          comment: "Great stay at diamondsea Hotel!",
-          status: "PUBLISHED",
-        },
-      });
-    }
-  }
-
-  async function seedShiftAssignments() {
-    const staffs = await prisma.staff.findMany();
-    const shifts = await prisma.shift.findMany();
-
-    const now = new Date();
-
-    for (let monthOffset = 0; monthOffset < 6; monthOffset++) {
-      const baseDate = new Date();
-      baseDate.setMonth(now.getMonth() - monthOffset);
-
-      for (let week = 0; week < 4; week++) {
-        for (const staff of staffs) {
-          for (let day = 0; day < 7; day++) {
-            const workDate = new Date(
-              baseDate.getFullYear(),
-              baseDate.getMonth(),
-              week * 7 + day + 1,
-            );
-
-            const shift = shifts[(day + staff.id) % shifts.length];
-
-            await prisma.staffShiftAssignment.create({
-              data: {
-                staffId: staff.id,
-                shiftId: shift.id,
-                workDate,
-                position: staff.position,
-              },
-            });
-          }
-        }
-      }
-    }
-  }
-
-  // call new seed functions
   const customers = await seedCustomers();
   const bookings = await seedBookings(customers);
 
-  // Create shift assignments first so housekeeping can detect staff in shift
   await seedShiftAssignments();
 
   await seedReviews(bookings);

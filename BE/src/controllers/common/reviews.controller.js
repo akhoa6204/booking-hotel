@@ -182,6 +182,7 @@ export async function list(req, res) {
         take: limit,
       }),
     ]);
+    console.log("rows:", rows);
 
     const meta = buildOffsetMeta({ page, limit, total });
     return success(res, { items: rows, meta });
@@ -213,8 +214,6 @@ export async function getById(req, res) {
         comment: true,
         isActive: true,
         status: true,
-        staffReply: true,
-        staffReplyAt: true,
         booking: {
           select: {
             id: true,
@@ -242,18 +241,7 @@ export async function getById(req, res) {
               },
             },
           },
-        },
-        staff: {
-          select: {
-            id: true,
-            user: {
-              select: {
-                id: true,
-                fullName: true,
-              },
-            },
-          },
-        },
+        } 
       },
     });
 

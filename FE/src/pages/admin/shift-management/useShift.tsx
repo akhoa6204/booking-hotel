@@ -196,6 +196,8 @@ const useShift = () => {
     }
     onChangeField(field, value);
   };
+  console.log("canEdit:", canEdit);
+  
   return {
     shifts,
     shiftDefinitions,

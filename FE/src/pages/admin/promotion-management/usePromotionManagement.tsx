@@ -26,19 +26,19 @@ const initialForm: PromotionForm = {
   scope: "GLOBAL",
   roomTypes: [],
   description: "",
-  minTotal: null,
+  minTotal: undefined,
   code: "",
   type: "PERCENT",
-  maxDiscountAmount: null,
-  value: null,
+  maxDiscountAmount: undefined,
+  value: 0,
   startAt: "",
   endAt: "",
   autoApply: false,
-  quotaTotal: null,
+  quotaTotal: undefined,
   eligibleFor: "ALL",
   isStackable: false,
 };
-export const getPromotionLabels = (promotion) => {
+export const getPromotionLabels = (promotion: Promotion) => {
   const scopeLabel =
     promotion.scope === "ROOM_TYPE"
       ? "Loại phòng"
@@ -108,6 +108,10 @@ const usePromotionManagement = () => {
   );
   const currentPage = useMemo(() => meta?.page || 1, [meta?.page]);
 
+  console.log("currentPage:", currentPage);
+  console.log("totalPages:", totalPages);
+  console.log("meta:", meta);
+
   const { data: promotion, isLoading: isLoadingPromotion } = useQuery({
     queryKey: ["promotion", editingId],
     queryFn: () => PromotionService.getById(Number(editingId)),
@@ -156,12 +160,12 @@ const usePromotionManagement = () => {
         value: Number(form.value || 0),
         startAt: form.startAt,
         endAt: form.endAt,
-        minTotal: Number(form.minTotal) || null,
-        code: form.code?.trim() || null,
-        name: form.name || null,
+        minTotal: Number(form.minTotal) || undefined,
+        code: form.code?.trim() || undefined,
+        name: form.name || "",
         autoApply: form.autoApply,
         priority: form.priority,
-        maxDiscountAmount: Number(form.maxDiscountAmount) || null,
+        maxDiscountAmount: Number(form.maxDiscountAmount) || undefined,
         isStackable: Boolean(form.isStackable),
       }),
     onSuccess: () => {
@@ -181,17 +185,17 @@ const usePromotionManagement = () => {
         scope: form.scope,
         type: form.type,
         description: form.description,
-        value: Number(form.value) || undefined,
-        startAt: form.startAt || undefined,
-        endAt: form.endAt || undefined,
-        roomTypes: form.roomTypes || null,
+        value: Number(form.value),
+        startAt: form.startAt,
+        endAt: form.endAt,
+        roomTypes: form.roomTypes || undefined,
         minTotal: Number(form.minTotal) || null,
-        code: form.code?.trim() || null,
+        code: form.code?.trim() || undefined,
 
-        name: form.name || null,
+        name: form.name || undefined,
         autoApply: form.autoApply,
         priority: form.priority,
-        maxDiscountAmount: Number(form.maxDiscountAmount) || null,
+        maxDiscountAmount: Number(form.maxDiscountAmount) || undefined,
         eligibleFor: form.eligibleFor,
         isStackable: Boolean(form.isStackable),
       }),

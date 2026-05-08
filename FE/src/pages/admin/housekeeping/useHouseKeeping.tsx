@@ -136,12 +136,12 @@ const useHouseKeeping = () => {
   const { form, onChangeField, onSubmit, resetForm, updateForm } =
     useForm<TaskForm>(
       {
-        roomId: null,
-        staffId: null,
+        roomId: undefined,
+        staffId: undefined,
         type: "DEFAULT",
         status: "PENDING",
-        updatedAt: null,
-        note: null,
+        updatedAt: undefined,
+        note: undefined,
       },
       validateForm,
       async () => {
@@ -197,7 +197,9 @@ const useHouseKeeping = () => {
       });
     },
     onError: (error) => {
-      const msg = error?.message || "Tạo nhiệm vụ phòng thất bại";
+      const msg =
+        error?.response?.data?.message || "Tạo nhiệm vụ phòng thất bại";
+
       showError(msg);
     },
   });

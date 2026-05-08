@@ -7,7 +7,7 @@ export const reviewsAdminRouter = Router();
 
 reviewsRouter.post("/", auth(), reviewController.create);
 
-reviewsRouter.get("/", auth(), reviewController.list);
+reviewsRouter.get("/", auth(true), reviewController.list);
 
 reviewsRouter.get("/stats", auth(), reviewController.getStats);
 

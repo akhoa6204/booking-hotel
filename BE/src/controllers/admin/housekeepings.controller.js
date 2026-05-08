@@ -110,9 +110,9 @@ export async function update(req, res) {
     const { id } = req.params;
     if (!id) return bad(res, "Thiếu thông tin ID", 400);
     const userId = req.user.id;
-    
+
     const { status, staffId, note, roomId, type } = req.body || {};
-    
+
     if (status && !["IN_PROGRESS", "PENDING", "DONE"].includes(status))
       return bad(res, "Trạng thái không hợp lệ", 400);
 
@@ -295,6 +295,40 @@ export async function create(req, res) {
         return bad(
           res,
           "Phòng này đang có nhiệm vụ dọn phòng chưa hoàn thành",
+          400,
+        );
+      }
+    }
+    if (type === "CLEANING" && roomId) {
+      const existedCleaning = await prisma.housekeepingTask.findFirst({
+        where: {
+          roomId: Number(roomId),
+          type: "CLEANING",
+          status: { in: ["PENDING", "IN_PROGRESS"] },
+        },
+      });
+
+      if (existedCleaning) {
+        return bad(
+          res,
+          "Phòng này đang có nhiệm vụ dọn phòng chưa hoàn thành",
+          400,
+        );
+      }
+    }
+    if (type === "INSPECTION" && roomId) {
+      const existedInspection = await prisma.housekeepingTask.findFirst({
+        where: {
+          roomId: Number(roomId),
+          type: "INSPECTION",
+          status: { in: ["PENDING", "IN_PROGRESS"] },
+        },
+      });
+
+      if (existedInspection) {
+        return bad(
+          res,
+          "Phòng này đang có nhiệm vụ kiểm tra chưa hoàn thành",
           400,
         );
       }

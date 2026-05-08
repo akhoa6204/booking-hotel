@@ -1,4 +1,5 @@
 import { PaymentMethod, PaymentType } from "@constant/types";
+import useAuth from "@hooks/useAuth";
 import useSnackbar from "@hooks/useSnackbar";
 import BookingService from "@services/BookingService";
 import InvoiceService from "@services/InvoiceService";
@@ -16,6 +17,7 @@ const usePayment = () => {
   const paymentIdFromParams = params.get("paymentId");
   const bookingIdFromParams = params.get("bookingId");
   const invoiceIdFromParams = params.get("invoiceId");
+  const { user } = useAuth();
 
   const bookingId = bookingIdFromParams
     ? Number(bookingIdFromParams)
@@ -168,7 +170,13 @@ const usePayment = () => {
     });
   };
 
-  const backToHome = () => navigate("/", { replace: true });
+  const backToHome = () => {
+    if (!user) {
+      navigate("/", { replace: true });
+    } else {
+      navigate(`/account/bookings/${bookingId}`, { replace: true });
+    }
+  };
   return {
     invoice,
     loadingInvoice,
